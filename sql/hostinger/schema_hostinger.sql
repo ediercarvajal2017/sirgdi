@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS rol_permiso (
 CREATE TABLE IF NOT EXISTS institucion (
     id_institucion          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     nombre                  VARCHAR(150)        NOT NULL,
-    logo_url                VARCHAR(500)        NULL,
+    logo_ruta               VARCHAR(500)        NULL,
     es_activa               TINYINT(1)          NOT NULL DEFAULT 1,
     fecha_creacion          DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion     DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP
