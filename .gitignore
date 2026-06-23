@@ -1,0 +1,52 @@
+# ============================================================
+# SIRGDI v2.0 — .gitignore
+# ============================================================
+
+# --- Secretos y configuración local (NUNCA subir) ---
+.env
+.env.local
+.env.production
+configuracion/.env
+
+# --- Datos en tiempo de ejecución (no versionar contenido) ---
+almacenamiento/sesiones/*
+almacenamiento/logs/*
+almacenamiento/cache/*
+almacenamiento/temp/*
+almacenamiento/archivos/evidencias/*
+public/almacenamiento/logos/*
+
+# Conservar las carpetas vacías en git (los .gitkeep sí se versionan)
+!almacenamiento/sesiones/.gitkeep
+!almacenamiento/logs/.gitkeep
+!almacenamiento/cache/.gitkeep
+!almacenamiento/temp/.gitkeep
+!almacenamiento/archivos/evidencias/.gitkeep
+!public/almacenamiento/logos/.gitkeep
+
+# --- Scripts de depuración/reparación (NO desplegar a producción) ---
+arreglar_superadmin.php
+asignar_permisos_admin.php
+cargar_sla.php
+configurar_superadmin.php
+debug_permisos.php
+debug_sla.php
+diagnostico_errores_bd.php
+ejecutar_migracion_institucion.php
+generar_hashes.php
+recarga_datos_demo.php
+reparar_charset.php
+reparar_errores_bd_automatico.php
+reparar_nombres.php
+verificar_admin.php
+verificar_bd.php
+backfill_*.php
+
+# --- Sistema / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+*.bak
+*.tmp

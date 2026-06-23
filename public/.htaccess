@@ -1,0 +1,57 @@
+# SIRGDI v2.0 - URL Rewriting (.htaccess)
+# Reescribir todas las requests al index.php (front controller)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Forzar HTTPS (descomentar en producción)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # No reescribir si es un archivo o directorio real
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Reescribir todas las requests a index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Deshabilitar listado de directorios
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+# Agregar headers de seguridad
+<IfModule mod_headers.c>
+    # Prevenir MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Clickjacking Protection
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Configuración de caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# Comprimir respuestas
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>

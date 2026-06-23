@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sistema de Toasts | SIRGDI v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./css/estilos_toasts.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #2C3E50;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #7F8C8D;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .demo-section {
+            margin-bottom: 40px;
+        }
+
+        .demo-section h2 {
+            color: #3498DB;
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .demo-section h2 i {
+            font-size: 20px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: #27AE60;
+            color: white;
+        }
+
+        .btn-error {
+            background: #E74C3C;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #F39C12;
+            color: white;
+        }
+
+        .btn-info {
+            background: #3498DB;
+            color: white;
+        }
+
+        .code-block {
+            background: #2C3E50;
+            color: #ECF0F1;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+
+        .divider {
+            height: 1px;
+            background: #ECF0F1;
+            margin: 40px 0;
+        }
+
+        .info-box {
+            background: #E8F4F8;
+            border-left: 4px solid #3498DB;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            color: #2C3E50;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #3498DB;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-bell"></i> Demo - Sistema de Toasts</h1>
+        <p class="subtitle">Prueba los diferentes tipos de notificaciones disponibles en SIRGDI v2.0</p>
+
+        <!-- Toasts de Éxito -->
+        <div class="demo-section">
+            <h2><i class="fas fa-check-circle" style="color: #27AE60;"></i> Notificaciones de Éxito</h2>
+            <div class="info-box">
+                <strong>Uso:</strong> Confirmación de acciones completadas (crear, guardar, eliminar, etc.)
+            </div>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="toast.success('¡Éxito!', 'Institución creada exitosamente')">
+                    <i class="fas fa-check"></i> Crear Institución
+                </button>
+                <button class="btn btn-success" onclick="toast.success('Guardado', 'Los cambios se guardaron correctamente')">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <button class="btn btn-success" onclick="toast.success('Completado', 'Archivo descargado correctamente')">
+                    <i class="fas fa-download"></i> Descargar
+                </button>
+            </div>
+            <div class="code-block">toast.success('¡Éxito!', 'Mensaje descriptivo');</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Toasts de Error -->
+        <div class="demo-section">
+            <h2><i class="fas fa-exclamation-circle" style="color: #E74C3C;"></i> Notificaciones de Error</h2>
+            <div class="info-box">
+                <strong>Uso:</strong> Informar sobre errores o acciones que fallaron
+            </div>
+            <div class="button-group">
+                <button class="btn btn-error" onclick="toast.error('Error', 'El código DANE ya está registrado')">
+                    <i class="fas fa-times"></i> DANE Duplicado
+                </button>
+                <button class="btn btn-error" onclick="toast.error('Error de Validación', 'Por favor completa todos los campos requeridos')">
+                    <i class="fas fa-ban"></i> Validación Fallida
+                </button>
+                <button class="btn btn-error" onclick="toast.error('Error de Conexión', 'No se pudo conectar con el servidor')">
+                    <i class="fas fa-wifi"></i> Conexión Fallida
+                </button>
+            </div>
+            <div class="code-block">toast.error('Error', 'Mensaje descriptivo del error');</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Toasts de Advertencia -->
+        <div class="demo-section">
+            <h2><i class="fas fa-exclamation-triangle" style="color: #F39C12;"></i> Notificaciones de Advertencia</h2>
+            <div class="info-box">
+                <strong>Uso:</strong> Alertas, precauciones o acciones que requieren confirmación
+            </div>
+            <div class="button-group">
+                <button class="btn btn-warning" onclick="toast.warning('Advertencia', 'Esta acción no se puede deshacer')">
+                    <i class="fas fa-exclamation"></i> Acción Irreversible
+                </button>
+                <button class="btn btn-warning" onclick="toast.warning('Límite Cercano', 'Has alcanzado el 90% de tu cuota')">
+                    <i class="fas fa-gauge"></i> Límite Cercano
+                </button>
+                <button class="btn btn-warning" onclick="toast.warning('Sesión Expirando', 'Tu sesión vencerá en 5 minutos')">
+                    <i class="fas fa-hourglass-end"></i> Sesión Expirando
+                </button>
+            </div>
+            <div class="code-block">toast.warning('Advertencia', 'Mensaje de precaución');</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Toasts de Información -->
+        <div class="demo-section">
+            <h2><i class="fas fa-info-circle" style="color: #3498DB;"></i> Notificaciones de Información</h2>
+            <div class="info-box">
+                <strong>Uso:</strong> Información general, updates, o mensajes de progreso
+            </div>
+            <div class="button-group">
+                <button class="btn btn-info" onclick="toast.info('Información', 'Los datos están siendo procesados')">
+                    <i class="fas fa-spinner"></i> Procesando...
+                </button>
+                <button class="btn btn-info" onclick="toast.info('Actualización', 'Nuevo reporte disponible')">
+                    <i class="fas fa-bell"></i> Nuevo Reporte
+                </button>
+                <button class="btn btn-info" onclick="toast.info('Tip', 'Usa Ctrl+S para guardar más rápido')">
+                    <i class="fas fa-lightbulb"></i> Consejo Útil
+                </button>
+            </div>
+            <div class="code-block">toast.info('Información', 'Mensaje informativo');</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Casos de Uso Real -->
+        <div class="demo-section">
+            <h2><i class="fas fa-star"></i> Casos de Uso Real en SIRGDI</h2>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="simularCrearReporte()">
+                    <i class="fas fa-file-alt"></i> Crear Reporte
+                </button>
+                <button class="btn btn-info" onclick="simularProcesarDatos()">
+                    <i class="fas fa-cog"></i> Procesar Datos
+                </button>
+                <button class="btn btn-warning" onclick="simularConfirmarEliminacion()">
+                    <i class="fas fa-trash"></i> Eliminar Institución
+                </button>
+                <button class="btn btn-error" onclick="simularErrorValidacion()">
+                    <i class="fas fa-alert"></i> Error de Validación
+                </button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Personalización -->
+        <div class="demo-section">
+            <h2><i class="fas fa-sliders-h"></i> Personalización de Duraciones</h2>
+            <div class="info-box">
+                <strong>Nota:</strong> Puedes cambiar cuánto tiempo aparece cada notificación. Valor en milisegundos.
+            </div>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="toast.success('Rápido', 'Desaparece en 2 segundos', 2000)">
+                    <i class="fas fa-rabbit"></i> Muy Rápido (2s)
+                </button>
+                <button class="btn btn-info" onclick="toast.info('Medio', 'Desaparece en 4 segundos', 4000)">
+                    <i class="fas fa-stopwatch"></i> Normal (4s)
+                </button>
+                <button class="btn btn-warning" onclick="toast.warning('Lento', 'Desaparece en 8 segundos', 8000)">
+                    <i class="fas fa-turtle"></i> Lento (8s)
+                </button>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Información Final -->
+        <div class="info-box">
+            <i class="fas fa-rocket"></i> <strong>¡Listo para usar!</strong><br>
+            Estos toasts están implementados en todos los formularios de SIRGDI v2.0.
+            Verás notificaciones automáticas cuando guardes datos, encuentres errores, o completes acciones.
+        </div>
+    </div>
+
+    <script src="./js/toast.js"></script>
+    <script>
+        function simularCrearReporte() {
+            toast.info('Creando reporte...', 'Por favor espera');
+            setTimeout(() => {
+                toast.success(
+                    '¡Reporte Creado!',
+                    'Tu reporte ha sido registrado. Número de ticket: #REP-2024-001234'
+                );
+            }, 2000);
+        }
+
+        function simularProcesarDatos() {
+            toast.info('Procesando...', 'Generando estadísticas');
+            setTimeout(() => {
+                toast.success(
+                    'Datos Procesados',
+                    'Los datos han sido generados y están listos para descargar'
+                );
+            }, 3000);
+        }
+
+        function simularConfirmarEliminacion() {
+            toast.warning(
+                'Confirmación Requerida',
+                '¿Estás seguro que deseas eliminar esta institución? Esta acción no se puede deshacer'
+            );
+        }
+
+        function simularErrorValidacion() {
+            toast.error(
+                'Error de Validación',
+                'Por favor verifica: Nombre (mín 3 caracteres), DANE (10 dígitos exactos), Logo (PNG/JPG máx 5MB)'
+            );
+        }
+    </script>
+</body>
+</html>

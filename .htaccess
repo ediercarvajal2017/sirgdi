@@ -1,0 +1,45 @@
+# ============================================================
+# SIRGDI v2.0 — .htaccess de la RAÍZ del proyecto
+# ============================================================
+# El subdominio mantenimiento.ediertech.com apunta a esta carpeta
+# (la raíz del repositorio), NO a /public. Por eso aquí enrutamos
+# todas las peticiones hacia la carpeta public/ (front controller)
+# y protegemos los archivos que NO deben ser accesibles por web.
+# ============================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Forzar HTTPS (Hostinger emite SSL gratis con Let's Encrypt)
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Si la petición ya viene hacia public/, no reescribir (evita bucle)
+    RewriteRule ^public/ - [L]
+
+    # Enrutar TODO el resto hacia la carpeta public/
+    # Ej: /css/estilos.css -> public/css/estilos.css
+    #     /?controlador=x   -> public/?controlador=x
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# ============================================================
+# Defensa adicional (por si mod_rewrite estuviera desactivado):
+# bloquear el acceso directo a carpetas y archivos sensibles.
+# ============================================================
+
+# Bloquear carpetas internas de la aplicación.
+# (No se incluye "almacenamiento" porque los logos públicos se sirven por
+#  /almacenamiento/logos/... que el rewrite redirige a public/almacenamiento/.
+#  La carpeta privada de la raíz nunca es accesible: el rewrite envía todo a public/.)
+RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas)(/|$)
+
+# Bloquear archivos sensibles por extensión/nombre
+<FilesMatch "(^\.|\.env$|\.env\..*|\.md$|\.sql$|\.log$|\.lock$|\.json$|composer\.(json|lock))">
+    Require all denied
+</FilesMatch>
+
+# No listar directorios
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>

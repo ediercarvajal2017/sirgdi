@@ -1,0 +1,445 @@
+/* Estilos Modernos para Formularios - SIRGDI v2.0 */
+/* Basado en el diseño del login */
+
+:root {
+    --primary-blue: #3498DB;
+    --light-blue: #D6EAF8;
+    --dark-text: #2C3E50;
+    --gray-text: #95A5A6;
+    --dark-blue: #2980B9;
+}
+
+/* Override de estilos base para formularios */
+.form-control,
+.input-modern {
+    border: 2px solid var(--primary-blue) !important;
+    background-color: #F8FBFC !important;
+    border-radius: 8px !important;
+    padding: 12px 15px !important;
+    font-size: 15px !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Wrapper para formularios modernos */
+.form-modern-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
+    border-left: 4px solid var(--primary-blue);
+}
+
+/* Grupos de formularios modernos */
+.form-modern .form-group,
+.form-modern-wrapper .form-group {
+    margin-bottom: 20px;
+}
+
+.form-modern label,
+.form-modern-wrapper label {
+    display: block;
+    font-weight: 600;
+    color: var(--dark-text);
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* Inputs modernos */
+.form-modern input[type="text"],
+.form-modern input[type="email"],
+.form-modern input[type="password"],
+.form-modern input[type="number"],
+.form-modern input[type="date"],
+.form-modern input[type="time"],
+.form-modern textarea,
+.form-modern select,
+.form-modern-wrapper input[type="text"],
+.form-modern-wrapper input[type="email"],
+.form-modern-wrapper input[type="password"],
+.form-modern-wrapper input[type="number"],
+.form-modern-wrapper input[type="date"],
+.form-modern-wrapper input[type="time"],
+.form-modern-wrapper textarea,
+.form-modern-wrapper select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--light-blue);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background-color: #F8FBFC;
+    color: var(--dark-text);
+}
+
+.form-modern input:focus,
+.form-modern textarea:focus,
+.form-modern select:focus,
+.form-modern-wrapper input:focus,
+.form-modern-wrapper textarea:focus,
+.form-modern-wrapper select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    background-color: white;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+}
+
+.form-modern input::placeholder,
+.form-modern textarea::placeholder,
+.form-modern-wrapper input::placeholder,
+.form-modern-wrapper textarea::placeholder {
+    color: var(--gray-text);
+}
+
+/* Textarea */
+.form-modern textarea,
+.form-modern-wrapper textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Checkboxes modernos */
+.form-modern-checkbox,
+.form-modern-wrapper .form-modern-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 12px;
+}
+
+.form-modern-checkbox input,
+.form-modern-wrapper .form-modern-checkbox input {
+    display: none;
+}
+
+.form-modern-checkbox .checkbox-mark,
+.form-modern-wrapper .form-modern-checkbox .checkbox-mark {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    background: white;
+}
+
+.form-modern-checkbox input:checked + .checkbox-mark,
+.form-modern-wrapper .form-modern-checkbox input:checked + .checkbox-mark {
+    background: var(--primary-blue);
+    color: white;
+}
+
+.form-modern-checkbox input:checked + .checkbox-mark::after,
+.form-modern-wrapper .form-modern-checkbox input:checked + .checkbox-mark::after {
+    content: "✓";
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.form-modern-checkbox label,
+.form-modern-wrapper .form-modern-checkbox label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--dark-text);
+}
+
+/* Radios modernos */
+.form-modern-radio,
+.form-modern-wrapper .form-modern-radio {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 12px;
+}
+
+.form-modern-radio input,
+.form-modern-wrapper .form-modern-radio input {
+    display: none;
+}
+
+.form-modern-radio .radio-mark,
+.form-modern-wrapper .form-modern-radio .radio-mark {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    background: white;
+}
+
+.form-modern-radio input:checked + .radio-mark,
+.form-modern-wrapper .form-modern-radio input:checked + .radio-mark {
+    background: var(--primary-blue);
+}
+
+.form-modern-radio input:checked + .radio-mark::after,
+.form-modern-wrapper .form-modern-radio input:checked + .radio-mark::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    display: block;
+}
+
+.form-modern-radio label,
+.form-modern-wrapper .form-modern-radio label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--dark-text);
+}
+
+/* Botones del formulario */
+.form-modern .btn-modern,
+.form-modern-wrapper .btn-modern {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #2980B9 100%);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-modern .btn-modern:hover,
+.form-modern-wrapper .btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+}
+
+.form-modern .btn-modern:active,
+.form-modern-wrapper .btn-modern:active {
+    transform: translateY(0);
+}
+
+/* Botones secundarios */
+.form-modern .btn-secondary,
+.form-modern-wrapper .btn-secondary {
+    background: #BDC3C7;
+    color: var(--dark-text);
+}
+
+.form-modern .btn-secondary:hover,
+.form-modern-wrapper .btn-secondary:hover {
+    background: #A6ACAF;
+}
+
+/* Botones peligrosos */
+.form-modern .btn-danger,
+.form-modern-wrapper .btn-danger {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+}
+
+.form-modern .btn-danger:hover,
+.form-modern-wrapper .btn-danger:hover {
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* Grupo de botones */
+.form-button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+/* Errores en formularios */
+.form-error {
+    color: #E74C3C;
+    font-size: 12px;
+    margin-top: 6px;
+    display: block;
+}
+
+.form-modern input.is-invalid,
+.form-modern textarea.is-invalid,
+.form-modern select.is-invalid,
+.form-modern-wrapper input.is-invalid,
+.form-modern-wrapper textarea.is-invalid,
+.form-modern-wrapper select.is-invalid {
+    border-color: #E74C3C;
+    background-color: #FADBD8;
+}
+
+/* Textos de ayuda */
+.form-help {
+    font-size: 12px;
+    color: var(--gray-text);
+    margin-top: 6px;
+    display: block;
+}
+
+/* Selects mejorados */
+.form-modern select,
+.form-modern-wrapper select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233498DB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+/* Textarea con contador */
+.form-textarea-wrapper {
+    position: relative;
+}
+
+.form-textarea-counter {
+    font-size: 12px;
+    color: var(--gray-text);
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* Campos requeridos */
+.required::after {
+    content: " *";
+    color: #E74C3C;
+    font-weight: bold;
+}
+
+/* Sobreescritura de estilos específicos */
+.card {
+    border-left: 4px solid var(--primary-blue) !important;
+}
+
+.card input:not([type="hidden"]),
+.card textarea,
+.card select {
+    border: 2px solid var(--primary-blue) !important;
+    background-color: #F8FBFC !important;
+    border-radius: 8px !important;
+}
+
+.card input:focus,
+.card textarea:focus,
+.card select:focus {
+    border-color: var(--primary-blue) !important;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15) !important;
+}
+
+.card .btn-primary,
+.card .btn {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%) !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+    padding: 12px 28px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    transition: all 0.3s ease !important;
+}
+
+.card .btn:hover,
+.card .btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4) !important;
+}
+
+/* Labels en tarjetas */
+.card .form-group label {
+    font-weight: 600 !important;
+    color: var(--dark-text) !important;
+}
+
+/* Alert mejorados */
+.alert {
+    border-radius: 8px !important;
+    border-left: 4px solid var(--primary-blue) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.alert i {
+    font-size: 18px !important;
+}
+
+/* Formularios con tabla */
+.table-form-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
+}
+
+/* Dropdown mejorado */
+select.input-modern,
+select[class*="form-control"] {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233498DB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 40px !important;
+}
+
+/* Textarea mejorado */
+textarea.input-modern,
+textarea[class*="form-control"] {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Inputs con ícono */
+.form-group-with-icon {
+    position: relative;
+}
+
+.form-group-with-icon .form-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-blue);
+    pointer-events: none;
+}
+
+.form-group-with-icon .input-modern {
+    padding-left: 45px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-modern-wrapper {
+        padding: 20px;
+    }
+
+    .form-button-group {
+        flex-direction: column;
+    }
+
+    .form-button-group .btn-modern {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card input,
+    .card textarea,
+    .card select {
+        font-size: 16px !important;
+    }
+}

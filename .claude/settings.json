@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -r ' *)",
+      "Bash(php diagnostico_errores_bd.php)",
+      "Bash(php reparar_errores_bd_automatico.php)",
+      "Bash(grep -E \"\\\\.\\(php|html\\)$\")"
+    ]
+  }
+}
