@@ -86,12 +86,14 @@ CREATE TABLE IF NOT EXISTS rol_permiso (
 CREATE TABLE IF NOT EXISTS institucion (
     id_institucion          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     nombre                  VARCHAR(150)        NOT NULL,
+    codigo_dane             VARCHAR(13)         NOT NULL DEFAULT '',
     logo_ruta               VARCHAR(500)        NULL,
     es_activa               TINYINT(1)          NOT NULL DEFAULT 1,
     fecha_creacion          DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion     DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP
                                                          ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_institucion)
+    PRIMARY KEY (id_institucion),
+    UNIQUE KEY uk_inst_dane (codigo_dane)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Tabla raíz multitenant: cada fila es un tenant (institución educativa)';
 
@@ -132,6 +134,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     id_usuario              BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     id_institucion          BIGINT UNSIGNED     NOT NULL,
     nombre_completo         VARCHAR(150)        NOT NULL,
+    numero_documento        VARCHAR(20)         NULL,
     correo_electronico      VARCHAR(150)        NOT NULL,
     telefono                VARCHAR(20)         NULL,
     cargo_descripcion       VARCHAR(100)        NULL,
@@ -147,6 +150,7 @@ CREATE TABLE IF NOT EXISTS usuario (
                                                          ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id_usuario),
     UNIQUE KEY uk_usuario_inst_correo (id_institucion, correo_electronico),
+    UNIQUE KEY uk_usuario_documento (numero_documento),
     CONSTRAINT fk_usr_inst FOREIGN KEY (id_institucion) REFERENCES institucion(id_institucion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Usuarios del sistema. Aislamiento garantizado por id_institucion. RN-01';
