@@ -50,3 +50,7 @@ Thumbs.db
 *.log
 *.bak
 *.tmp
+
+# Credenciales demo y config local (no publicar)
+usurios.md
+.claude/settings.local.json
