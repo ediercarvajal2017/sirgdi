@@ -34,22 +34,90 @@
         </div>
     </section>
 
-    <!-- CARACTERÍSTICAS: reportar · administrar · seguimiento -->
-    <section class="features-inicio">
-        <div class="feature-card">
-            <div class="feature-icon feature-icon-1"><i class="fas fa-clipboard-check"></i></div>
-            <h3>Reportar</h3>
-            <p>Registra fallas, daños, solicitudes o incidencias en la infraestructura escolar de forma rápida y guiada.</p>
+    <!-- CARACTERÍSTICAS PRINCIPALES -->
+    <section class="features-section">
+        <div class="features-header">
+            <div class="features-header-line"></div>
+            <div class="features-header-text">
+                <span class="features-label"><i class="fas fa-star"></i> ¿Qué puedes hacer?</span>
+                <h2 class="features-titulo">Características Principales</h2>
+                <p class="features-subtitulo">Todo lo que necesitas para gestionar incidencias institucionales en un solo lugar</p>
+            </div>
+            <div class="features-header-line"></div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon feature-icon-2"><i class="fas fa-tasks"></i></div>
-            <h3>Administrar</h3>
-            <p>Asigna técnicos, prioriza por urgencia y gestiona cada reporte hasta su resolución con control total.</p>
+
+        <div class="features-grid">
+            <div class="feature-card fc-blue">
+                <div class="fc-number">01</div>
+                <div class="fc-top">
+                    <div class="fc-icon-wrap"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="fc-badge">Módulo Reportes</div>
+                </div>
+                <h3 class="fc-title">Reportar Incidencias</h3>
+                <p class="fc-desc">Registra fallas, daños, solicitudes o incidencias en la infraestructura escolar de forma rápida y guiada, adjuntando fotos y ubicación exacta.</p>
+                <div class="fc-footer">
+                    <span><i class="fas fa-check-circle"></i> Formulario inteligente</span>
+                    <span><i class="fas fa-check-circle"></i> Ticket automático</span>
+                    <span><i class="fas fa-check-circle"></i> Evidencias fotográficas</span>
+                </div>
+            </div>
+
+            <div class="feature-card fc-teal">
+                <div class="fc-number">02</div>
+                <div class="fc-top">
+                    <div class="fc-icon-wrap"><i class="fas fa-sitemap"></i></div>
+                    <div class="fc-badge">Módulo Gestión</div>
+                </div>
+                <h3 class="fc-title">Administrar y Gestionar</h3>
+                <p class="fc-desc">Asigna técnicos, prioriza por urgencia y gestiona cada reporte hasta su resolución con control total del flujo de trabajo y SLA.</p>
+                <div class="fc-footer">
+                    <span><i class="fas fa-check-circle"></i> Kanban visual</span>
+                    <span><i class="fas fa-check-circle"></i> Asignación de técnicos</span>
+                    <span><i class="fas fa-check-circle"></i> Control de SLA</span>
+                </div>
+            </div>
+
+            <div class="feature-card fc-indigo">
+                <div class="fc-number">03</div>
+                <div class="fc-top">
+                    <div class="fc-icon-wrap"><i class="fas fa-chart-line"></i></div>
+                    <div class="fc-badge">Módulo Analytics</div>
+                </div>
+                <h3 class="fc-title">Seguimiento y Análisis</h3>
+                <p class="fc-desc">Consulta el estado, la trazabilidad y las evidencias de cada incidencia en tiempo real. Exporta reportes y toma decisiones con datos.</p>
+                <div class="fc-footer">
+                    <span><i class="fas fa-check-circle"></i> Dashboard KPIs</span>
+                    <span><i class="fas fa-check-circle"></i> Exportar CSV</span>
+                    <span><i class="fas fa-check-circle"></i> Auditoría completa</span>
+                </div>
+            </div>
         </div>
-        <div class="feature-card">
-            <div class="feature-icon feature-icon-3"><i class="fas fa-route"></i></div>
-            <h3>Hacer seguimiento</h3>
-            <p>Consulta el estado, la trazabilidad y las evidencias de cada incidencia en tiempo real.</p>
+
+        <!-- Fila inferior: 3 stats -->
+        <div class="features-stats">
+            <div class="fstat">
+                <i class="fas fa-users fstat-icon"></i>
+                <div>
+                    <strong>6 Roles</strong>
+                    <span>Reportante, Técnico, Gestor, Rector, Admin, Superadmin</span>
+                </div>
+            </div>
+            <div class="fstat-divider"></div>
+            <div class="fstat">
+                <i class="fas fa-layer-group fstat-icon"></i>
+                <div>
+                    <strong>Multitenant</strong>
+                    <span>Cada institución con sus datos aislados y seguros</span>
+                </div>
+            </div>
+            <div class="fstat-divider"></div>
+            <div class="fstat">
+                <i class="fas fa-shield-alt fstat-icon"></i>
+                <div>
+                    <strong>Seguro y Auditable</strong>
+                    <span>RBAC, CSRF, 2FA y registro completo de auditoría</span>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -208,64 +276,253 @@
         margin: 0;
     }
 
-    /* ===== FEATURES ===== */
-    .features-inicio {
+    /* ===== FEATURES SECTION ===== */
+    .features-section {
+        background: linear-gradient(170deg, #EBF5FB 0%, #F4F9FD 60%, #EAF4FF 100%);
+        border-radius: 24px;
+        padding: 48px 40px 40px;
+        border: 1px solid #D6EAF8;
+        box-shadow: 0 6px 28px rgba(41,128,185,.07);
+    }
+
+    /* Header */
+    .features-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 36px;
+    }
+
+    .features-header-line {
+        flex: 1;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #AED6F1, transparent);
+    }
+
+    .features-header-text {
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .features-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--primary-blue);
+        background: rgba(52,152,219,.12);
+        padding: 5px 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(52,152,219,.25);
+        margin-bottom: 10px;
+    }
+
+    .features-titulo {
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--dark-text);
+        margin: 8px 0 6px;
+        letter-spacing: -0.3px;
+    }
+
+    .features-subtitulo {
+        font-size: 14px;
+        color: #7F8C8D;
+        margin: 0;
+        max-width: 480px;
+    }
+
+    /* Grid de tarjetas */
+    .features-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 22px;
+        gap: 20px;
+        margin-bottom: 24px;
     }
 
     .feature-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px 26px;
-        box-shadow: 0 4px 18px rgba(52, 152, 219, 0.08);
-        border: 1px solid #EDF4FB;
+        position: relative;
+        border-radius: 20px;
+        padding: 30px 26px 26px;
+        overflow: hidden;
+        color: #fff;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: default;
     }
 
     .feature-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 30px rgba(52, 152, 219, 0.18);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 44px rgba(0,0,0,.22) !important;
     }
 
-    .feature-icon {
-        width: 60px;
-        height: 60px;
+    /* Variantes de color */
+    .fc-blue {
+        background: linear-gradient(145deg, #1A5276 0%, #2471A3 45%, #3498DB 100%);
+        box-shadow: 0 10px 30px rgba(41,128,185,.35);
+    }
+
+    .fc-teal {
+        background: linear-gradient(145deg, #0E6655 0%, #1A9370 45%, #1ABC9C 100%);
+        box-shadow: 0 10px 30px rgba(26,179,148,.30);
+    }
+
+    .fc-indigo {
+        background: linear-gradient(145deg, #1A237E 0%, #283593 45%, #3F51B5 100%);
+        box-shadow: 0 10px 30px rgba(63,81,181,.32);
+    }
+
+    /* Número decorativo de fondo */
+    .fc-number {
+        position: absolute;
+        top: -14px;
+        right: 20px;
+        font-size: 90px;
+        font-weight: 900;
+        color: rgba(255,255,255,.08);
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+        letter-spacing: -4px;
+    }
+
+    /* Top: ícono + badge */
+    .fc-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .fc-icon-wrap {
+        width: 54px;
+        height: 54px;
+        flex-shrink: 0;
+        background: rgba(255,255,255,.18);
+        border: 1.5px solid rgba(255,255,255,.3);
         border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 26px;
-        color: #fff;
-        margin-bottom: 18px;
+        font-size: 22px;
+        backdrop-filter: blur(4px);
     }
 
-    .feature-icon-1 { background: linear-gradient(135deg, #3498DB, #2980B9); }
-    .feature-icon-2 { background: linear-gradient(135deg, #27AE60, #1E8449); }
-    .feature-icon-3 { background: linear-gradient(135deg, #E67E22, #CA6F1E); }
-
-    .feature-card h3 {
-        font-size: 19px;
-        color: var(--dark-text);
-        margin: 0 0 10px;
+    .fc-badge {
+        font-size: 11px;
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        background: rgba(255,255,255,.18);
+        border: 1px solid rgba(255,255,255,.25);
+        padding: 4px 12px;
+        border-radius: 20px;
     }
 
-    .feature-card p {
+    .fc-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+        margin: 0 0 10px;
+        letter-spacing: -0.2px;
+    }
+
+    .fc-desc {
+        font-size: 14px;
+        line-height: 1.65;
+        color: rgba(255,255,255,.88);
+        margin: 0 0 20px;
+    }
+
+    /* Footer con checks */
+    .fc-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        border-top: 1px solid rgba(255,255,255,.18);
+        padding-top: 16px;
+        margin-top: auto;
+    }
+
+    .fc-footer span {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: rgba(255,255,255,.92);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .fc-footer span i {
+        font-size: 11px;
+        opacity: .85;
+    }
+
+    /* Stats bar */
+    .features-stats {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px 30px;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        box-shadow: 0 3px 14px rgba(41,128,185,.1);
+        border: 1px solid #D6EAF8;
+    }
+
+    .fstat {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .fstat-icon {
+        font-size: 28px;
+        color: var(--primary-blue);
+        flex-shrink: 0;
+        opacity: .85;
+    }
+
+    .fstat strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 2px;
+    }
+
+    .fstat span {
+        font-size: 12.5px;
         color: #7F8C8D;
-        font-size: 14.5px;
-        line-height: 1.6;
-        margin: 0;
+        line-height: 1.4;
+    }
+
+    .fstat-divider {
+        width: 1px;
+        height: 46px;
+        background: #D6EAF8;
+        margin: 0 28px;
+        flex-shrink: 0;
     }
 
     /* ===== RESPONSIVE ===== */
+    @media (max-width: 1000px) {
+        .features-grid { grid-template-columns: 1fr; }
+        .features-stats { flex-direction: column; gap: 18px; }
+        .fstat-divider { width: 60px; height: 1px; margin: 0; }
+    }
+
     @media (max-width: 900px) {
-        .features-inicio { grid-template-columns: 1fr; }
+        .features-section { padding: 36px 24px 30px; }
         .hero-inicio { padding: 44px 34px; }
         .hero-titulo { font-size: 38px; }
         .institucion-card { flex-direction: column; text-align: center; gap: 24px; }
         .institucion-bienvenida { justify-content: center; }
+        .features-header { flex-direction: column; gap: 12px; }
+        .features-header-line { display: none; }
     }
 
     @media (max-width: 480px) {
@@ -275,5 +532,8 @@
         .hero-texto { font-size: 15px; }
         .institucion-card { padding: 28px 22px; }
         .institucion-nombre { font-size: 26px; }
+        .features-section { padding: 28px 16px 24px; }
+        .feature-card { padding: 24px 20px 20px; }
+        .fc-title { font-size: 18px; }
     }
 </style>
