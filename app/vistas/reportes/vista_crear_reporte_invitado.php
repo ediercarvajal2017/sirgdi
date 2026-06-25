@@ -156,47 +156,57 @@ $urgencias = [
         .urg-pill.selected.urg-3 { background: #D35400; color: #fff; border-color: #D35400; box-shadow: 0 4px 12px rgba(211,84,0,.3); }
         .urg-pill.selected.urg-4 { background: #E74C3C; color: #fff; border-color: #E74C3C; box-shadow: 0 4px 12px rgba(231,76,60,.3); }
 
-        /* ── Foto upload ── */
-        .foto-zone {
-            border: 2px dashed #AED6F1; border-radius: 12px;
-            padding: 24px; text-align: center;
-            background: #F0F9FF; cursor: pointer; transition: all .2s;
-        }
-        .foto-zone:hover { border-color: #3498DB; background: #EBF5FB; }
-        .foto-zone i { font-size: 32px; color: #AED6F1; display: block; margin-bottom: 10px; }
-        .foto-zone p { font-size: 14px; color: #85929E; margin: 0; }
-        .foto-zone span { font-size: 12px; color: #AEB6BF; }
-        #input-fotos-inv { display: none; }
+        /* ── Evidencia tabs ── */
+        .ev-tabs { display:flex; gap:6px; margin-bottom:16px; }
+        .ev-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 18px; border:1.5px solid #D5E8F5; border-radius:8px; background:#F4F9FD; color:#808B96; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
+        .ev-tab:hover { background:#EBF5FB; color:#2C3E50; }
+        .ev-tab-active { background:#3498DB; color:#fff; border-color:#3498DB; }
+        .ev-tab-badge { background:rgba(255,255,255,.25); color:#fff; border-radius:10px; font-size:11px; padding:1px 6px; font-weight:700; }
+        .ev-tab-badge-rec { background:#E74C3C; }
 
-        /* Botones de fuente */
-        .foto-source-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
-        .foto-source-btn {
-            flex: 1; min-width: 140px;
-            display: flex; flex-direction: column; align-items: center; gap: 7px;
-            padding: 16px 12px; border: 2px dashed #AED6F1; border-radius: 10px;
-            background: #F0F9FF; cursor: pointer; transition: all .2s;
-            color: #5D6D7E; font-size: 13px; font-weight: 600;
-        }
-        .foto-source-btn i { font-size: 22px; color: #3498DB; }
-        .foto-source-btn:hover { border-color: #3498DB; background: #EBF5FB; color: #1A5276; }
-        #input-cam-movil-inv { display: none; }
+        /* ── Source row ── */
+        .ev-source-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+        .ev-source-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:22px 16px; border:2px dashed #C8DDEF; border-radius:12px; background:#F8FBFE; cursor:pointer; transition:all .2s; text-align:center; }
+        .ev-source-card i { font-size:26px; color:#3498DB; transition:transform .2s; }
+        .ev-source-card strong { font-size:13px; font-weight:700; color:#2C3E50; }
+        .ev-source-card small { font-size:11px; color:#808B96; }
+        .ev-source-card:hover { border-color:#3498DB; background:#EBF5FB; }
+        .ev-source-card:hover i { transform:scale(1.1); }
+        .ev-source-cam { border-color:#C5EAE0; background:#F0FAF7; }
+        .ev-source-cam i { color:#16A085; }
+        .ev-source-cam:hover { border-color:#1ABC9C; background:#E8F8F5; }
+        .ev-source-card.dragover { border-color:#3498DB; background:#EBF5FB; }
 
-        /* Previews */
-        .foto-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-        .foto-preview-item {
-            position: relative; width: 82px; height: 82px;
-            border-radius: 8px; overflow: hidden;
-            border: 2px solid #AED6F1; box-shadow: 0 2px 6px rgba(0,0,0,.08);
-        }
-        .foto-preview-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .foto-preview-remove {
-            position: absolute; top: 3px; right: 3px;
-            width: 20px; height: 20px; border-radius: 50%;
-            background: rgba(231,76,60,.9); color: #fff;
-            border: none; cursor: pointer; font-size: 11px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .foto-count { font-size: 12px; color: #85929E; margin-top: 8px; }
+        /* ── Preview grid ── */
+        .ev-preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px; margin-bottom:10px; }
+        .ev-preview-item { position:relative; border-radius:10px; overflow:hidden; background:#EEF2F5; aspect-ratio:1; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+        .ev-preview-item img, .ev-preview-item video { width:100%; height:100%; object-fit:cover; display:block; }
+        .ev-preview-item .ev-remove { position:absolute; top:5px; right:5px; background:rgba(231,76,60,.9); color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; }
+        .ev-preview-item .ev-remove:hover { background:#E74C3C; }
+        .ev-preview-item .ev-label { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.5); color:#fff; font-size:10px; padding:3px 6px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .ev-hint { font-size:11.5px; color:#808B96; display:flex; align-items:center; gap:5px; margin-top:4px; }
+
+        /* ── Camera modal ── */
+        .cam-modal { position:fixed; inset:0; background:rgba(15,25,40,.7); backdrop-filter:blur(4px); z-index:9000; display:flex; align-items:center; justify-content:center; padding:16px; }
+        .cam-box { background:#fff; border-radius:16px; width:100%; max-width:520px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+        .cam-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; font-weight:700; font-size:15px; }
+        .cam-close { background:rgba(255,255,255,.15); border:none; border-radius:8px; color:#fff; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+        .cam-close:hover { background:rgba(255,255,255,.3); }
+        .cam-body { position:relative; background:#000; aspect-ratio:4/3; max-height:340px; overflow:hidden; }
+        .cam-stream { width:100%; height:100%; object-fit:cover; display:block; }
+        .cam-flash { position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .05s; }
+        .cam-flash.flash { opacity:1; }
+        .rec-indicator { position:absolute; top:12px; left:12px; background:rgba(231,76,60,.9); color:#fff; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; }
+        .rec-dot { width:8px; height:8px; background:#fff; border-radius:50%; animation:blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .cam-footer { padding:16px 20px; display:flex; align-items:center; justify-content:center; gap:12px; background:#F8FBFC; }
+        .cam-btn-capture { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; box-shadow:0 4px 14px rgba(52,152,219,.35); }
+        .cam-btn-capture:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(52,152,219,.45); }
+        .cam-btn-stop { display:inline-flex; align-items:center; gap:8px; background:#E74C3C; color:#fff; border:none; border-radius:10px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; }
+        .cam-btn-stop:hover { background:#C0392B; }
+        .cam-btn-switch { background:#EBF5FB; border:1.5px solid #D5E8F5; border-radius:10px; color:#3498DB; width:44px; height:44px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+        .cam-btn-switch:hover { background:#D5E8F5; }
+        .cam-error { margin:0; padding:10px 20px 14px; background:#FDF0EF; color:#C0392B; font-size:13px; text-align:center; }
 
         /* ── Botón de envío ── */
         .inv-submit-wrap { text-align: center; margin-top: 10px; }
@@ -455,32 +465,120 @@ $urgencias = [
             </div>
         </div>
 
-        <!-- ── Sección 5: Evidencia fotográfica ── -->
+        <!-- ── Sección 5: Evidencias ── -->
         <div class="inv-card">
             <div class="inv-card-head">
-                <div class="inv-card-head-icon"><i class="fas fa-camera"></i></div>
+                <div class="inv-card-head-icon"><i class="fas fa-photo-film"></i></div>
                 <div>
-                    <h3>Evidencia fotográfica</h3>
-                    <p>Adjunte fotos del daño (opcional, máximo 5 fotos)</p>
+                    <h3>Evidencias</h3>
+                    <p>Adjunte fotos o video del daño (opcional)</p>
                 </div>
             </div>
             <div class="inv-card-body">
-                <input type="file" id="input-fotos-inv" name="fotos[]" multiple accept="image/*,.pdf">
-                <input type="file" id="input-cam-movil-inv" name="fotos[]" accept="image/*" capture="environment">
 
-                <div class="foto-source-row">
-                    <div class="foto-source-btn" onclick="document.getElementById('input-fotos-inv').click()">
-                        <i class="fas fa-folder-open"></i>
-                        Subir desde galería
-                    </div>
-                    <div class="foto-source-btn" onclick="abrirCamaraInv()">
-                        <i class="fas fa-camera"></i>
-                        Tomar foto
-                    </div>
+                <!-- Tabs -->
+                <div class="ev-tabs">
+                    <button type="button" class="ev-tab ev-tab-active" onclick="switchEvTabInv('fotos', this)">
+                        <i class="fas fa-images"></i> Fotos
+                        <span class="ev-tab-badge" id="badge-fotos-inv" style="display:none;">0</span>
+                    </button>
+                    <button type="button" class="ev-tab" onclick="switchEvTabInv('video', this)">
+                        <i class="fas fa-video"></i> Video
+                        <span class="ev-tab-badge ev-tab-badge-rec" id="badge-video-inv" style="display:none;">1</span>
+                    </button>
                 </div>
 
-                <div class="foto-previews" id="foto-previews-inv"></div>
-                <p class="foto-count" id="foto-count-inv" style="display:none;"></p>
+                <!-- PANEL FOTOS -->
+                <div id="tab-fotos-inv">
+                    <div class="ev-source-row">
+                        <div class="ev-source-card" id="dz-fotos-inv" onclick="document.getElementById('input-fotos-inv').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <strong>Subir archivo</strong>
+                            <small>Arrastra o haz clic · JPG, PNG</small>
+                        </div>
+                        <div class="ev-source-card ev-source-cam" onclick="abrirCamaraFotoInv()">
+                            <i class="fas fa-camera"></i>
+                            <strong>Tomar foto</strong>
+                            <small>Cámara en tiempo real</small>
+                        </div>
+                    </div>
+                    <input type="file" id="input-fotos-inv" name="fotos[]" multiple accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    <input type="file" id="input-camara-movil-foto-inv" accept="image/*" capture="environment" style="display:none;">
+                    <div id="preview-fotos-inv" class="ev-preview-grid"></div>
+                    <p class="ev-hint"><i class="fas fa-circle-info"></i> Máx. 5 fotos &nbsp;·&nbsp; JPG / PNG / WebP &nbsp;·&nbsp; hasta 5 MB c/u</p>
+                </div>
+
+                <!-- PANEL VIDEO -->
+                <div id="tab-video-inv" style="display:none;">
+                    <div class="ev-source-row">
+                        <div class="ev-source-card" id="dz-video-inv" onclick="document.getElementById('input-video-inv').click()">
+                            <i class="fas fa-file-video"></i>
+                            <strong>Subir video</strong>
+                            <small>MP4 / WebM · máx 50 MB</small>
+                        </div>
+                        <div class="ev-source-card ev-source-cam" onclick="abrirCamaraVideoInv()">
+                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i>
+                            <strong>Grabar video</strong>
+                            <small>Cámara · máx 20 segundos</small>
+                        </div>
+                    </div>
+                    <input type="file" id="input-video-inv" name="video" accept="video/mp4,video/webm" style="display:none;">
+                    <input type="file" id="input-camara-movil-video-inv" accept="video/*" capture="environment" style="display:none;">
+                    <div id="preview-video-inv" class="ev-preview-grid"></div>
+                    <p class="ev-hint"><i class="fas fa-circle-info"></i> Máx. 1 video &nbsp;·&nbsp; MP4 / WebM &nbsp;·&nbsp; hasta 50 MB &nbsp;·&nbsp; máx. 20 seg</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── MODAL CÁMARA FOTO ── -->
+        <div id="modal-cam-foto-inv" class="cam-modal" role="dialog" aria-modal="true" aria-label="Tomar foto" style="display:none;">
+            <div class="cam-box">
+                <div class="cam-header">
+                    <span><i class="fas fa-camera"></i> Tomar foto</span>
+                    <button type="button" class="cam-close" onclick="cerrarCamaraFotoInv()"><i class="fas fa-xmark"></i></button>
+                </div>
+                <div class="cam-body">
+                    <video id="cam-foto-stream-inv" autoplay playsinline muted class="cam-stream"></video>
+                    <canvas id="cam-foto-canvas-inv" style="display:none;"></canvas>
+                    <div id="cam-foto-flash-inv" class="cam-flash"></div>
+                </div>
+                <div class="cam-footer">
+                    <button type="button" class="cam-btn-switch" id="btn-switch-cam-foto-inv" onclick="cambiarCamaraInv('foto')" title="Cambiar cámara" style="display:none;">
+                        <i class="fas fa-rotate"></i>
+                    </button>
+                    <button type="button" class="cam-btn-capture" onclick="capturarFotoInv()">
+                        <i class="fas fa-camera"></i> Capturar
+                    </button>
+                </div>
+                <p id="cam-foto-error-inv" class="cam-error" style="display:none;"></p>
+            </div>
+        </div>
+
+        <!-- ── MODAL CÁMARA VIDEO ── -->
+        <div id="modal-cam-video-inv" class="cam-modal" role="dialog" aria-modal="true" aria-label="Grabar video" style="display:none;">
+            <div class="cam-box">
+                <div class="cam-header">
+                    <span><i class="fas fa-video"></i> Grabar video</span>
+                    <button type="button" class="cam-close" onclick="cerrarCamaraVideoInv()"><i class="fas fa-xmark"></i></button>
+                </div>
+                <div class="cam-body">
+                    <video id="cam-video-stream-inv" autoplay playsinline muted class="cam-stream"></video>
+                    <div id="rec-indicator-inv" class="rec-indicator" style="display:none;">
+                        <span class="rec-dot"></span> REC &nbsp;<span id="rec-timer-inv">00:00</span> / 00:20
+                    </div>
+                </div>
+                <div class="cam-footer">
+                    <button type="button" class="cam-btn-switch" id="btn-switch-cam-video-inv" onclick="cambiarCamaraInv('video')" title="Cambiar cámara" style="display:none;">
+                        <i class="fas fa-rotate"></i>
+                    </button>
+                    <button type="button" class="cam-btn-capture" id="btn-rec-start-inv" onclick="iniciarGrabacionInv()">
+                        <i class="fas fa-circle-dot" style="color:#E74C3C;"></i> Iniciar grabación
+                    </button>
+                    <button type="button" class="cam-btn-stop" id="btn-rec-stop-inv" onclick="detenerGrabacionInv()" style="display:none;">
+                        <i class="fas fa-square"></i> Detener
+                    </button>
+                </div>
+                <p id="cam-video-error-inv" class="cam-error" style="display:none;"></p>
             </div>
         </div>
 
@@ -504,9 +602,7 @@ $urgencias = [
 
 <script>
 const apiBase = '<?php echo $base; ?>';
-const fotosSeleccionadas = [];
-const MAX_FOTOS = 5;
-const MAX_MB = 5;
+const idInstitucion = <?php echo intval($id_institucion); ?>;
 
 /* ── Urgencia pills ── */
 function selUrgencia(radio) {
@@ -523,7 +619,6 @@ document.getElementById('descripcion_problema').addEventListener('input', functi
 });
 
 /* ── Subcategorías AJAX ── */
-const idInstitucion = <?php echo intval($id_institucion); ?>;
 function cargarSubcats() {
     const idCat = document.getElementById('id_categoria').value;
     const sel = document.getElementById('id_subcategoria');
@@ -556,69 +651,286 @@ function cargarSubcats() {
     });
 }
 
-/* ── Cámara (móvil nativo / desktop se usa galería) ── */
+/* ── Estado global de evidencias ── */
+let fotosSeleccionadas = [];
+let videoSeleccionado  = null;
+let streamFotoInv = null, streamVideoInv = null;
+let mediaRecorderInv = null, chunksInv = [], recTimerInv = null, recSegsInv = 0;
+let facingFoto = 'environment', facingVideo = 'environment';
 const esMobil = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-function abrirCamaraInv() {
-    document.getElementById('input-cam-movil-inv').click();
+
+/* ── Tabs ── */
+function switchEvTabInv(tab, btn) {
+    document.querySelectorAll('.ev-tab').forEach(b => b.classList.remove('ev-tab-active'));
+    btn.classList.add('ev-tab-active');
+    document.getElementById('tab-fotos-inv').style.display = tab === 'fotos' ? '' : 'none';
+    document.getElementById('tab-video-inv').style.display = tab === 'video' ? '' : 'none';
 }
 
-/* ── Selección de archivos ── */
-document.getElementById('input-fotos-inv').addEventListener('change', function() {
-    procesarArchivos(Array.from(this.files));
-    this.value = '';
-});
-document.getElementById('input-cam-movil-inv').addEventListener('change', function() {
-    procesarArchivos(Array.from(this.files));
-    this.value = '';
-});
+/* ── Drag & drop fotos ── */
+(function() {
+    const dz  = document.getElementById('dz-fotos-inv');
+    const inp = document.getElementById('input-fotos-inv');
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }));
+    dz.addEventListener('dragover',  () => dz.classList.add('dragover'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+        dz.classList.remove('dragover');
+        procesarFotosInv(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+    inp.addEventListener('change', e => { procesarFotosInv(Array.from(e.target.files)); e.target.value = ''; });
+    document.getElementById('input-camara-movil-foto-inv')
+        .addEventListener('change', e => { procesarFotosInv(Array.from(e.target.files)); e.target.value = ''; });
+})();
 
-function procesarArchivos(files) {
+/* ── Drag & drop video ── */
+(function() {
+    const dz  = document.getElementById('dz-video-inv');
+    const inp = document.getElementById('input-video-inv');
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }));
+    dz.addEventListener('dragover',  () => dz.classList.add('dragover'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+        dz.classList.remove('dragover');
+        const vids = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+        if (vids[0]) procesarVideoInv(vids[0]);
+    });
+    inp.addEventListener('change', e => procesarVideoInv(e.target.files[0]));
+    document.getElementById('input-camara-movil-video-inv')
+        .addEventListener('change', e => procesarVideoInv(e.target.files[0]));
+})();
+
+/* ── Procesar fotos ── */
+function procesarFotosInv(files) {
+    if (!files.length) return;
     files.forEach(file => {
-        if (fotosSeleccionadas.length >= MAX_FOTOS) {
-            mostrarToast('Máximo ' + MAX_FOTOS + ' fotos permitidas.'); return;
-        }
-        if (file.size > MAX_MB * 1024 * 1024) {
-            mostrarToast('"' + file.name + '" supera ' + MAX_MB + 'MB.'); return;
-        }
-        fotosSeleccionadas.push(file);
+        if (fotosSeleccionadas.length >= 5) { mostrarToast('Máximo 5 fotos permitidas.'); return; }
+        if (file.size > 5 * 1024 * 1024) { mostrarToast('"' + file.name + '" supera 5 MB.'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => { fotosSeleccionadas.push({ file, src: ev.target.result }); renderFotosInv(); };
+        reader.readAsDataURL(file);
     });
-    renderPreviews();
-    sincronizarInput();
 }
 
-function renderPreviews() {
-    const wrap = document.getElementById('foto-previews-inv');
-    const count = document.getElementById('foto-count-inv');
-    wrap.innerHTML = '';
-    fotosSeleccionadas.forEach((f, idx) => {
-        const div = document.createElement('div');
-        div.className = 'foto-preview-item';
-        const reader = new FileReader();
-        reader.onload = e => {
-            div.innerHTML = '<img src="' + e.target.result + '" alt="foto">'
-                + '<button type="button" class="foto-preview-remove" onclick="quitarFoto(' + idx + ')"><i class="fas fa-times"></i></button>';
-        };
-        reader.readAsDataURL(f);
-        wrap.appendChild(div);
+function renderFotosInv() {
+    const grid = document.getElementById('preview-fotos-inv');
+    grid.innerHTML = '';
+    fotosSeleccionadas.forEach((foto, idx) => {
+        const el = document.createElement('div');
+        el.className = 'ev-preview-item';
+        el.innerHTML = `<img src="${foto.src}" alt="Foto ${idx+1}">
+            <button type="button" class="ev-remove" onclick="quitarFotoInv(${idx})" title="Quitar"><i class="fas fa-xmark"></i></button>
+            <div class="ev-label">${(foto.file.size/1024/1024).toFixed(1)} MB</div>`;
+        grid.appendChild(el);
     });
-    if (fotosSeleccionadas.length > 0) {
-        count.style.display = 'block';
-        count.textContent = fotosSeleccionadas.length + ' foto(s) seleccionada(s)';
-    } else {
-        count.style.display = 'none';
+    const dt = new DataTransfer();
+    fotosSeleccionadas.forEach(f => dt.items.add(f.file));
+    document.getElementById('input-fotos-inv').files = dt.files;
+    const b = document.getElementById('badge-fotos-inv');
+    b.textContent = fotosSeleccionadas.length;
+    b.style.display = fotosSeleccionadas.length ? '' : 'none';
+}
+
+function quitarFotoInv(idx) { fotosSeleccionadas.splice(idx, 1); renderFotosInv(); }
+
+/* ── Procesar video ── */
+function procesarVideoInv(file) {
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) { mostrarToast('El video supera 50 MB.'); return; }
+    const tmpVid = document.createElement('video');
+    tmpVid.onloadedmetadata = () => {
+        if (tmpVid.duration > 20) { mostrarToast('El video supera los 20 segundos.'); return; }
+        const reader = new FileReader();
+        reader.onload = ev => {
+            videoSeleccionado = { file, src: ev.target.result, duration: tmpVid.duration };
+            renderVideoInv();
+        };
+        reader.readAsDataURL(file);
+    };
+    tmpVid.src = URL.createObjectURL(file);
+}
+
+function renderVideoInv() {
+    const grid = document.getElementById('preview-video-inv');
+    grid.innerHTML = '';
+    if (!videoSeleccionado) {
+        document.getElementById('badge-video-inv').style.display = 'none'; return;
+    }
+    const el = document.createElement('div');
+    el.className = 'ev-preview-item';
+    el.innerHTML = `<video controls src="${videoSeleccionado.src}"></video>
+        <button type="button" class="ev-remove" onclick="quitarVideoInv()" title="Quitar"><i class="fas fa-xmark"></i></button>
+        <div class="ev-label">${videoSeleccionado.duration.toFixed(1)} s</div>`;
+    grid.appendChild(el);
+    const dt = new DataTransfer();
+    dt.items.add(videoSeleccionado.file);
+    document.getElementById('input-video-inv').files = dt.files;
+    document.getElementById('badge-video-inv').style.display = '';
+}
+
+function quitarVideoInv() {
+    videoSeleccionado = null;
+    document.getElementById('input-video-inv').value = '';
+    renderVideoInv();
+}
+
+/* ── Cámara foto ── */
+function abrirCamaraFotoInv() {
+    if (esMobil) { document.getElementById('input-camara-movil-foto-inv').click(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarToast('Tu navegador no soporta la cámara. Usa "Subir archivo".');
+        return;
+    }
+    document.getElementById('modal-cam-foto-inv').style.display = 'flex';
+    iniciarStreamFotoInv();
+}
+
+async function iniciarStreamFotoInv() {
+    ocultarErrorInv('cam-foto-error-inv');
+    try {
+        if (streamFotoInv) streamFotoInv.getTracks().forEach(t => t.stop());
+        streamFotoInv = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingFoto, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+        });
+        document.getElementById('cam-foto-stream-inv').srcObject = streamFotoInv;
+        navigator.mediaDevices.enumerateDevices().then(devs => {
+            const cams = devs.filter(d => d.kind === 'videoinput');
+            document.getElementById('btn-switch-cam-foto-inv').style.display = cams.length > 1 ? '' : 'none';
+        });
+    } catch(err) {
+        mostrarErrorInv('cam-foto-error-inv', mensajeErrorCamaraInv(err));
     }
 }
 
-function quitarFoto(idx) {
-    fotosSeleccionadas.splice(idx, 1);
-    renderPreviews();
-    sincronizarInput();
+function capturarFotoInv() {
+    const video  = document.getElementById('cam-foto-stream-inv');
+    const canvas = document.getElementById('cam-foto-canvas-inv');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const flash = document.getElementById('cam-foto-flash-inv');
+    flash.classList.add('flash');
+    setTimeout(() => flash.classList.remove('flash'), 150);
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        if (fotosSeleccionadas.length >= 5) { mostrarToast('Ya tienes 5 fotos. Elimina una antes de capturar otra.'); return; }
+        const file = new File([blob], 'foto_camara_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+        const reader = new FileReader();
+        reader.onload = ev => { fotosSeleccionadas.push({ file, src: ev.target.result }); renderFotosInv(); };
+        reader.readAsDataURL(file);
+    }, 'image/jpeg', 0.88);
 }
 
-function sincronizarInput() {
-    const dt = new DataTransfer();
-    fotosSeleccionadas.forEach(f => dt.items.add(f));
-    document.getElementById('input-fotos-inv').files = dt.files;
+function cerrarCamaraFotoInv() {
+    if (streamFotoInv) { streamFotoInv.getTracks().forEach(t => t.stop()); streamFotoInv = null; }
+    document.getElementById('cam-foto-stream-inv').srcObject = null;
+    document.getElementById('modal-cam-foto-inv').style.display = 'none';
+    ocultarErrorInv('cam-foto-error-inv');
+}
+
+/* ── Cámara video ── */
+function abrirCamaraVideoInv() {
+    if (esMobil) { document.getElementById('input-camara-movil-video-inv').click(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarToast('Tu navegador no soporta la cámara. Usa "Subir archivo".');
+        return;
+    }
+    document.getElementById('modal-cam-video-inv').style.display = 'flex';
+    iniciarStreamVideoInv();
+}
+
+async function iniciarStreamVideoInv() {
+    ocultarErrorInv('cam-video-error-inv');
+    try {
+        if (streamVideoInv) streamVideoInv.getTracks().forEach(t => t.stop());
+        streamVideoInv = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingVideo, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true
+        });
+        document.getElementById('cam-video-stream-inv').srcObject = streamVideoInv;
+        navigator.mediaDevices.enumerateDevices().then(devs => {
+            const cams = devs.filter(d => d.kind === 'videoinput');
+            document.getElementById('btn-switch-cam-video-inv').style.display = cams.length > 1 ? '' : 'none';
+        });
+    } catch(err) {
+        mostrarErrorInv('cam-video-error-inv', mensajeErrorCamaraInv(err));
+    }
+}
+
+function iniciarGrabacionInv() {
+    if (!streamVideoInv) return;
+    chunksInv = []; recSegsInv = 0;
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9'
+        : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4');
+    mediaRecorderInv = new MediaRecorder(streamVideoInv, { mimeType });
+    mediaRecorderInv.ondataavailable = e => { if (e.data.size > 0) chunksInv.push(e.data); };
+    mediaRecorderInv.onstop = finalizarGrabacionInv;
+    mediaRecorderInv.start(200);
+    document.getElementById('btn-rec-start-inv').style.display = 'none';
+    document.getElementById('btn-rec-stop-inv').style.display = '';
+    document.getElementById('rec-indicator-inv').style.display = 'flex';
+    recTimerInv = setInterval(() => {
+        recSegsInv++;
+        const mm = String(Math.floor(recSegsInv / 60)).padStart(2,'0');
+        const ss = String(recSegsInv % 60).padStart(2,'0');
+        document.getElementById('rec-timer-inv').textContent = mm + ':' + ss;
+        if (recSegsInv >= 20) detenerGrabacionInv();
+    }, 1000);
+}
+
+function detenerGrabacionInv() {
+    if (mediaRecorderInv && mediaRecorderInv.state !== 'inactive') mediaRecorderInv.stop();
+    clearInterval(recTimerInv);
+    document.getElementById('btn-rec-start-inv').style.display = '';
+    document.getElementById('btn-rec-stop-inv').style.display = 'none';
+    document.getElementById('rec-indicator-inv').style.display = 'none';
+    document.getElementById('rec-timer-inv').textContent = '00:00';
+}
+
+function finalizarGrabacionInv() {
+    const mimeType = chunksInv[0]?.type || 'video/webm';
+    const blob = new Blob(chunksInv, { type: mimeType });
+    const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const file = new File([blob], 'video_camara_' + Date.now() + '.' + ext, { type: mimeType });
+    videoSeleccionado = { file, src: URL.createObjectURL(blob), duration: recSegsInv };
+    renderVideoInv();
+    cerrarCamaraVideoInv();
+}
+
+function cerrarCamaraVideoInv() {
+    detenerGrabacionInv();
+    if (streamVideoInv) { streamVideoInv.getTracks().forEach(t => t.stop()); streamVideoInv = null; }
+    document.getElementById('cam-video-stream-inv').srcObject = null;
+    document.getElementById('modal-cam-video-inv').style.display = 'none';
+    ocultarErrorInv('cam-video-error-inv');
+}
+
+function cambiarCamaraInv(tipo) {
+    if (tipo === 'foto') {
+        facingFoto = facingFoto === 'environment' ? 'user' : 'environment';
+        iniciarStreamFotoInv();
+    } else {
+        facingVideo = facingVideo === 'environment' ? 'user' : 'environment';
+        iniciarStreamVideoInv();
+    }
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cerrarCamaraFotoInv(); cerrarCamaraVideoInv(); }
+});
+
+/* ── Helpers ── */
+function mostrarErrorInv(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.style.display = ''; }
+}
+function ocultarErrorInv(id) {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+}
+function mensajeErrorCamaraInv(err) {
+    if (err.name === 'NotAllowedError')  return 'Acceso a la cámara denegado. Permite el permiso en tu navegador.';
+    if (err.name === 'NotFoundError')    return 'No se encontró ninguna cámara en este dispositivo.';
+    if (err.name === 'NotReadableError') return 'La cámara está siendo usada por otra aplicación.';
+    return 'No se pudo acceder a la cámara: ' + err.message;
 }
 
 /* ── Toast ── */
@@ -639,34 +951,24 @@ document.getElementById('form-invitado').addEventListener('submit', function(e) 
     const desc      = document.getElementById('descripcion_problema').value.trim();
 
     if (!nombres || !apellidos) {
-        e.preventDefault();
-        mostrarToast('Ingrese sus nombres y apellidos.');
-        document.getElementById('nombres').focus();
-        return;
+        e.preventDefault(); mostrarToast('Ingrese sus nombres y apellidos.');
+        document.getElementById('nombres').focus(); return;
     }
     if (!sede) {
-        e.preventDefault();
-        mostrarToast('Seleccione una sede.');
-        document.getElementById('id_sede').focus();
-        return;
+        e.preventDefault(); mostrarToast('Seleccione una sede.');
+        document.getElementById('id_sede').focus(); return;
     }
     if (!area) {
-        e.preventDefault();
-        mostrarToast('Indique el área o espacio del daño.');
-        document.getElementById('area').focus();
-        return;
+        e.preventDefault(); mostrarToast('Indique el área o espacio del daño.');
+        document.getElementById('area').focus(); return;
     }
     if (!cat) {
-        e.preventDefault();
-        mostrarToast('Seleccione una categoría de daño.');
-        document.getElementById('id_categoria').focus();
-        return;
+        e.preventDefault(); mostrarToast('Seleccione una categoría de daño.');
+        document.getElementById('id_categoria').focus(); return;
     }
     if (desc.length < 10) {
-        e.preventDefault();
-        mostrarToast('La descripción debe tener al menos 10 caracteres.');
-        document.getElementById('descripcion_problema').focus();
-        return;
+        e.preventDefault(); mostrarToast('La descripción debe tener al menos 10 caracteres.');
+        document.getElementById('descripcion_problema').focus(); return;
     }
 
     document.getElementById('btn-submit-inv').disabled = true;

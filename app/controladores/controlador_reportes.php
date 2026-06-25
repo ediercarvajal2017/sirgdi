@@ -188,8 +188,29 @@ class ControladorReportes {
                     ]);
                 }
             }
+            // Guardar video si viene uno
+            if (!empty($_FILES['video']) && ($_FILES['video']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                $res_video = $servicio_archivos->procesar_video(
+                    $_FILES['video']['tmp_name'],
+                    $_FILES['video']['name']
+                );
+                if (!empty($res_video['exito'])) {
+                    $modelo_evidencia->crear([
+                        'id_reporte'              => $id_reporte,
+                        'id_institucion'          => $id_institucion,
+                        'etapa_evidencia'         => 'reportante',
+                        'url_archivo'             => $res_video['ruta'],
+                        'nombre_archivo_original' => $res_video['nombre_original'],
+                        'tipo_mime'               => $res_video['mime_type'],
+                        'tamanio_bytes'           => $res_video['tamaño_bytes'],
+                        'descripcion'             => 'Video adjuntado por el reportante',
+                        'cargada_por'             => $id_usuario,
+                    ]);
+                }
+            }
+
         } catch (Exception $e) {
-            // No abortar la creación del reporte si falla el guardado de fotos
+            // No abortar la creación del reporte si falla el guardado de evidencias
             error_log('Evidencias iniciales: ' . $e->getMessage());
         }
     }

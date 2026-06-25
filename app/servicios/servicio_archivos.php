@@ -102,6 +102,46 @@ class ServicioArchivos {
     }
 
     /**
+     * Validar y mover archivo de video (MP4/WebM, máx 50 MB)
+     */
+    public function procesar_video($archivo_temporal, $nombre_original) {
+        if (!file_exists($archivo_temporal) || !is_uploaded_file($archivo_temporal)) {
+            return ['exito' => false, 'error' => 'Archivo de video no válido.'];
+        }
+
+        $tamaño = filesize($archivo_temporal);
+        if ($tamaño > 50 * 1024 * 1024) {
+            return ['exito' => false, 'error' => 'Video demasiado grande. Máximo: 50 MB.'];
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_type = finfo_file($finfo, $archivo_temporal);
+        finfo_close($finfo);
+
+        $mimes_video = ['video/mp4', 'video/webm', 'video/quicktime'];
+        if (!in_array($mime_type, $mimes_video)) {
+            return ['exito' => false, 'error' => 'Formato de video no permitido. Use MP4 o WebM.'];
+        }
+
+        $ext_map = ['video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/quicktime' => 'mp4'];
+        $ext = $ext_map[$mime_type] ?? 'mp4';
+        $nombre_archivo = 'evidencia_video_' . uniqid() . '.' . $ext;
+        $ruta_final = $this->directorio_almacenamiento . '/' . $nombre_archivo;
+
+        if (!move_uploaded_file($archivo_temporal, $ruta_final)) {
+            return ['exito' => false, 'error' => 'No se pudo guardar el video.'];
+        }
+
+        return [
+            'exito'           => true,
+            'ruta'            => $ruta_final,
+            'nombre_original' => $nombre_original,
+            'tamaño_bytes'    => filesize($ruta_final),
+            'mime_type'       => $mime_type,
+        ];
+    }
+
+    /**
      * Eliminar archivo de evidencia
      */
     public function eliminar_archivo($ruta_archivo) {
