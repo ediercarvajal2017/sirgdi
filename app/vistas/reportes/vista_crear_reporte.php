@@ -821,7 +821,14 @@ function procesarFotos(files) {
         }
         const reader = new FileReader();
         reader.onload = ev => {
-            fotosSeleccionadas.push({ file, src: ev.target.result });
+            // Copiar a File en memoria para evitar ERR_UPLOAD_FILE_CHANGED en Android
+            const b64 = ev.target.result.split(',');
+            const mime = b64[0].match(/:(.*?);/)[1];
+            const bin = atob(b64[1]);
+            const u8 = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+            const memFile = new File([u8], file.name || 'foto.jpg', { type: mime });
+            fotosSeleccionadas.push({ file: memFile, src: ev.target.result });
             renderPreviewFotos();
         };
         reader.readAsDataURL(file);
