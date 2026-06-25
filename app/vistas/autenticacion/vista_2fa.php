@@ -2,7 +2,7 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-logo">
-            <i class="fas fa-shield-alt"></i>
+            <img src="<?php echo config('app.url_base'); ?>/img/logo_sirgdi.png" alt="SIRGDI">
         </div>
 
         <h2>Autenticación de Dos Factores</h2>
@@ -69,19 +69,13 @@
 
     .auth-logo {
         margin-bottom: 25px;
+        text-align: center;
     }
-
-    .auth-logo i {
-        font-size: 80px;
-        color: var(--primary-blue);
-        background: linear-gradient(135deg, var(--light-blue) 0%, var(--very-light-blue) 100%);
-        width: 120px;
-        height: 120px;
-        line-height: 120px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    .auth-logo img {
+        max-width: 210px;
+        height: auto;
+        border-radius: 14px;
+        display: inline-block;
     }
 
     .auth-card h2 {
@@ -221,11 +215,8 @@
             padding: 35px 20px;
         }
 
-        .auth-logo i {
-            width: 100px;
-            height: 100px;
-            line-height: 100px;
-            font-size: 60px;
+        .auth-logo img {
+            max-width: 180px;
         }
 
         .auth-card h2 {

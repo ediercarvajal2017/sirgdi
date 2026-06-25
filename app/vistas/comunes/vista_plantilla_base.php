@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo config('app.url_base'); ?>/img/favicon.png">
+    <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
 
     <!-- CSS Base -->
     <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_base.css">

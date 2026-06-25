@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo config('app.app_name'); ?> - Sistema de Reportes de Daños</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo config('app.url_base'); ?>/img/favicon.png">
+    <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -56,15 +58,20 @@
         .nav-logo-icon {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
             border-radius: 10px;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
-            color: #fff;
-            font-weight: 800;
             box-shadow: 0 4px 12px rgba(52,152,219,.4);
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .nav-logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 2px;
         }
 
         .nav-brand-name {
@@ -731,14 +738,19 @@
 
         .footer-logo-icon {
             width: 34px; height: 34px;
-            background: linear-gradient(135deg, var(--blue), var(--teal));
             border-radius: 8px;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            color: #fff;
-            font-weight: 800;
+            background: #fff;
+            flex-shrink: 0;
+        }
+        .footer-logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 2px;
         }
 
         .footer-brand-name { font-size: 16px; font-weight: 700; color: #fff; }
@@ -805,7 +817,7 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar">
         <a href="#" class="nav-brand">
-            <div class="nav-logo-icon">S</div>
+            <div class="nav-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI"></div>
             <div>
                 <div class="nav-brand-name">SIRGDI v2.0</div>
                 <div class="nav-brand-sub">Sistema de Reportes</div>
@@ -1115,7 +1127,7 @@
         <div class="footer-container">
             <div>
                 <div class="footer-brand">
-                    <div class="footer-logo-icon">S</div>
+                    <div class="footer-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI"></div>
                     <span class="footer-brand-name">SIRGDI v2.0</span>
                 </div>
                 <p class="footer-copy">&copy; 2026 Sistema de Reportes y Gestión de Daños e Incidencias. Todos los derechos reservados.</p>

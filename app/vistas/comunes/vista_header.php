@@ -3,7 +3,7 @@
     <div class="header-bar">
         <div class="header-brand-section">
             <div class="header-logo">
-                <i class="fas fa-building"></i>
+                <img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI">
             </div>
             <div class="header-title">
                 <h1><?php echo config('app.app_name'); ?></h1>
@@ -166,13 +166,20 @@
     .header-logo {
         width: 45px;
         height: 45px;
-        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
         border-radius: 8px;
+        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 24px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        flex-shrink: 0;
+    }
+    .header-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 3px;
     }
 
     .header-title h1 {

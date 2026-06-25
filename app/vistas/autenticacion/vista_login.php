@@ -2,7 +2,7 @@
 <div class="form-modern-wrapper">
     <div class="form-modern-card">
         <div class="login-logo">
-            <i class="fas fa-user-circle"></i>
+            <img src="<?php echo config('app.url_base'); ?>/img/logo_sirgdi.png" alt="SIRGDI">
         </div>
 
         <h2><?php echo config('app.app_name'); ?></h2>
@@ -77,19 +77,13 @@
 
     .login-logo {
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
-
-    .login-logo i {
-        font-size: 64px;
-        color: #3498DB;
-        background: linear-gradient(135deg, #D6EAF8 0%, #E8F4F8 100%);
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    .login-logo img {
+        max-width: 220px;
+        height: auto;
+        border-radius: 14px;
+        display: inline-block;
     }
 
     .form-modern-card h2 {
