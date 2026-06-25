@@ -95,41 +95,111 @@
             <!-- Sección: Evidencias -->
             <fieldset class="form-section">
                 <legend><i class="fas fa-camera"></i> Evidencias (opcional)</legend>
-                <div class="evidencia-section">
-                    <div class="evidencia-type-toggle">
-                        <label class="radio-group">
-                            <input type="radio" name="evidencia_type" value="fotos" checked onchange="toggleEvidenciaType('fotos')">
-                            Fotos (máx 5)
-                        </label>
-                        <label class="radio-group">
-                            <input type="radio" name="evidencia_type" value="video" onchange="toggleEvidenciaType('video')">
-                            Video (máx 20 seg)
-                        </label>
-                    </div>
 
-                    <!-- Carga de Fotos -->
-                    <div id="fotos-section" class="evidencia-container">
-                        <div class="drop-zone" id="drop-zone-fotos">
+                <!-- Tabs Fotos / Video -->
+                <div class="ev-tabs">
+                    <button type="button" class="ev-tab ev-tab-active" onclick="switchEvTab('fotos', this)">
+                        <i class="fas fa-images"></i> Fotos
+                        <span class="ev-tab-badge" id="badge-fotos" style="display:none;">0</span>
+                    </button>
+                    <button type="button" class="ev-tab" onclick="switchEvTab('video', this)">
+                        <i class="fas fa-video"></i> Video
+                        <span class="ev-tab-badge ev-tab-badge-rec" id="badge-video" style="display:none;">1</span>
+                    </button>
+                </div>
+
+                <!-- PANEL FOTOS -->
+                <div id="tab-fotos" class="ev-panel">
+                    <div class="ev-source-row">
+                        <div class="ev-source-card" id="dz-fotos" onclick="document.getElementById('input-fotos').click()">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Arrastra máximo 5 fotos aquí o haz clic para seleccionar</p>
-                            <small>Formatos: JPG, PNG (máx 5MB c/u)</small>
+                            <strong>Subir archivo</strong>
+                            <small>Arrastra o haz clic · JPG, PNG</small>
                         </div>
-                        <input type="file" id="input-fotos" name="fotos[]" multiple accept="image/jpeg,image/png" style="display:none;">
-                        <div id="preview-fotos" class="preview-container"></div>
+                        <div class="ev-source-card ev-source-cam" onclick="abrirCamaraFoto()">
+                            <i class="fas fa-camera"></i>
+                            <strong>Tomar foto</strong>
+                            <small>Cámara en tiempo real</small>
+                        </div>
                     </div>
+                    <input type="file" id="input-fotos" name="fotos[]" multiple accept="image/jpeg,image/png,image/webp" style="display:none;">
+                    <input type="file" id="input-camara-movil-foto" accept="image/*" capture="environment" style="display:none;">
+                    <div id="preview-fotos" class="ev-preview-grid"></div>
+                    <p class="ev-hint"><i class="fas fa-circle-info"></i> Máx. 5 fotos &nbsp;·&nbsp; JPG / PNG / WebP &nbsp;·&nbsp; hasta 5 MB c/u</p>
+                </div>
 
-                    <!-- Carga de Video -->
-                    <div id="video-section" class="evidencia-container" style="display:none;">
-                        <div class="drop-zone" id="drop-zone-video">
-                            <i class="fas fa-video"></i>
-                            <p>Arrastra tu video aquí o haz clic para seleccionar</p>
-                            <small>Formatos: MP4, WebM (máx 50MB, duración máx 20 seg)</small>
+                <!-- PANEL VIDEO -->
+                <div id="tab-video" class="ev-panel" style="display:none;">
+                    <div class="ev-source-row">
+                        <div class="ev-source-card" id="dz-video" onclick="document.getElementById('input-video').click()">
+                            <i class="fas fa-file-video"></i>
+                            <strong>Subir video</strong>
+                            <small>MP4 / WebM · máx 50 MB</small>
                         </div>
-                        <input type="file" id="input-video" name="video" accept="video/mp4,video/webm" style="display:none;">
-                        <div id="preview-video" class="preview-container"></div>
+                        <div class="ev-source-card ev-source-cam" onclick="abrirCamaraVideo()">
+                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i>
+                            <strong>Grabar video</strong>
+                            <small>Cámara · máx 20 segundos</small>
+                        </div>
                     </div>
+                    <input type="file" id="input-video" name="video" accept="video/mp4,video/webm" style="display:none;">
+                    <input type="file" id="input-camara-movil-video" accept="video/*" capture="environment" style="display:none;">
+                    <div id="preview-video" class="ev-preview-grid"></div>
+                    <p class="ev-hint"><i class="fas fa-circle-info"></i> Máx. 1 video &nbsp;·&nbsp; MP4 / WebM &nbsp;·&nbsp; hasta 50 MB &nbsp;·&nbsp; máx. 20 seg</p>
                 </div>
             </fieldset>
+
+            <!-- ── MODAL CÁMARA FOTO ── -->
+            <div id="modal-cam-foto" class="cam-modal" role="dialog" aria-modal="true" aria-label="Tomar foto" style="display:none;">
+                <div class="cam-box">
+                    <div class="cam-header">
+                        <span><i class="fas fa-camera"></i> Tomar foto</span>
+                        <button type="button" class="cam-close" onclick="cerrarCamaraFoto()"><i class="fas fa-xmark"></i></button>
+                    </div>
+                    <div class="cam-body">
+                        <video id="cam-foto-stream" autoplay playsinline muted class="cam-stream"></video>
+                        <canvas id="cam-foto-canvas" style="display:none;"></canvas>
+                        <div id="cam-foto-flash" class="cam-flash"></div>
+                    </div>
+                    <div class="cam-footer">
+                        <button type="button" class="cam-btn-switch" id="btn-switch-cam-foto" onclick="cambiarCamara('foto')" title="Cambiar cámara" style="display:none;">
+                            <i class="fas fa-rotate"></i>
+                        </button>
+                        <button type="button" class="cam-btn-capture" onclick="capturarFoto()">
+                            <i class="fas fa-camera"></i> Capturar
+                        </button>
+                    </div>
+                    <p id="cam-foto-error" class="cam-error" style="display:none;"></p>
+                </div>
+            </div>
+
+            <!-- ── MODAL CÁMARA VIDEO ── -->
+            <div id="modal-cam-video" class="cam-modal" role="dialog" aria-modal="true" aria-label="Grabar video" style="display:none;">
+                <div class="cam-box">
+                    <div class="cam-header">
+                        <span><i class="fas fa-video"></i> Grabar video</span>
+                        <button type="button" class="cam-close" onclick="cerrarCamaraVideo()"><i class="fas fa-xmark"></i></button>
+                    </div>
+                    <div class="cam-body">
+                        <video id="cam-video-stream" autoplay playsinline muted class="cam-stream"></video>
+                        <div id="rec-indicator" class="rec-indicator" style="display:none;">
+                            <span class="rec-dot"></span> REC &nbsp;<span id="rec-timer">00:00</span> / 00:20
+                        </div>
+                    </div>
+                    <div class="cam-footer">
+                        <button type="button" class="cam-btn-switch" id="btn-switch-cam-video" onclick="cambiarCamara('video')" title="Cambiar cámara" style="display:none;">
+                            <i class="fas fa-rotate"></i>
+                        </button>
+                        <button type="button" class="cam-btn-capture" id="btn-rec-start" onclick="iniciarGrabacion()">
+                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i> Iniciar grabación
+                        </button>
+                        <button type="button" class="cam-btn-stop" id="btn-rec-stop" onclick="detenerGrabacion()" style="display:none;">
+                            <i class="fas fa-square"></i> Detener
+                        </button>
+                    </div>
+                    <p id="cam-video-error" class="cam-error" style="display:none;"></p>
+                </div>
+            </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn-modern btn-primary-modern">
@@ -341,346 +411,666 @@
         color: #C0392B;
     }
 
-    .evidencia-section {
-        background: #f9f9f9;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
+    /* ── TABS EVIDENCIA ── */
+    .ev-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 16px;
     }
 
-    .evidencia-type-toggle {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 20px;
-    }
-
-    .radio-group {
-        display: flex;
+    .ev-tab {
+        display: inline-flex;
         align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    .radio-group input[type="radio"] {
-        cursor: pointer;
-    }
-
-    .evidencia-container {
-        margin-bottom: 20px;
-    }
-
-    .drop-zone {
-        border: 2px dashed #667eea;
+        gap: 7px;
+        padding: 8px 18px;
+        border: 1.5px solid #D5E8F5;
         border-radius: 8px;
-        padding: 40px 20px;
-        text-align: center;
-        background: white;
+        background: #F4F9FD;
+        color: var(--gray-text);
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all .2s;
+        font-family: inherit;
     }
 
-    .drop-zone:hover,
-    .drop-zone.dragover {
-        background: rgba(102, 126, 234, 0.1);
-        border-color: #5568d3;
+    .ev-tab:hover { background: #EBF5FB; color: var(--dark-text); }
+
+    .ev-tab-active {
+        background: var(--primary-blue);
+        color: #fff;
+        border-color: var(--primary-blue);
     }
 
-    .drop-zone i {
-        font-size: 32px;
-        color: #667eea;
-        margin-bottom: 12px;
-        display: block;
+    .ev-tab-badge {
+        background: rgba(255,255,255,.25);
+        color: #fff;
+        border-radius: 10px;
+        font-size: 11px;
+        padding: 1px 6px;
+        font-weight: 700;
     }
 
-    .drop-zone p {
-        margin: 8px 0;
-        font-weight: 500;
-        color: #333;
-    }
+    .ev-tab-badge-rec { background: #E74C3C; }
 
-    .drop-zone small {
-        display: block;
-        color: #666;
-        font-size: 12px;
-    }
-
-    .preview-container {
+    /* ── SOURCE ROW ── */
+    .ev-source-row {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
-        margin-top: 16px;
+        margin-bottom: 14px;
     }
 
-    .preview-item {
-        position: relative;
-        border-radius: 6px;
-        overflow: hidden;
-        background: #f0f0f0;
-        aspect-ratio: 1;
-    }
-
-    .preview-item img,
-    .preview-item video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .preview-item .remove-btn {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        background: rgba(231, 76, 60, 0.9);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        cursor: pointer;
-        font-size: 16px;
+    .ev-source-card {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
+        gap: 6px;
+        padding: 22px 16px;
+        border: 2px dashed #C8DDEF;
+        border-radius: 12px;
+        background: #F8FBFE;
+        cursor: pointer;
+        transition: all .2s;
+        text-align: center;
     }
 
-    .preview-item .remove-btn:hover {
-        background: rgba(231, 76, 60, 1);
+    .ev-source-card i { font-size: 26px; color: var(--primary-blue); transition: transform .2s; }
+    .ev-source-card strong { font-size: 13px; font-weight: 700; color: var(--dark-text); }
+    .ev-source-card small  { font-size: 11px; color: var(--gray-text); }
+
+    .ev-source-card:hover {
+        border-color: var(--primary-blue);
+        background: #EBF5FB;
     }
 
-    .file-info {
-        font-size: 12px;
-        color: #666;
-        padding: 8px 4px;
+    .ev-source-card:hover i { transform: scale(1.1); }
+
+    .ev-source-cam {
+        border-color: #C5EAE0;
+        background: #F0FAF7;
+    }
+
+    .ev-source-cam i { color: #16A085; }
+
+    .ev-source-cam:hover {
+        border-color: #1ABC9C;
+        background: #E8F8F5;
+    }
+
+    .ev-source-card.dragover {
+        border-color: var(--primary-blue);
+        background: #EBF5FB;
+    }
+
+    /* ── PREVIEW GRID ── */
+    .ev-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .ev-preview-item {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #EEF2F5;
+        aspect-ratio: 1;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .ev-preview-item img,
+    .ev-preview-item video {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .ev-preview-item .ev-remove {
+        position: absolute;
+        top: 5px; right: 5px;
+        background: rgba(231,76,60,.9);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 26px; height: 26px;
+        cursor: pointer;
+        font-size: 13px;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .2s;
+    }
+
+    .ev-preview-item .ev-remove:hover { background: #E74C3C; }
+
+    .ev-preview-item .ev-label {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        background: rgba(0,0,0,.5);
+        color: #fff;
+        font-size: 10px;
+        padding: 3px 6px;
         text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .error-message {
-        color: #E74C3C;
-        font-size: 12px;
-        margin-top: 8px;
-        padding: 8px;
-        background: rgba(231, 76, 60, 0.1);
-        border-radius: 4px;
+    .ev-hint {
+        font-size: 11.5px;
+        color: var(--gray-text);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 4px;
     }
 
-    @media (max-width: 768px) {
-        .form-container-modern {
-            padding: 0 15px;
-        }
+    /* ── CAMERA MODAL ── */
+    .cam-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15,25,40,.7);
+        backdrop-filter: blur(4px);
+        z-index: 9000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
 
-        .form-modern {
-            padding: 25px;
-        }
+    .cam-box {
+        background: #fff;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 520px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
 
-        .form-header h2 {
-            font-size: 22px;
-        }
+    .cam-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #2980B9, #3498DB);
+        color: #fff;
+        font-weight: 700;
+        font-size: 15px;
+    }
 
-        .btn-modern {
-            width: 100%;
-            justify-content: center;
-            min-width: unset;
-        }
+    .cam-close {
+        background: rgba(255,255,255,.15);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        width: 32px; height: 32px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex; align-items: center; justify-content: center;
+        transition: background .2s;
+    }
 
-        .form-actions {
-            flex-direction: column;
-        }
+    .cam-close:hover { background: rgba(255,255,255,.3); }
 
-        .drop-zone {
-            padding: 30px 15px;
-        }
+    .cam-body {
+        position: relative;
+        background: #000;
+        aspect-ratio: 4/3;
+        max-height: 340px;
+        overflow: hidden;
+    }
 
-        .drop-zone i {
-            font-size: 28px;
-        }
+    .cam-stream {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        display: block;
+    }
 
-        .preview-container {
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        }
+    .cam-flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .05s;
+    }
 
-        .radio-group {
-            font-size: 13px;
-        }
+    .cam-flash.flash { opacity: 1; }
+
+    /* REC indicator */
+    .rec-indicator {
+        position: absolute;
+        top: 12px; left: 12px;
+        background: rgba(231,76,60,.9);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .rec-dot {
+        width: 8px; height: 8px;
+        background: #fff;
+        border-radius: 50%;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .cam-footer {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #F8FBFC;
+    }
+
+    .cam-btn-capture {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #2980B9, #3498DB);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s;
+        box-shadow: 0 4px 14px rgba(52,152,219,.35);
+    }
+
+    .cam-btn-capture:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(52,152,219,.45); }
+
+    .cam-btn-stop {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #E74C3C;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 12px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s;
+    }
+
+    .cam-btn-stop:hover { background: #C0392B; }
+
+    .cam-btn-switch {
+        background: #EBF5FB;
+        border: 1.5px solid #D5E8F5;
+        border-radius: 10px;
+        color: var(--primary-blue);
+        width: 44px; height: 44px;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex; align-items: center; justify-content: center;
+        transition: all .2s;
+    }
+
+    .cam-btn-switch:hover { background: #D5E8F5; }
+
+    .cam-error {
+        margin: 0;
+        padding: 10px 20px 14px;
+        background: #FDF0EF;
+        color: #C0392B;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    @media (max-width: 600px) {
+        .ev-source-row { grid-template-columns: 1fr 1fr; }
+        .ev-preview-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+        .btn-modern { width: 100%; justify-content: center; min-width: unset; }
+        .form-actions { flex-direction: column; }
     }
 </style>
 
 <script>
 const apiBase = '<?php echo config("app.url_base"); ?>';
-let fotosSeleccionadas = [];
-let videoSeleccionado = null;
 
-// Toggle entre Fotos y Video
-function toggleEvidenciaType(type) {
-    if (type === 'fotos') {
-        document.getElementById('fotos-section').style.display = 'block';
-        document.getElementById('video-section').style.display = 'none';
-        videoSeleccionado = null;
-        document.getElementById('input-video').value = '';
-        document.getElementById('preview-video').innerHTML = '';
-    } else {
-        document.getElementById('fotos-section').style.display = 'none';
-        document.getElementById('video-section').style.display = 'block';
-        fotosSeleccionadas = [];
-        document.getElementById('input-fotos').value = '';
-        document.getElementById('preview-fotos').innerHTML = '';
-    }
+// ─── Estado global ───────────────────────────────────────────────────────────
+let fotosSeleccionadas = [];
+let videoSeleccionado  = null;
+
+// Cámara
+let streamFoto         = null;
+let streamVideo        = null;
+let mediaRecorder      = null;
+let chunksGrabacion    = [];
+let recTimerInterval   = null;
+let recSegundos        = 0;
+let facingModeFoto     = 'environment';  // 'user' | 'environment'
+let facingModeVideo    = 'environment';
+
+const esMobil = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function switchEvTab(tab, btn) {
+    document.querySelectorAll('.ev-tab').forEach(b => b.classList.remove('ev-tab-active'));
+    btn.classList.add('ev-tab-active');
+    document.getElementById('tab-fotos').style.display = tab === 'fotos' ? '' : 'none';
+    document.getElementById('tab-video').style.display = tab === 'video' ? '' : 'none';
 }
 
-// Setup Drag & Drop para Fotos
-const dropZoneFotos = document.getElementById('drop-zone-fotos');
-const inputFotos = document.getElementById('input-fotos');
+// ─── DRAG & DROP Fotos ───────────────────────────────────────────────────────
+(function() {
+    const dz = document.getElementById('dz-fotos');
+    const inp = document.getElementById('input-fotos');
 
-dropZoneFotos.addEventListener('click', () => inputFotos.click());
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+        dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    });
+    dz.addEventListener('dragover',  () => dz.classList.add('dragover'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+        dz.classList.remove('dragover');
+        procesarFotos(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+    inp.addEventListener('change', e => procesarFotos(Array.from(e.target.files)));
 
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    dropZoneFotos.addEventListener(evt, e => e.preventDefault());
-    dropZoneFotos.addEventListener(evt, e => e.stopPropagation());
-});
+    // Cámara nativa móvil (foto)
+    document.getElementById('input-camara-movil-foto')
+        .addEventListener('change', e => procesarFotos(Array.from(e.target.files)));
+})();
 
-dropZoneFotos.addEventListener('dragover', () => dropZoneFotos.classList.add('dragover'));
-dropZoneFotos.addEventListener('dragleave', () => dropZoneFotos.classList.remove('dragover'));
-dropZoneFotos.addEventListener('drop', (e) => {
-    dropZoneFotos.classList.remove('dragover');
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-    procesarFotos(files);
-});
+// ─── DRAG & DROP Video ───────────────────────────────────────────────────────
+(function() {
+    const dz  = document.getElementById('dz-video');
+    const inp = document.getElementById('input-video');
 
-inputFotos.addEventListener('change', (e) => procesarFotos(Array.from(e.target.files)));
+    ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+        dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    });
+    dz.addEventListener('dragover',  () => dz.classList.add('dragover'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+        dz.classList.remove('dragover');
+        const vids = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+        if (vids[0]) procesarVideo(vids[0]);
+    });
+    inp.addEventListener('change', e => procesarVideo(e.target.files[0]));
 
+    // Cámara nativa móvil (video)
+    document.getElementById('input-camara-movil-video')
+        .addEventListener('change', e => procesarVideo(e.target.files[0]));
+})();
+
+// ─── PROCESAR FOTOS ──────────────────────────────────────────────────────────
 function procesarFotos(files) {
-    // Máximo 5 fotos
+    if (!files.length) return;
     if (fotosSeleccionadas.length + files.length > 5) {
-        alert('Máximo 5 fotos permitidas');
-        return;
+        mostrarAlerta('Máximo 5 fotos permitidas. Ya tienes ' + fotosSeleccionadas.length + '.'); return;
     }
-
     files.forEach(file => {
-        // Validar tamaño (5MB)
         if (file.size > 5 * 1024 * 1024) {
-            alert(`Foto ${file.name} supera 5MB`);
-            return;
+            mostrarAlerta(file.name + ' supera 5 MB.'); return;
         }
-
         const reader = new FileReader();
-        reader.onload = (e) => {
-            fotosSeleccionadas.push({ file, src: e.target.result });
+        reader.onload = ev => {
+            fotosSeleccionadas.push({ file, src: ev.target.result });
             renderPreviewFotos();
         };
         reader.readAsDataURL(file);
     });
-
-    inputFotos.value = '';
+    document.getElementById('input-fotos').value = '';
 }
 
 function renderPreviewFotos() {
-    const container = document.getElementById('preview-fotos');
-    container.innerHTML = '';
-
+    const grid = document.getElementById('preview-fotos');
+    grid.innerHTML = '';
     fotosSeleccionadas.forEach((foto, idx) => {
-        const item = document.createElement('div');
-        item.className = 'preview-item';
-        item.innerHTML = `
-            <img src="${foto.src}" alt="Foto ${idx + 1}">
-            <button type="button" class="remove-btn" onclick="removerFoto(${idx})">✕</button>
-            <div class="file-info">${(foto.file.size / 1024 / 1024).toFixed(1)}MB</div>
-        `;
-        container.appendChild(item);
+        const el = document.createElement('div');
+        el.className = 'ev-preview-item';
+        el.innerHTML = `
+            <img src="${foto.src}" alt="Foto ${idx+1}">
+            <button type="button" class="ev-remove" onclick="removerFoto(${idx})" title="Quitar"><i class="fas fa-xmark"></i></button>
+            <div class="ev-label">${(foto.file.size/1024/1024).toFixed(1)} MB</div>`;
+        grid.appendChild(el);
     });
-
-    // Actualizar input file
-    const dataTransfer = new DataTransfer();
-    fotosSeleccionadas.forEach(f => dataTransfer.items.add(f.file));
-    inputFotos.files = dataTransfer.files;
+    // Sync input file
+    const dt = new DataTransfer();
+    fotosSeleccionadas.forEach(f => dt.items.add(f.file));
+    document.getElementById('input-fotos').files = dt.files;
+    // Badge
+    const b = document.getElementById('badge-fotos');
+    b.textContent = fotosSeleccionadas.length;
+    b.style.display = fotosSeleccionadas.length ? '' : 'none';
 }
 
-function removerFoto(idx) {
-    fotosSeleccionadas.splice(idx, 1);
-    renderPreviewFotos();
-}
+function removerFoto(idx) { fotosSeleccionadas.splice(idx, 1); renderPreviewFotos(); }
 
-// Setup Drag & Drop para Video
-const dropZoneVideo = document.getElementById('drop-zone-video');
-const inputVideo = document.getElementById('input-video');
-
-dropZoneVideo.addEventListener('click', () => inputVideo.click());
-
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-    dropZoneVideo.addEventListener(evt, e => e.preventDefault());
-    dropZoneVideo.addEventListener(evt, e => e.stopPropagation());
-});
-
-dropZoneVideo.addEventListener('dragover', () => dropZoneVideo.classList.add('dragover'));
-dropZoneVideo.addEventListener('dragleave', () => dropZoneVideo.classList.remove('dragover'));
-dropZoneVideo.addEventListener('drop', (e) => {
-    dropZoneVideo.classList.remove('dragover');
-    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
-    procesarVideo(files[0]);
-});
-
-inputVideo.addEventListener('change', (e) => procesarVideo(e.target.files[0]));
-
+// ─── PROCESAR VIDEO ──────────────────────────────────────────────────────────
 function procesarVideo(file) {
     if (!file) return;
-
-    // Validar tamaño (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-        alert('Video supera 50MB');
-        return;
-    }
-
-    // Validar duración
-    const video = document.createElement('video');
-    video.onloadedmetadata = () => {
-        if (video.duration > 20) {
-            alert('Video supera 20 segundos de duración');
-            inputVideo.value = '';
-            return;
-        }
-
+    if (file.size > 50 * 1024 * 1024) { mostrarAlerta('El video supera 50 MB.'); return; }
+    const tmpVid = document.createElement('video');
+    tmpVid.onloadedmetadata = () => {
+        if (tmpVid.duration > 20) { mostrarAlerta('El video supera los 20 segundos.'); return; }
         const reader = new FileReader();
-        reader.onload = (e) => {
-            videoSeleccionado = { file, src: e.target.result, duration: video.duration };
+        reader.onload = ev => {
+            videoSeleccionado = { file, src: ev.target.result, duration: tmpVid.duration };
             renderPreviewVideo();
         };
         reader.readAsDataURL(file);
     };
-    video.src = URL.createObjectURL(file);
+    tmpVid.src = URL.createObjectURL(file);
 }
 
 function renderPreviewVideo() {
-    const container = document.getElementById('preview-video');
-    container.innerHTML = '';
-
-    if (videoSeleccionado) {
-        const item = document.createElement('div');
-        item.className = 'preview-item';
-        item.innerHTML = `
-            <video controls>
-                <source src="${videoSeleccionado.src}" type="${videoSeleccionado.file.type}">
-            </video>
-            <button type="button" class="remove-btn" onclick="removerVideo()">✕</button>
-            <div class="file-info">${videoSeleccionado.duration.toFixed(1)}s</div>
-        `;
-        container.appendChild(item);
-
-        // Actualizar input file
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(videoSeleccionado.file);
-        inputVideo.files = dataTransfer.files;
+    const grid = document.getElementById('preview-video');
+    grid.innerHTML = '';
+    if (!videoSeleccionado) {
+        document.getElementById('badge-video').style.display = 'none'; return;
     }
+    const el = document.createElement('div');
+    el.className = 'ev-preview-item';
+    el.innerHTML = `
+        <video controls src="${videoSeleccionado.src}"></video>
+        <button type="button" class="ev-remove" onclick="removerVideo()" title="Quitar"><i class="fas fa-xmark"></i></button>
+        <div class="ev-label">${videoSeleccionado.duration.toFixed(1)} s</div>`;
+    grid.appendChild(el);
+    // Sync input file
+    const dt = new DataTransfer();
+    dt.items.add(videoSeleccionado.file);
+    document.getElementById('input-video').files = dt.files;
+    // Badge
+    document.getElementById('badge-video').style.display = '';
 }
 
 function removerVideo() {
     videoSeleccionado = null;
-    inputVideo.value = '';
+    document.getElementById('input-video').value = '';
     renderPreviewVideo();
 }
 
+// ─── CÁMARA FOTO ─────────────────────────────────────────────────────────────
+function abrirCamaraFoto() {
+    if (esMobil) {
+        // Móvil: abrir cámara nativa
+        document.getElementById('input-camara-movil-foto').click(); return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarAlerta('Tu navegador no soporta acceso a la cámara. Usa la opción "Subir archivo".');
+        return;
+    }
+    document.getElementById('modal-cam-foto').style.display = 'flex';
+    iniciarStreamFoto();
+}
+
+async function iniciarStreamFoto() {
+    ocultarError('cam-foto-error');
+    try {
+        if (streamFoto) { streamFoto.getTracks().forEach(t => t.stop()); }
+        streamFoto = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingModeFoto, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+        document.getElementById('cam-foto-stream').srcObject = streamFoto;
+
+        // Mostrar botón de cambiar cámara si hay >1 dispositivo
+        navigator.mediaDevices.enumerateDevices().then(devs => {
+            const cams = devs.filter(d => d.kind === 'videoinput');
+            document.getElementById('btn-switch-cam-foto').style.display = cams.length > 1 ? '' : 'none';
+        });
+    } catch(err) {
+        mostrarError('cam-foto-error', mensajeErrorCamara(err));
+    }
+}
+
+function capturarFoto() {
+    const video  = document.getElementById('cam-foto-stream');
+    const canvas = document.getElementById('cam-foto-canvas');
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    // Flash visual
+    const flash = document.getElementById('cam-foto-flash');
+    flash.classList.add('flash');
+    setTimeout(() => flash.classList.remove('flash'), 150);
+
+    canvas.toBlob(blob => {
+        if (!blob) return;
+        if (fotosSeleccionadas.length >= 5) {
+            mostrarAlerta('Ya tienes 5 fotos. Elimina una antes de capturar otra.'); return;
+        }
+        const nombre = 'foto_camara_' + Date.now() + '.jpg';
+        const file = new File([blob], nombre, { type: 'image/jpeg' });
+        const reader = new FileReader();
+        reader.onload = ev => {
+            fotosSeleccionadas.push({ file, src: ev.target.result });
+            renderPreviewFotos();
+        };
+        reader.readAsDataURL(file);
+    }, 'image/jpeg', 0.88);
+}
+
+function cerrarCamaraFoto() {
+    if (streamFoto) { streamFoto.getTracks().forEach(t => t.stop()); streamFoto = null; }
+    document.getElementById('cam-foto-stream').srcObject = null;
+    document.getElementById('modal-cam-foto').style.display = 'none';
+    ocultarError('cam-foto-error');
+}
+
+// ─── CÁMARA VIDEO ─────────────────────────────────────────────────────────────
+function abrirCamaraVideo() {
+    if (esMobil) {
+        document.getElementById('input-camara-movil-video').click(); return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        mostrarAlerta('Tu navegador no soporta acceso a la cámara. Usa la opción "Subir archivo".');
+        return;
+    }
+    document.getElementById('modal-cam-video').style.display = 'flex';
+    iniciarStreamVideo();
+}
+
+async function iniciarStreamVideo() {
+    ocultarError('cam-video-error');
+    try {
+        if (streamVideo) { streamVideo.getTracks().forEach(t => t.stop()); }
+        streamVideo = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingModeVideo, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: true
+        });
+        document.getElementById('cam-video-stream').srcObject = streamVideo;
+
+        navigator.mediaDevices.enumerateDevices().then(devs => {
+            const cams = devs.filter(d => d.kind === 'videoinput');
+            document.getElementById('btn-switch-cam-video').style.display = cams.length > 1 ? '' : 'none';
+        });
+    } catch(err) {
+        mostrarError('cam-video-error', mensajeErrorCamara(err));
+    }
+}
+
+function iniciarGrabacion() {
+    if (!streamVideo) return;
+    chunksGrabacion = [];
+    recSegundos     = 0;
+
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : (MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : 'video/mp4');
+
+    mediaRecorder = new MediaRecorder(streamVideo, { mimeType });
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunksGrabacion.push(e.data); };
+    mediaRecorder.onstop = finalizarGrabacion;
+    mediaRecorder.start(200);
+
+    // UI
+    document.getElementById('btn-rec-start').style.display = 'none';
+    document.getElementById('btn-rec-stop').style.display  = '';
+    document.getElementById('rec-indicator').style.display = 'flex';
+
+    // Timer y auto-stop a 20s
+    recTimerInterval = setInterval(() => {
+        recSegundos++;
+        const mm = String(Math.floor(recSegundos / 60)).padStart(2,'0');
+        const ss = String(recSegundos % 60).padStart(2,'0');
+        document.getElementById('rec-timer').textContent = mm + ':' + ss;
+        if (recSegundos >= 20) detenerGrabacion();
+    }, 1000);
+}
+
+function detenerGrabacion() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    clearInterval(recTimerInterval);
+    document.getElementById('btn-rec-start').style.display = '';
+    document.getElementById('btn-rec-stop').style.display  = 'none';
+    document.getElementById('rec-indicator').style.display = 'none';
+    document.getElementById('rec-timer').textContent = '00:00';
+}
+
+function finalizarGrabacion() {
+    const mimeType = chunksGrabacion[0]?.type || 'video/webm';
+    const blob = new Blob(chunksGrabacion, { type: mimeType });
+    const ext  = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const file = new File([blob], 'video_camara_' + Date.now() + '.' + ext, { type: mimeType });
+    videoSeleccionado = { file, src: URL.createObjectURL(blob), duration: recSegundos };
+    renderPreviewVideo();
+    cerrarCamaraVideo();
+}
+
+function cerrarCamaraVideo() {
+    detenerGrabacion();
+    if (streamVideo) { streamVideo.getTracks().forEach(t => t.stop()); streamVideo = null; }
+    document.getElementById('cam-video-stream').srcObject = null;
+    document.getElementById('modal-cam-video').style.display = 'none';
+    ocultarError('cam-video-error');
+}
+
+// ─── CAMBIAR CÁMARA (front/back) ─────────────────────────────────────────────
+function cambiarCamara(tipo) {
+    if (tipo === 'foto') {
+        facingModeFoto = facingModeFoto === 'environment' ? 'user' : 'environment';
+        iniciarStreamFoto();
+    } else {
+        facingModeVideo = facingModeVideo === 'environment' ? 'user' : 'environment';
+        iniciarStreamVideo();
+    }
+}
+
+// Cerrar modales con Escape
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { cerrarCamaraFoto(); cerrarCamaraVideo(); }
+});
+
+// ─── SUBCATEGORÍAS (AJAX) ────────────────────────────────────────────────────
 function cargarSubcategorias() {
     const idCategoria = document.getElementById('id_categoria').value;
     const subcatSelect = document.getElementById('id_subcategoria');
@@ -692,9 +1082,7 @@ function cargarSubcategorias() {
 
     fetch(apiBase + '/?controlador=reportes&accion=cargar_subcategorias_json', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'id_categoria=' + idCategoria
     })
     .then(r => r.json())
@@ -710,13 +1098,39 @@ function cargarSubcategorias() {
     .catch(e => console.error('Error cargando subcategorías:', e));
 }
 
-// Validación al enviar
+// ─── VALIDACIÓN SUBMIT ───────────────────────────────────────────────────────
 document.getElementById('form-crear-reporte').addEventListener('submit', function(e) {
     const desc = document.getElementById('descripcion_problema').value.trim();
     if (desc.length < 10) {
         e.preventDefault();
-        alert('La descripción debe tener al menos 10 caracteres');
-        return false;
+        mostrarAlerta('La descripción debe tener al menos 10 caracteres.');
     }
 });
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function mostrarAlerta(msg) {
+    // Toast no-intrusivo en lugar de alert()
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#C0392B;color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.2);z-index:9999;';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+}
+
+function mostrarError(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.style.display = ''; }
+}
+
+function ocultarError(id) {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+}
+
+function mensajeErrorCamara(err) {
+    if (err.name === 'NotAllowedError')  return 'Acceso a la cámara denegado. Permite el permiso en tu navegador e intenta de nuevo.';
+    if (err.name === 'NotFoundError')    return 'No se encontró ninguna cámara en este dispositivo.';
+    if (err.name === 'NotReadableError') return 'La cámara está siendo usada por otra aplicación.';
+    return 'No se pudo acceder a la cámara: ' + err.message;
+}
 </script>

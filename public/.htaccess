@@ -21,19 +21,28 @@
     Options -Indexes
 </IfModule>
 
-# Agregar headers de seguridad
+# Headers de seguridad HTTP
 <IfModule mod_headers.c>
-    # Prevenir MIME type sniffing
+    # MIME sniffing
     Header always set X-Content-Type-Options "nosniff"
 
-    # XSS Protection
+    # XSS Protection (legacy browsers)
     Header always set X-XSS-Protection "1; mode=block"
 
-    # Clickjacking Protection
-    Header always set X-Frame-Options "SAMEORIGIN"
+    # Clickjacking
+    Header always set X-Frame-Options "DENY"
 
     # Referrer Policy
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # HSTS: forzar HTTPS por 1 año (activar solo cuando SSL esté confirmado)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # Content Security Policy — permite CDNs usados por la app
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+
+    # Deshabilitar características innecesarias del navegador
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 </IfModule>
 
 # Configuración de caching

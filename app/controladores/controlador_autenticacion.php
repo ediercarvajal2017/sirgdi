@@ -205,7 +205,7 @@ class ControladorAutenticacion {
 
             $this->redirigir_cambiar_contrasena('Contraseña cambiada exitosamente.', 'exito');
         } catch (Exception $e) {
-            $this->redirigir_cambiar_contrasena(urlencode($e->getMessage()), 'error');
+            $this->redirigir_cambiar_contrasena($e->getMessage(), 'error');
         }
 
         exit;
@@ -263,10 +263,21 @@ class ControladorAutenticacion {
             exit;
         }
 
+        // Obtener instituciones activas para el botón de reporte libre
+        $instituciones_publicas = [];
+        try {
+            require_once APP_PATH . '/modelos/modelo_institucion.php';
+            $modelo_inst = new ModeloInstitucion();
+            $instituciones_publicas = $modelo_inst->listar(true);
+        } catch (Exception $e) {
+            // No interrumpir la carga si falla
+        }
+
         // Renderizar página de inicio pública
         $datos = [
-            'titulo' => 'Bienvenido - SIRGDI v2.0',
-            'app_name' => config('app.app_name'),
+            'titulo'                 => 'Bienvenido - SIRGDI v2.0',
+            'app_name'               => config('app.app_name'),
+            'instituciones_publicas' => $instituciones_publicas,
         ];
 
         $this->renderizar_vista('autenticacion/vista_inicio', $datos);

@@ -72,10 +72,19 @@ class ServicioAutenticacion {
             return $resultado;
         }
 
+        // Verificar rate limiting ANTES de consultar BD (sección 3.1 seguridad)
+        $bloqueo = $this->verificar_rate_limit($email);
+        if ($bloqueo['bloqueado']) {
+            $minutos = ceil($bloqueo['segundos_restantes'] / 60);
+            $resultado['mensaje'] = "Demasiados intentos fallidos. Espere {$minutos} minuto(s) e intente de nuevo.";
+            $this->registrar_intento_fallido($email, 'cuenta_bloqueada_rate_limit');
+            return $resultado;
+        }
+
         // Buscar usuario
         $usuario = $this->modelo_usuario->obtener_por_email($email, $id_institucion);
         if (!$usuario) {
-            // Log de intento fallido (sin revelar si existe)
+            $this->incrementar_rate_limit($email);
             $this->registrar_intento_fallido($email, 'usuario_no_encontrado');
             $resultado['mensaje'] = 'Email o contraseña incorrectos.';
             return $resultado;
@@ -90,6 +99,7 @@ class ServicioAutenticacion {
 
         // Validar contraseña con hash bcrypt
         if (!password_verify($contrasena, $usuario['hash_contrasena'])) {
+            $this->incrementar_rate_limit($email);
             $this->registrar_intento_fallido($email, 'contrasena_incorrecta');
             $resultado['mensaje'] = 'Email o contraseña incorrectos.';
             return $resultado;
@@ -111,7 +121,8 @@ class ServicioAutenticacion {
             return $resultado;
         }
 
-        // Login exitoso (sin 2FA)
+        // Login exitoso (sin 2FA): limpiar rate limit
+        $this->limpiar_rate_limit($email);
         $this->crear_sesion($usuario);
         $resultado['exito'] = true;
         $resultado['id_usuario'] = $usuario['id_usuario'];
@@ -284,6 +295,97 @@ class ServicioAutenticacion {
         $_SESSION = [];
         session_destroy();
     }
+
+    // ===== RATE LIMITING (sección 3.1 seguridad — bloqueo tras N intentos) =====
+
+    /**
+     * Verificar si el email/IP está bloqueado por rate limiting
+     * Retorna ['bloqueado' => bool, 'segundos_restantes' => int]
+     */
+    private function verificar_rate_limit($email) {
+        $datos = $this->leer_rate_limit_archivo($email);
+        if (!$datos) {
+            return ['bloqueado' => false, 'segundos_restantes' => 0];
+        }
+
+        $ahora = time();
+
+        if (!empty($datos['bloqueado_hasta']) && $ahora < $datos['bloqueado_hasta']) {
+            return [
+                'bloqueado' => true,
+                'segundos_restantes' => $datos['bloqueado_hasta'] - $ahora,
+            ];
+        }
+
+        // Ventana expirada: limpiar automáticamente
+        if (!empty($datos['primera_vez']) && ($ahora - $datos['primera_vez']) > VENTANA_INTENTOS_LOGIN) {
+            $this->limpiar_rate_limit($email);
+        }
+
+        return ['bloqueado' => false, 'segundos_restantes' => 0];
+    }
+
+    /**
+     * Incrementar contador de intentos fallidos
+     */
+    private function incrementar_rate_limit($email) {
+        $datos = $this->leer_rate_limit_archivo($email) ?: [
+            'intentos' => 0,
+            'primera_vez' => time(),
+            'bloqueado_hasta' => null,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'desconocida',
+        ];
+
+        $ahora = time();
+
+        // Reiniciar si la ventana expiró
+        if (!empty($datos['primera_vez']) && ($ahora - $datos['primera_vez']) > VENTANA_INTENTOS_LOGIN) {
+            $datos['intentos'] = 0;
+            $datos['primera_vez'] = $ahora;
+            $datos['bloqueado_hasta'] = null;
+        }
+
+        $datos['intentos']++;
+
+        if ($datos['intentos'] >= MAX_INTENTOS_LOGIN) {
+            $datos['bloqueado_hasta'] = $ahora + BLOQUEO_LOGIN_SEGUNDOS;
+        }
+
+        $this->escribir_rate_limit_archivo($email, $datos);
+    }
+
+    /**
+     * Eliminar datos de rate limit para el email (login exitoso)
+     */
+    private function limpiar_rate_limit($email) {
+        $archivo = $this->ruta_rate_limit_archivo($email);
+        if (file_exists($archivo)) {
+            @unlink($archivo);
+        }
+    }
+
+    private function ruta_rate_limit_archivo($email) {
+        if (!is_dir(RATE_LIMIT_DIR)) {
+            @mkdir(RATE_LIMIT_DIR, 0750, true);
+        }
+        return RATE_LIMIT_DIR . '/' . md5(strtolower(trim($email))) . '.json';
+    }
+
+    private function leer_rate_limit_archivo($email) {
+        $archivo = $this->ruta_rate_limit_archivo($email);
+        if (!file_exists($archivo)) {
+            return null;
+        }
+        $contenido = @file_get_contents($archivo);
+        return $contenido ? json_decode($contenido, true) : null;
+    }
+
+    private function escribir_rate_limit_archivo($email, $datos) {
+        $archivo = $this->ruta_rate_limit_archivo($email);
+        @file_put_contents($archivo, json_encode($datos), LOCK_EX);
+    }
+
+    // ===== AUDITORÍA =====
 
     /**
      * Registrar intento de login fallido (para auditoría y detección de ataques)

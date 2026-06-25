@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'reportes/cargar_areas_json',
         'reportes/cargar_subareas_json',
         'reportes/cargar_subcategorias_json',
+        'reportes/cargar_subcategorias_publico_json',
     ];
 
     $controlador_accion = ($_GET['controlador'] ?? '') . '/' . ($_GET['accion'] ?? '');

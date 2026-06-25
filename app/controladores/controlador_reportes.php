@@ -143,7 +143,7 @@ class ControladorReportes {
             exit;
 
         } catch (Exception $e) {
-            $this->redirigir_crear(urlencode($e->getMessage()), 'error');
+            $this->redirigir_crear($e->getMessage(), 'error');
             exit;
         }
     }
@@ -153,7 +153,7 @@ class ControladorReportes {
      * Se registran como evidencia de etapa "Antes" (estado inicial del daño).
      * No interrumpe la creación del reporte si una foto falla.
      */
-    private function guardar_evidencias_iniciales($id_reporte, $id_institucion, $id_usuario) {
+    private function guardar_evidencias_iniciales($id_reporte, $id_institucion, $id_usuario = null) {
         if (empty($_FILES['fotos']) || !isset($_FILES['fotos']['tmp_name']) || !is_array($_FILES['fotos']['tmp_name'])) {
             return;
         }
@@ -481,6 +481,7 @@ class ControladorReportes {
             'sede' => $sede,
             'categoria' => $categoria,
             'subcategoria' => $subcategoria,
+            'from' => $_GET['from'] ?? '',
         ];
 
         $this->renderizar_vista('reportes/vista_detalle_reporte', $datos);
@@ -576,6 +577,31 @@ class ControladorReportes {
         echo json_encode($subcategorias);
     }
 
+    /**
+     * Cargar subcategorías para el formulario público de invitado (AJAX, sin auth).
+     * Requiere id_categoria e id_institucion en POST.
+     */
+    public function cargar_subcategorias_publico_json() {
+        $id_categoria   = intval($_POST['id_categoria']   ?? 0);
+        $id_institucion = intval($_POST['id_institucion'] ?? 0);
+
+        header('Content-Type: application/json');
+
+        if (!$id_categoria || !$id_institucion) {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('{"error":"id_categoria e id_institucion requeridos"}');
+        }
+
+        $categoria = $this->modelo_categoria->obtener_por_id($id_categoria, $id_institucion);
+        if (!$categoria) {
+            http_response_code(HTTP_FORBIDDEN);
+            die('{"error":"Categoría no válida"}');
+        }
+
+        $subcategorias = $this->modelo_subcategoria->listar_por_categoria($id_categoria, $id_institucion);
+        echo json_encode($subcategorias);
+    }
+
     // ===== HELPERS =====
 
     private function renderizar_vista($vista, $datos = []) {
@@ -621,6 +647,139 @@ class ControladorReportes {
         $url = config('app.url_base') . '/?controlador=reportes&accion=crear';
         if ($error_msg) {
             $url .= '&' . $tipo . '=' . urlencode($error_msg);
+        }
+        header('Location: ' . $url);
+    }
+
+    // ----------------------------------------------------------------
+    // REPORTES DE INVITADOS (sin registro de usuario)
+    // ----------------------------------------------------------------
+
+    /**
+     * Formulario público para crear reporte sin cuenta.
+     * URL: ?controlador=reportes&accion=crear_invitado&inst={id_institucion}
+     */
+    public function crear_invitado() {
+        $id_institucion = intval($_GET['inst'] ?? 0);
+        if (!$id_institucion) {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('URL inválida. Solicite el enlace correcto al administrador del sistema.');
+        }
+
+        require_once APP_PATH . '/modelos/modelo_institucion.php';
+        $modelo_inst = new ModeloInstitucion();
+        $institucion = $modelo_inst->obtener_por_id($id_institucion);
+
+        if (!$institucion || !$institucion['es_activa']) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Institución no encontrada o inactiva.');
+        }
+
+        $csrf_token = Validacion::generar_csrf_token();
+        $sedes = $this->modelo_sede->listar_activas($id_institucion);
+        $categorias = $this->modelo_categoria->listar_por_institucion($id_institucion);
+
+        $datos = [
+            'titulo' => 'Reportar Daño — ' . $institucion['nombre'],
+            'csrf_token' => $csrf_token,
+            'sedes' => $sedes,
+            'categorias' => $categorias,
+            'institucion' => $institucion,
+            'id_institucion' => $id_institucion,
+            'error' => $_GET['error'] ?? null,
+        ];
+
+        $this->renderizar_vista('reportes/vista_crear_reporte_invitado', $datos);
+    }
+
+    /**
+     * Procesar creación de reporte de invitado (POST).
+     */
+    public function procesar_crear_invitado() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('Método no permitido.');
+        }
+
+        $id_institucion = intval($_POST['id_institucion'] ?? 0);
+        if (!$id_institucion) {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('Institución requerida.');
+        }
+
+        $nombres   = Validacion::sanitizar_texto($_POST['nombres']   ?? '');
+        $apellidos = Validacion::sanitizar_texto($_POST['apellidos']  ?? '');
+        $correo    = Validacion::sanitizar_texto($_POST['correo']     ?? '');
+        $telefono  = Validacion::sanitizar_texto($_POST['telefono']   ?? '');
+
+        $id_sede         = intval($_POST['id_sede']              ?? 0);
+        $area_texto      = trim($_POST['area']                   ?? '');
+        $id_categoria    = intval($_POST['id_categoria']         ?? 0);
+        $id_subcategoria = intval($_POST['id_subcategoria']      ?? 0);
+        $id_urgencia     = intval($_POST['id_urgencia_declarada'] ?? URGENCIA_NO_URGENTE);
+        $descripcion     = Validacion::sanitizar_texto($_POST['descripcion_problema'] ?? '');
+
+        if (!$nombres || !$apellidos) {
+            $this->redirigir_invitado($id_institucion, 'Ingrese sus nombres y apellidos completos.');
+            exit;
+        }
+        if (!$id_sede || !$area_texto || !$id_categoria || strlen($descripcion) < 10) {
+            $this->redirigir_invitado($id_institucion, 'Complete todos los campos obligatorios del reporte.');
+            exit;
+        }
+
+        try {
+            $sede = $this->modelo_sede->obtener_por_id($id_sede, $id_institucion);
+            if (!$sede) {
+                throw new Exception('Sede no válida para esta institución.');
+            }
+
+            $datos_reporte = [
+                'id_institucion'            => $id_institucion,
+                'id_sede'                   => $id_sede,
+                'id_area'                   => null,
+                'id_subarea'                => null,
+                'referencia_ubicacion_libre'=> substr($area_texto, 0, 255),
+                'id_categoria'              => $id_categoria,
+                'id_subcategoria'           => $id_subcategoria ?: null,
+                'id_urgencia_declarada'     => $id_urgencia,
+                'descripcion_problema'      => $descripcion,
+                'id_reportante'             => null,
+                'nombre_reportante'         => trim($nombres . ' ' . $apellidos),
+                'correo_reportante'         => $correo ?: null,
+                'telefono_reportante'       => $telefono ?: null,
+                'es_anonimo'                => 0,
+            ];
+
+            $id_reporte = $this->modelo_reporte->crear($datos_reporte);
+            $reporte    = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
+
+            $this->guardar_evidencias_iniciales($id_reporte, $id_institucion, null);
+
+            $this->servicio_notificacion->notificar_nuevo_reporte(
+                $id_reporte,
+                $id_institucion,
+                $reporte['numero_ticket'],
+                $descripcion
+            );
+
+            header('Location: ' . config('app.url_base')
+                . '/?controlador=reportes&accion=seguimiento&token='
+                . urlencode($reporte['token_seguimiento_publico'])
+                . '&nuevo=1');
+            exit;
+
+        } catch (Exception $e) {
+            $this->redirigir_invitado($id_institucion, $e->getMessage());
+            exit;
+        }
+    }
+
+    private function redirigir_invitado($id_institucion, $msg = '') {
+        $url = config('app.url_base')
+            . '/?controlador=reportes&accion=crear_invitado&inst=' . intval($id_institucion);
+        if ($msg) {
+            $url .= '&error=' . urlencode($msg);
         }
         header('Location: ' . $url);
     }

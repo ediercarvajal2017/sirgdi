@@ -298,15 +298,15 @@ CREATE TABLE IF NOT EXISTS reporte (
     numero_ticket                   VARCHAR(30)         NOT NULL COMMENT 'RN-07: único e inmutable',
     token_seguimiento_publico       CHAR(36)            NOT NULL COMMENT 'UUID para acceso sin login. RN-11',
     -- Datos del reportante (desnormalizados para soportar reportes anónimos y cambios de datos)
-    id_reportante                   BIGINT UNSIGNED     NOT NULL,
+    id_reportante                   BIGINT UNSIGNED     NULL     COMMENT 'NULL para reportes de invitados sin cuenta',
     nombre_reportante               VARCHAR(150)        NOT NULL,
     cargo_reportante                VARCHAR(100)        NULL,
-    correo_reportante               VARCHAR(150)        NOT NULL,
+    correo_reportante               VARCHAR(150)        NULL,
     telefono_reportante             VARCHAR(20)         NULL,
     es_anonimo                      TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'RF-09, RN-09',
-    -- Ubicación (RN-02: sede y area son NOT NULL)
+    -- Ubicación (RN-02: sede NOT NULL; id_area nullable cuando se usa referencia_ubicacion_libre)
     id_sede                         BIGINT UNSIGNED     NOT NULL,
-    id_area                         BIGINT UNSIGNED     NOT NULL,
+    id_area                         BIGINT UNSIGNED     NULL,
     id_subarea                      BIGINT UNSIGNED     NULL,
     referencia_ubicacion_libre      VARCHAR(255)        NULL,
     -- Clasificación
@@ -402,7 +402,7 @@ CREATE TABLE IF NOT EXISTS evidencia (
     tamanio_bytes           INT UNSIGNED        NOT NULL,
     hash_archivo            CHAR(64)            NULL COMMENT 'SHA-256 para verificación de integridad',
     descripcion             VARCHAR(255)        NULL,
-    cargada_por             BIGINT UNSIGNED     NOT NULL,
+    cargada_por             BIGINT UNSIGNED     NULL     COMMENT 'NULL para evidencias de invitados sin cuenta',
     fecha_hora_carga        DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id_evidencia),
     CONSTRAINT fk_ev_rpt     FOREIGN KEY (id_reporte)    REFERENCES reporte(id_reporte),

@@ -52,11 +52,17 @@ $security_config = [
 ];
 
 // === SESIÓN ===
+// cookie_secure: activo si HTTPS real está presente O si se fuerza por env
+$_https_activo = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || ($_SERVER['SERVER_PORT'] ?? 80) == 443
+    || getenv('FORCE_HTTPS') === 'true';
+
 $session_config = [
     'timeout' => SESSION_TIMEOUT_SECONDS,
     'absolute_timeout' => SESSION_ABSOLUTE_TIMEOUT_SECONDS,
-    'cookie_secure' => getenv('FORCE_HTTPS') === 'true' ? true : false,
+    'cookie_secure' => $_https_activo,
     'cookie_httponly' => true,
+    'cookie_samesite' => 'Lax',
 ];
 
 // === APLICACIÓN ===
@@ -82,10 +88,10 @@ $storage_config = [
     'cache_dir' => STORAGE_PATH . '/cache',
 ];
 
-// Crear directorios si no existen
+// Crear directorios si no existen (0750: sin lectura para "otros")
 foreach ($storage_config as $dir) {
     if (!is_dir($dir)) {
-        @mkdir($dir, 0755, true);
+        @mkdir($dir, 0750, true);
     }
 }
 
@@ -96,9 +102,12 @@ error_reporting(E_ALL);
 // Timezone (América/Bogotá para Colombia - ajustar según región)
 date_default_timezone_set(getenv('TIMEZONE') ?: 'America/Bogota');
 
-// Configuración de sesión
+// Configuración de sesión (sección 3.1 seguridad)
+session_name('SIRGDI_SESS');
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', $session_config['cookie_secure'] ? 1 : 0);
+ini_set('session.cookie_samesite', $session_config['cookie_samesite']);
+ini_set('session.use_strict_mode', 1);
 ini_set('session.gc_maxlifetime', $session_config['timeout']);
 session_save_path(STORAGE_PATH . '/sesiones');
 

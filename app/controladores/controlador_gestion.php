@@ -81,6 +81,8 @@ class ControladorGestion {
             ESTADO_EN_PROCESO => [],
             ESTADO_DEVUELTO => [],
             ESTADO_SOLUCIONADO => [],
+            ESTADO_EN_VALIDACION => [],
+            ESTADO_CERRADO => [],
         ];
 
         $estados_nombres = [
@@ -88,6 +90,8 @@ class ControladorGestion {
             ESTADO_EN_PROCESO => 'En Proceso',
             ESTADO_DEVUELTO => 'Devuelto',
             ESTADO_SOLUCIONADO => 'Solucionado',
+            ESTADO_EN_VALIDACION => 'En Validación',
+            ESTADO_CERRADO => 'Cerrado',
         ];
 
         foreach ($reportes_por_prioridad as $item) {

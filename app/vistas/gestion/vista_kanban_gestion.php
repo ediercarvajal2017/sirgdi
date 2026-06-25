@@ -98,8 +98,13 @@
                             <td>
                                 <?php if ($tiene_tecnico): ?>
                                     <span class="tec-ok"><i class="fas fa-user-check"></i> Asignado</span>
+                                    <?php if (!$bloquear_asignar): ?>
+                                        <button class="btn-tabla btn-reasignar" onclick="abrirAsignacion(<?php echo $r['id_reporte']; ?>, true)" title="Cambiar técnico asignado">
+                                            <i class="fas fa-user-edit"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 <?php elseif (!$bloquear_asignar): ?>
-                                    <button class="btn-tabla btn-asignar" onclick="abrirAsignacion(<?php echo $r['id_reporte']; ?>)">
+                                    <button class="btn-tabla btn-asignar" onclick="abrirAsignacion(<?php echo $r['id_reporte']; ?>, false)">
                                         <i class="fas fa-user-plus"></i> Asignar
                                     </button>
                                 <?php else: ?>
@@ -107,7 +112,7 @@
                                 <?php endif; ?>
                             </td>
                             <td class="td-center td-acciones">
-                                <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=detalle&id=<?php echo $r['id_reporte']; ?>" class="btn-icono" target="_blank" title="Ver detalle">
+                                <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=detalle&id=<?php echo $r['id_reporte']; ?>&from=gestion" class="btn-icono" target="_blank" title="Ver detalle">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <?php if ($r['id_estado'] !== ESTADO_CERRADO && $r['id_estado'] !== ESTADO_ANULADO): ?>
@@ -137,7 +142,7 @@
         <button class="modal-close" onclick="cerrarAsignacion()">
             <i class="fas fa-times"></i>
         </button>
-        <h3><i class="fas fa-user-tie"></i> Asignar Técnico</h3>
+        <h3 id="modal-asig-titulo"><i class="fas fa-user-tie"></i> Asignar Técnico</h3>
 
         <form id="form-asignacion" method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=gestion&accion=asignar_tecnico">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token ?? Validacion::generar_csrf_token()); ?>">
@@ -211,6 +216,8 @@
     .btn-tabla { border:none; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .2s; white-space:nowrap; }
     .btn-asignar { background:rgba(52,152,219,.12); color:#3498DB; }
     .btn-asignar:hover { background:#3498DB; color:#fff; }
+    .btn-reasignar { background:rgba(230,126,34,.12); color:#E67E22; padding:4px 8px; }
+    .btn-reasignar:hover { background:#E67E22; color:#fff; }
 
     .td-acciones { white-space:nowrap; }
     .btn-icono { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:6px; background:#ECF0F1; color:#2C3E50; text-decoration:none; margin:0 2px; transition:all .2s; }
@@ -895,9 +902,16 @@ function ordenarTabla(th, colIndex, tipo) {
     if (icono) icono.className = asc ? 'fas fa-sort-up' : 'fas fa-sort-down';
 }
 
-function abrirAsignacion(idReporte) {
+function abrirAsignacion(idReporte, esReasignacion) {
     document.getElementById('id_reporte_asignar').value = idReporte;
     document.getElementById('modal-asignacion').style.display = 'flex';
+
+    const titulo = document.getElementById('modal-asig-titulo');
+    if (esReasignacion) {
+        titulo.innerHTML = '<i class="fas fa-user-edit"></i> Cambiar Técnico Asignado';
+    } else {
+        titulo.innerHTML = '<i class="fas fa-user-tie"></i> Asignar Técnico';
+    }
 
     // Cargar técnicos disponibles
     fetch(apiBase + '/?controlador=gestion&accion=obtener_tecnicos_json')

@@ -78,7 +78,7 @@
                         <a href="<?php echo config('app.url_base'); ?>/?controlador=gestion&accion=cambiar_estado&id=<?php echo $reporte['id_reporte']; ?>" class="btn-action-compact btn-edit" title="Cambiar estado">
                             <i class="fas fa-exchange-alt"></i>
                         </a>
-                        <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=detalle&id=<?php echo $reporte['id_reporte']; ?>" class="btn-action-compact btn-view" title="Ver detalles">
+                        <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=detalle&id=<?php echo $reporte['id_reporte']; ?>&from=gestion" class="btn-action-compact btn-view" title="Ver detalles">
                             <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>

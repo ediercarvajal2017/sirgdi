@@ -163,7 +163,11 @@ $base = config('app.url_base');
 
             <!-- Acciones -->
             <div class="det-actions">
-                <a href="<?php echo $base; ?>/?controlador=reportes&accion=listar" class="btn-modern-secondary"><i class="fas fa-arrow-left"></i> Volver a Mis Reportes</a>
+                <?php if (($from ?? '') === 'gestion'): ?>
+                    <a href="<?php echo $base; ?>/?controlador=gestion&accion=kanban" class="btn-modern-secondary"><i class="fas fa-arrow-left"></i> Volver a Gestión</a>
+                <?php else: ?>
+                    <a href="<?php echo $base; ?>/?controlador=reportes&accion=listar" class="btn-modern-secondary"><i class="fas fa-arrow-left"></i> Volver a Mis Reportes</a>
+                <?php endif; ?>
                 <a href="<?php echo $base; ?>/?controlador=reportes&accion=crear" class="btn-modern"><i class="fas fa-plus-circle"></i> Crear Otro Reporte</a>
             </div>
         </div>

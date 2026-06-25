@@ -43,3 +43,8 @@ RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas)(/|$)
 <IfModule mod_autoindex.c>
     Options -Indexes
 </IfModule>
+
+# HSTS: una vez que HTTPS esté activo y verificado, descomentar esta línea
+# <IfModule mod_headers.c>
+#     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+# </IfModule>

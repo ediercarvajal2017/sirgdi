@@ -88,3 +88,9 @@ define('TICKET_PREFIX', 'SIR'); // SIRGDI Reporte
 define('LOG_DIR', ROOT_PATH . '/almacenamiento/logs');
 define('ERROR_LOG', LOG_DIR . '/errores.log');
 define('AUDIT_LOG', LOG_DIR . '/auditoria.log');
+
+// Rate limiting de login (sección 3.1 seguridad)
+define('MAX_INTENTOS_LOGIN', 5);           // Intentos antes de bloquear
+define('VENTANA_INTENTOS_LOGIN', 900);     // 15 minutos (ventana de conteo)
+define('BLOQUEO_LOGIN_SEGUNDOS', 900);     // 15 minutos bloqueado
+define('RATE_LIMIT_DIR', ROOT_PATH . '/almacenamiento/cache/rate_limit');
