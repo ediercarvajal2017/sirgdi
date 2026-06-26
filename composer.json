@@ -1,0 +1,17 @@
+{
+    "name": "sirgdi/sirgdi",
+    "description": "Sistema de Reporte y Gestión de Daños en Instituciones Educativas",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "SIRGDI\\": "app/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
