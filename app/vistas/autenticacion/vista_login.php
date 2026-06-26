@@ -7,6 +7,10 @@
 
         <h2><?php echo config('app.app_name'); ?></h2>
 
+        <?php if (!empty($exito)): ?>
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($exito); ?></div>
+        <?php endif; ?>
+
         <?php if (!empty($error)): ?>
             <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
@@ -258,6 +262,12 @@
         display: flex;
         align-items: center;
         gap: 12px;
+    }
+
+    .alert-success {
+        background-color: #D5F5E3;
+        color: #1a6b3a;
+        border: 2px solid #27AE60;
     }
 
     .alert-error {

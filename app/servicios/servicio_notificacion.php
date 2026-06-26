@@ -119,6 +119,24 @@ class ServicioNotificacion {
         );
     }
 
+    /** Recuperación de contraseña — envía link de reset al usuario */
+    public function enviar_recuperacion_contrasena($email, $nombre, $link_reset) {
+        $asunto = 'Recuperación de contraseña — SIRGDI';
+        $cuerpo = $this->plantilla('Recuperación de Contraseña', [
+            'Usuario' => htmlspecialchars($nombre),
+        ], 'Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+            El enlace expira en <strong>1 hora</strong>.
+            <p style="text-align:center;margin:24px 0;">
+              <a href="' . htmlspecialchars($link_reset) . '"
+                 style="background:#1a56db;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
+                 Restablecer contraseña
+              </a>
+            </p>
+            <p style="font-size:13px;color:#6b7280;">Si no solicitaste este cambio, ignora este mensaje. Tu contraseña no será modificada.</p>');
+
+        $this->enviar_email($email, $nombre, $asunto, $cuerpo, null, null, 'reset_password');
+    }
+
     /** Obtener notificaciones pendientes de un usuario (para campana in-app) */
     public function obtener_pendientes($id_usuario, $id_institucion) {
         $sql = 'SELECT * FROM notificacion

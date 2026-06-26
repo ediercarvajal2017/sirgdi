@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'autenticacion/2fa',
         'autenticacion/recuperar_contrasena',
         'autenticacion/procesar_recuperar_contrasena',
+        'autenticacion/procesar_restablecer_contrasena',
         'reportes/cargar_areas_json',
         'reportes/cargar_subareas_json',
         'reportes/cargar_subcategorias_json',

@@ -30,9 +30,10 @@ class ControladorAutenticacion {
 
         // Preparar datos para la vista
         $datos = [
-            'titulo' => 'Login - SIRGDI',
+            'titulo'     => 'Login - SIRGDI',
             'csrf_token' => $csrf_token,
-            'error' => $_GET['error'] ?? null,
+            'error'      => $_GET['error'] ?? null,
+            'exito'      => $_GET['exito'] ?? null,
         ];
 
         // Renderizar vista
@@ -228,9 +229,7 @@ class ControladorAutenticacion {
     }
 
     /**
-     * Procesar recuperación de contraseña (POST)
-     * Nota: En versión 1.0 solo registra el email para admin
-     * En versión 2.0 se implementaría envío de email con token
+     * Procesar recuperación de contraseña — genera token y envía email
      */
     public function procesar_recuperar_contrasena() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -239,17 +238,127 @@ class ControladorAutenticacion {
         }
 
         $email = Validacion::sanitizar_email($_POST['email'] ?? '');
-
-        // Validar entrada
         if (!$email) {
             $this->redirigir_recuperar_contrasena('Email requerido.', 'error');
             exit;
         }
 
-        // En v1.0, siempre mostrar mensaje genérico (no revelar si existe email)
-        // En v2.0: generar token y enviar por email
-        $this->redirigir_recuperar_contrasena('Si el email existe, recibirás instrucciones de recuperación.', 'exito');
+        // Buscar usuario (sin revelar si existe por seguridad)
+        require_once APP_PATH . '/modelos/modelo_usuario.php';
+        $modelo_usuario = new ModeloUsuario();
+        $usuario = $modelo_usuario->obtener_por_email($email);
 
+        if ($usuario && $usuario['activo']) {
+            try {
+                $token = $modelo_usuario->generar_token_reset(
+                    $usuario['id_usuario'],
+                    $usuario['id_institucion']
+                );
+
+                $link_reset = config('app.url_base')
+                    . '/?controlador=autenticacion&accion=restablecer_contrasena&token='
+                    . urlencode($token);
+
+                require_once APP_PATH . '/servicios/servicio_notificacion.php';
+                $notif = new ServicioNotificacion();
+                $notif->enviar_recuperacion_contrasena(
+                    $usuario['correo_electronico'],
+                    $usuario['nombre_completo'] ?? 'Usuario',
+                    $link_reset
+                );
+            } catch (Exception $e) {
+                // Silenciar — no revelar al usuario si falló
+            }
+        }
+
+        // Mensaje siempre genérico (no revelar si el email existe)
+        $this->redirigir_recuperar_contrasena(
+            'Si el correo está registrado, recibirás un enlace en los próximos minutos. Revisa también la carpeta de spam.',
+            'exito'
+        );
+        exit;
+    }
+
+    /**
+     * Mostrar formulario para ingresar nueva contraseña (GET con token)
+     */
+    public function restablecer_contrasena() {
+        $token = trim($_GET['token'] ?? '');
+
+        if (!$token) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=recuperar_contrasena');
+            exit;
+        }
+
+        // Verificar que el token sea válido antes de mostrar el formulario
+        $sql = 'SELECT id_usuario FROM usuario
+                WHERE token_reset_pass = :token
+                  AND token_reset_expira > NOW()
+                LIMIT 1';
+        require_once LIB_PATH . '/basedatos.php';
+        $bd      = BaseDatos::obtener();
+        $valido  = $bd->obtener_uno($sql, [':token' => $token]);
+
+        if (!$valido) {
+            $this->redirigir_recuperar_contrasena(
+                'El enlace de recuperación ha expirado o ya fue usado. Solicita uno nuevo.',
+                'error'
+            );
+            exit;
+        }
+
+        $datos = [
+            'titulo'    => 'Nueva Contraseña - SIRGDI',
+            'token'     => $token,
+            'error'     => $_GET['error'] ?? null,
+        ];
+        $this->renderizar_vista('autenticacion/vista_restablecer_contrasena', $datos);
+    }
+
+    /**
+     * Procesar nueva contraseña (POST)
+     */
+    public function procesar_restablecer_contrasena() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=recuperar_contrasena');
+            exit;
+        }
+
+        $token             = trim($_POST['token'] ?? '');
+        $nueva_contrasena  = $_POST['nueva_contrasena'] ?? '';
+        $confirmar         = $_POST['confirmar_contrasena'] ?? '';
+
+        $url_token = config('app.url_base')
+            . '/?controlador=autenticacion&accion=restablecer_contrasena&token='
+            . urlencode($token);
+
+        if (!$token || !$nueva_contrasena || !$confirmar) {
+            header('Location: ' . $url_token . '&error=' . urlencode('Todos los campos son requeridos.'));
+            exit;
+        }
+
+        if ($nueva_contrasena !== $confirmar) {
+            header('Location: ' . $url_token . '&error=' . urlencode('Las contraseñas no coinciden.'));
+            exit;
+        }
+
+        if (strlen($nueva_contrasena) < 8) {
+            header('Location: ' . $url_token . '&error=' . urlencode('La contraseña debe tener al menos 8 caracteres.'));
+            exit;
+        }
+
+        try {
+            require_once APP_PATH . '/modelos/modelo_usuario.php';
+            $modelo_usuario = new ModeloUsuario();
+            $modelo_usuario->usar_token_reset($token, $nueva_contrasena);
+
+            header('Location: ' . config('app.url_base')
+                . '/?controlador=autenticacion&accion=login&exito='
+                . urlencode('Contraseña actualizada correctamente. Ya puedes iniciar sesión.'));
+
+        } catch (Exception $e) {
+            header('Location: ' . $url_token . '&error=' . urlencode('El enlace expiró o ya fue usado. Solicita uno nuevo.'));
+        }
         exit;
     }
 
