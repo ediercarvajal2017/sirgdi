@@ -1,12 +1,32 @@
 <?php
 // Configuración global de SIRGDI
-// Cargar variables de entorno desde .env (si existe)
-if (file_exists(dirname(__DIR__) . '/.env')) {
-    $env_vars = parse_ini_file(dirname(__DIR__) . '/.env');
-    foreach ($env_vars as $key => $value) {
-        putenv("$key=$value");
+
+// Cargar variables de entorno desde .env
+// parse_ini_file en PHP 7+ no reconoce # como comentario y falla silenciosamente;
+// usamos un parser propio que los maneja correctamente.
+function _cargar_env($archivo) {
+    if (!file_exists($archivo)) return;
+    $lineas = file($archivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lineas === false) return;
+    foreach ($lineas as $linea) {
+        $linea = trim($linea);
+        if ($linea === '' || $linea[0] === '#' || $linea[0] === ';') continue;
+        if (strpos($linea, '=') === false) continue;
+        [$clave, $valor] = explode('=', $linea, 2);
+        $clave = trim($clave);
+        $valor = trim($valor);
+        // Eliminar comillas envolventes si existen
+        if (strlen($valor) >= 2) {
+            $q = $valor[0];
+            if (($q === '"' || $q === "'") && substr($valor, -1) === $q) {
+                $valor = substr($valor, 1, -1);
+            }
+        }
+        putenv("$clave=$valor");
+        $_ENV[$clave] = $valor;
     }
 }
+_cargar_env(dirname(__DIR__) . '/.env');
 
 // Definir constantes de rutas (antes de cargar constantes.php)
 define('ROOT_PATH', dirname(dirname(__FILE__)));
