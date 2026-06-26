@@ -42,9 +42,6 @@ verificar_admin.php
 verificar_bd.php
 backfill_*.php
 
-# --- Dependencias Composer (regenerar con: composer install) ---
-vendor/
-
 # --- Sistema / editor ---
 .DS_Store
 Thumbs.db
