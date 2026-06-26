@@ -136,11 +136,13 @@ class ModeloUsuario {
         // Generar token seguro
         $token = bin2hex(random_bytes(32));
 
-        // Guardar token con expiration (1 hora)
-        $this->actualizar($id_usuario, $id_institucion, [
-            'token_reset_pass' => $token,
-            'token_reset_expira' => date('Y-m-d H:i:s', time() + 3600),
-        ]);
+        // Usar DATE_ADD(NOW(), INTERVAL 1 HOUR) en MySQL para evitar
+        // desfase cuando PHP (America/Bogota) y MySQL (UTC) difieren.
+        $this->bd->ejecutar(
+            'UPDATE usuario SET token_reset_pass = ?, token_reset_expira = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+             WHERE id_usuario = ? AND id_institucion = ?',
+            [$token, $id_usuario, $id_institucion]
+        );
 
         return $token;
     }
