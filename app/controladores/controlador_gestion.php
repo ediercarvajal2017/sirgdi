@@ -232,7 +232,6 @@ class ControladorGestion {
                 }
             }
 
-            $_SESSION['exito'] = 'Reporte eliminado correctamente.';
             header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&exito=1');
             exit;
 
@@ -422,6 +421,7 @@ class ControladorGestion {
     <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_formularios_modernos.css">
     <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_profesionales.css">
     <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_base.css">
+    <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_toasts.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { font-size: 16px; }
@@ -437,6 +437,21 @@ class ControladorGestion {
     </main>
     <?php if (isset($_SESSION['id_usuario'])): require_once APP_PATH . '/vistas/comunes/vista_footer.php'; endif; ?>
     <script src="<?php echo config('app.url_base'); ?>/js/script_base.js"></script>
+    <script src="<?php echo config('app.url_base'); ?>/js/toast.js"></script>
+    <?php if (!empty($_SESSION['exito'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        toast.success('¡Éxito!', '<?php echo addslashes(htmlspecialchars($_SESSION['exito'])); ?>', 5000);
+    });
+    </script>
+    <?php unset($_SESSION['exito']); endif; ?>
+    <?php if (!empty($_SESSION['error'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        toast.error('Error', '<?php echo addslashes(htmlspecialchars($_SESSION['error'])); ?>', 6000);
+    });
+    </script>
+    <?php unset($_SESSION['error']); endif; ?>
 </body>
 </html><?php
         echo ob_get_clean();
