@@ -29,9 +29,10 @@ INSERT INTO estado (id_estado, nombre, descripcion, es_terminal) VALUES
 
 -- Etapas de evidencia fotográfica (RF-18, RN-03)
 INSERT INTO etapa_evidencia (id_etapa, nombre, orden) VALUES
-(1, 'Antes',   1),
-(2, 'Durante', 2),
-(3, 'Después', 3);
+(1, 'Antes',      1),
+(2, 'Durante',    2),
+(3, 'Después',    3),
+(4, 'Reportante', 4);
 
 -- Roles del sistema (sección 1.1 del ERS)
 INSERT INTO rol (id_rol, nombre_rol, descripcion) VALUES
@@ -270,7 +271,7 @@ INSERT INTO usuario_rol (id_usuario, id_rol, id_institucion) VALUES
 -- Registros insertados:
 --   urgencia:          4 filas
 --   estado:            8 filas
---   etapa_evidencia:   3 filas
+--   etapa_evidencia:   4 filas
 --   rol:               6 filas
 --   permiso:          23 filas
 --   rol_permiso:      ~55 filas (calculado por SELECT)
