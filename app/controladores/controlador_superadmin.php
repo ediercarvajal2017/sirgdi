@@ -613,6 +613,150 @@ class ControladorSuperadmin {
         }
     }
 
+    // ===== TÉCNICOS EXTERNOS =====
+
+    /**
+     * Panel para gestionar vínculos técnico ↔ institución educativa.
+     */
+    public function gestionar_tecnicos() {
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_INSTITUCIONES);
+
+        require_once LIB_PATH . '/basedatos.php';
+        require_once LIB_PATH . '/validacion.php';
+        $bd = BaseDatos::obtener();
+
+        // Técnicos externos con sus vínculos activos
+        $sql = "SELECT
+                    u.id_usuario, u.nombre_completo, u.correo_electronico,
+                    emp.nombre AS empresa, emp.id_institucion AS id_empresa,
+                    ti.id_institucion AS id_inst_vinculada,
+                    ie.nombre AS nombre_inst_vinculada,
+                    ti.fecha_vinculacion
+                FROM usuario u
+                JOIN institucion emp ON emp.id_institucion = u.id_institucion
+                    AND emp.tipo = 'empresa_mantenimiento'
+                JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                    AND ur.id_institucion = u.id_institucion
+                JOIN rol r ON r.id_rol = ur.id_rol AND r.nombre_rol = 'tecnico'
+                LEFT JOIN tecnico_institucion ti ON ti.id_usuario = u.id_usuario AND ti.activo = 1
+                LEFT JOIN institucion ie ON ie.id_institucion = ti.id_institucion
+                WHERE u.activo = 1
+                ORDER BY emp.nombre ASC, u.nombre_completo ASC, ie.nombre ASC";
+
+        $rows = $bd->obtener_todos($sql) ?? [];
+
+        // Agrupar por técnico
+        $tecnicos = [];
+        foreach ($rows as $row) {
+            $id = $row['id_usuario'];
+            if (!isset($tecnicos[$id])) {
+                $tecnicos[$id] = [
+                    'id_usuario'        => $id,
+                    'nombre_completo'   => $row['nombre_completo'],
+                    'correo_electronico'=> $row['correo_electronico'],
+                    'empresa'           => $row['empresa'],
+                    'id_empresa'        => $row['id_empresa'],
+                    'instituciones'     => [],
+                ];
+            }
+            if ($row['id_inst_vinculada']) {
+                $tecnicos[$id]['instituciones'][] = [
+                    'id_institucion'   => $row['id_inst_vinculada'],
+                    'nombre'           => $row['nombre_inst_vinculada'],
+                    'fecha_vinculacion'=> $row['fecha_vinculacion'],
+                ];
+            }
+        }
+
+        // Instituciones educativas disponibles para vincular
+        $instituciones_educativas = $bd->obtener_todos(
+            "SELECT id_institucion, nombre FROM institucion
+             WHERE tipo = 'educativa' AND es_activa = 1 ORDER BY nombre ASC"
+        ) ?? [];
+
+        $datos = [
+            'titulo'                  => 'Técnicos Externos - SIRGDI',
+            'tecnicos'                => array_values($tecnicos),
+            'instituciones_educativas'=> $instituciones_educativas,
+            'csrf_token'              => Validacion::generar_csrf_token(),
+        ];
+
+        $this->renderizar_vista('superadmin/vista_gestionar_tecnicos', $datos);
+    }
+
+    /**
+     * Vincular un técnico a una institución educativa (POST).
+     */
+    public function vincular_tecnico() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=gestionar_tecnicos');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_INSTITUCIONES);
+
+        $id_usuario     = intval($_POST['id_usuario']     ?? 0);
+        $id_institucion = intval($_POST['id_institucion'] ?? 0);
+
+        try {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token CSRF inválido.');
+            }
+            if (!$id_usuario || !$id_institucion) {
+                throw new Exception('Técnico e institución son requeridos.');
+            }
+
+            require_once APP_PATH . '/modelos/modelo_usuario.php';
+            $modelo = new ModeloUsuario();
+            $modelo->vincular_tecnico_institucion($id_usuario, $id_institucion, $_SESSION['id_usuario']);
+
+            $_SESSION['exito'] = 'Técnico vinculado correctamente a la institución.';
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=gestionar_tecnicos');
+        exit;
+    }
+
+    /**
+     * Desvincular un técnico de una institución educativa (POST).
+     */
+    public function desvincular_tecnico() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=gestionar_tecnicos');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_INSTITUCIONES);
+
+        $id_usuario     = intval($_POST['id_usuario']     ?? 0);
+        $id_institucion = intval($_POST['id_institucion'] ?? 0);
+
+        try {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token CSRF inválido.');
+            }
+            if (!$id_usuario || !$id_institucion) {
+                throw new Exception('Técnico e institución son requeridos.');
+            }
+
+            require_once APP_PATH . '/modelos/modelo_usuario.php';
+            $modelo = new ModeloUsuario();
+            $modelo->desvincular_tecnico_institucion($id_usuario, $id_institucion);
+
+            $_SESSION['exito'] = 'Técnico desvinculado correctamente.';
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=gestionar_tecnicos');
+        exit;
+    }
+
     // ===== HELPERS =====
 
     /**

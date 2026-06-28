@@ -11,6 +11,9 @@
         <a href="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=crear_institucion" class="btn-modern btn-primary-modern">
             <i class="fas fa-plus-circle"></i> Crear Nueva Institución
         </a>
+        <a href="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=gestionar_tecnicos" class="btn-modern btn-tecnicos-modern">
+            <i class="fas fa-user-cog"></i> Técnicos Externos
+        </a>
     </div>
 
     <?php if (!empty($cred_admin)): ?>
@@ -173,6 +176,16 @@ function copiarCredAdmin() {
     .btn-primary-modern:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-tecnicos-modern {
+        background: linear-gradient(135deg, #8E44AD 0%, #7D3C98 100%);
+        color: white;
+    }
+
+    .btn-tecnicos-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(142, 68, 173, 0.3);
     }
 
     .institutions-list {
