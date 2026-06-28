@@ -533,6 +533,24 @@ function cambiarCamara() {
 // Cerrar con Escape
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarCamara(); });
 
+// ─── Overlay de carga al subir foto ──────────────────────────────────────────
+['antes', 'durante', 'despues'].forEach(function(clave) {
+    var form = document.getElementById('form-' + clave);
+    if (!form) return;
+    form.addEventListener('submit', function() {
+        var labels = { antes: 'Antes', durante: 'Durante', despues: 'Después' };
+        var overlay = document.getElementById('overlay-ev-carga');
+        document.getElementById('overlay-ev-etapa').textContent =
+            'Subiendo foto de etapa "' + labels[clave] + '"…';
+        overlay.style.display = 'flex';
+    });
+});
+
+window.addEventListener('pageshow', function() {
+    var overlay = document.getElementById('overlay-ev-carga');
+    if (overlay) overlay.style.display = 'none';
+});
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function mostrarError(msg) {
     const el = document.getElementById('cam-error');
@@ -556,3 +574,30 @@ function mensajeErrorCamara(err) {
     return 'No se pudo acceder a la cámara: ' + err.message;
 }
 </script>
+
+<!-- Overlay de carga al subir evidencia -->
+<div id="overlay-ev-carga" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75);
+     z-index:99999; flex-direction:column; align-items:center; justify-content:center;
+     backdrop-filter:blur(3px);">
+    <div style="background:#fff; border-radius:18px; padding:36px 44px; text-align:center;
+                box-shadow:0 24px 60px rgba(0,0,0,.25); max-width:300px; width:90%;">
+        <div style="margin:0 auto 20px; width:56px; height:56px; border-radius:50%;
+                    border:5px solid #E8F4FD; border-top-color:#3498DB;
+                    animation:spin-ev 0.8s linear infinite;"></div>
+        <p style="font-size:16px; font-weight:700; color:#2C3E50; margin:0 0 8px;">
+            Subiendo foto…
+        </p>
+        <p id="overlay-ev-etapa" style="font-size:13px; color:#7F8C8D; margin:0 0 18px; line-height:1.5;"></p>
+        <div style="height:4px; background:#E8EDEF; border-radius:4px; overflow:hidden;">
+            <div style="height:100%; background:linear-gradient(90deg,#3498DB,#2ECC71,#3498DB);
+                        background-size:200% 100%; animation:progress-ev 1.5s linear infinite;
+                        border-radius:4px;"></div>
+        </div>
+        <p style="font-size:11px; color:#BDC3C7; margin:10px 0 0;">Por favor, no cierres esta ventana</p>
+    </div>
+</div>
+
+<style>
+@keyframes spin-ev     { to { transform: rotate(360deg); } }
+@keyframes progress-ev { 0% { background-position:100% 0; } 100% { background-position:-100% 0; } }
+</style>
