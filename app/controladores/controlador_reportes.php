@@ -73,6 +73,13 @@ class ControladorReportes {
             exit;
         }
 
+        // Detectar cuando PHP descartó el POST por superar post_max_size
+        // (en ese caso $_POST queda vacío aunque el formulario venía lleno)
+        if (!empty($_SERVER['CONTENT_LENGTH']) && empty($_POST)) {
+            $this->redirigir_crear('Las imágenes adjuntas son demasiado grandes. Usa menos fotos o reduce su tamaño (máx. 5 MB por foto, máx. 5 fotos).', 'error');
+            exit;
+        }
+
         // Requerir autenticación
         $this->auth->requerir_autenticacion();
 
@@ -139,7 +146,8 @@ class ControladorReportes {
             );
 
             // Redirigir a detalle del reporte creado
-            header('Location: ' . config('app.url_base') . '/?controlador=reportes&accion=detalle&id=' . $id_reporte . '&exito=1');
+            $_SESSION['exito'] = 'Reporte creado correctamente. Ticket: ' . htmlspecialchars($reporte['numero_ticket']);
+            header('Location: ' . config('app.url_base') . '/?controlador=reportes&accion=detalle&id=' . $id_reporte);
             exit;
 
         } catch (Exception $e) {
@@ -644,6 +652,7 @@ class ControladorReportes {
     <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_formularios_modernos.css">
     <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_profesionales.css">
     <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_base.css">
+    <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_toasts.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { font-size: 16px; }
@@ -659,6 +668,21 @@ class ControladorReportes {
     </main>
     <?php if (isset($_SESSION['id_usuario'])): require_once APP_PATH . '/vistas/comunes/vista_footer.php'; endif; ?>
     <script src="<?php echo config('app.url_base'); ?>/js/script_base.js"></script>
+    <script src="<?php echo config('app.url_base'); ?>/js/toast.js"></script>
+    <?php if (!empty($_SESSION['exito'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        toast.success('¡Éxito!', '<?php echo addslashes(htmlspecialchars($_SESSION['exito'])); ?>', 5000);
+    });
+    </script>
+    <?php unset($_SESSION['exito']); endif; ?>
+    <?php if (!empty($_SESSION['error'])): ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        toast.error('Error', '<?php echo addslashes(htmlspecialchars($_SESSION['error'])); ?>', 6000);
+    });
+    </script>
+    <?php unset($_SESSION['error']); endif; ?>
 </body>
 </html><?php
         echo ob_get_clean();

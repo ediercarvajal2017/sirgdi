@@ -1,6 +1,11 @@
 # SIRGDI v2.0 - URL Rewriting (.htaccess)
 # Reescribir todas las requests al index.php (front controller)
 
+# Límites de subida de archivos (evidencias: hasta 5 fotos × 5MB + video 50MB)
+php_value upload_max_filesize 20M
+php_value post_max_size 30M
+php_value max_file_uploads 10
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
