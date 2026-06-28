@@ -1111,8 +1111,35 @@ document.getElementById('form-crear-reporte').addEventListener('submit', functio
     if (desc.length < 10) {
         e.preventDefault();
         mostrarAlerta('La descripción debe tener al menos 10 caracteres.');
+        return;
     }
+
+    const tieneArchivos = fotosSeleccionadas.length > 0 || videoSeleccionado !== null;
+    mostrarOverlayCarga(tieneArchivos);
 });
+
+// ─── OVERLAY DE CARGA ────────────────────────────────────────────────────────
+function mostrarOverlayCarga(tieneArchivos) {
+    const overlay = document.getElementById('overlay-carga');
+    const msg     = document.getElementById('overlay-carga-msg');
+
+    if (tieneArchivos) {
+        const total = fotosSeleccionadas.length + (videoSeleccionado ? 1 : 0);
+        msg.textContent = 'Subiendo ' + total + ' archivo' + (total > 1 ? 's' : '') + '… Esto puede tomar unos segundos.';
+    } else {
+        msg.textContent = 'Guardando reporte…';
+    }
+
+    overlay.style.display = 'flex';
+
+    // Animar el contador de puntos (···)
+    let dots = 0;
+    const label = document.getElementById('overlay-carga-label');
+    setInterval(() => {
+        dots = (dots + 1) % 4;
+        label.textContent = 'Guardando reporte' + '.'.repeat(dots);
+    }, 500);
+}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function mostrarAlerta(msg) {
@@ -1140,4 +1167,45 @@ function mensajeErrorCamara(err) {
     if (err.name === 'NotReadableError') return 'La cámara está siendo usada por otra aplicación.';
     return 'No se pudo acceder a la cámara: ' + err.message;
 }
+
+// Ocultar overlay si el usuario presiona Atrás (regresa a la página con el formulario)
+window.addEventListener('pageshow', () => {
+    const overlay = document.getElementById('overlay-carga');
+    if (overlay) overlay.style.display = 'none';
+});
 </script>
+
+<!-- Overlay de carga al enviar el formulario -->
+<div id="overlay-carga" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:99999;
+     flex-direction:column; align-items:center; justify-content:center; gap:20px; backdrop-filter:blur(3px);">
+    <div style="background:#fff; border-radius:18px; padding:36px 44px; text-align:center;
+                box-shadow:0 24px 60px rgba(0,0,0,.25); max-width:320px; width:90%;">
+        <!-- Spinner -->
+        <div style="margin:0 auto 20px; width:56px; height:56px; border-radius:50%;
+                    border:5px solid #E8F4FD; border-top-color:#3498DB;
+                    animation:spin-overlay 0.8s linear infinite;"></div>
+        <!-- Título animado -->
+        <p id="overlay-carga-label" style="font-size:16px; font-weight:700; color:#2C3E50; margin:0 0 8px;">
+            Guardando reporte...
+        </p>
+        <!-- Mensaje dinámico (archivos) -->
+        <p id="overlay-carga-msg" style="font-size:13px; color:#7F8C8D; margin:0; line-height:1.5;"></p>
+        <!-- Barra de progreso indeterminada -->
+        <div style="margin-top:18px; height:4px; background:#E8EDEF; border-radius:4px; overflow:hidden;">
+            <div style="height:100%; background:linear-gradient(90deg,#3498DB,#2ECC71,#3498DB);
+                        background-size:200% 100%; animation:progress-slide 1.5s linear infinite;
+                        border-radius:4px;"></div>
+        </div>
+        <p style="font-size:11px; color:#BDC3C7; margin:10px 0 0;">Por favor, no cierres esta ventana</p>
+    </div>
+</div>
+
+<style>
+@keyframes spin-overlay {
+    to { transform: rotate(360deg); }
+}
+@keyframes progress-slide {
+    0%   { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+</style>
