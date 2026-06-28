@@ -74,6 +74,12 @@ class ControladorAutenticacion {
             exit;
         }
 
+        // Si el técnico externo tiene múltiples instituciones, elegir primero
+        if ($resultado['requiere_seleccion_institucion'] ?? false) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion');
+            exit;
+        }
+
         // Login exitoso, redirigir al dashboard
         header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
         exit;
@@ -123,6 +129,12 @@ class ControladorAutenticacion {
 
         if (!$resultado['exito']) {
             $this->redirigir_2fa(urlencode($resultado['mensaje']));
+            exit;
+        }
+
+        // Si el técnico externo tiene múltiples instituciones, elegir primero
+        if ($resultado['requiere_seleccion_institucion'] ?? false) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion');
             exit;
         }
 
@@ -390,6 +402,102 @@ class ControladorAutenticacion {
         ];
 
         $this->renderizar_vista('autenticacion/vista_inicio', $datos);
+    }
+
+    /**
+     * Selector de institución para técnicos externos con múltiples vínculos (GET)
+     */
+    public function seleccionar_institucion() {
+        // Debe estar autenticado (sesión válida) pero aún con pendiente
+        if (!$this->auth->validar_sesion_vigente()) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=login');
+            exit;
+        }
+
+        if (empty($_SESSION['pendiente_seleccion_institucion'])) {
+            // Ya seleccionó o no necesita selector
+            header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+            exit;
+        }
+
+        $csrf_token = Validacion::generar_csrf_token();
+
+        $datos = [
+            'titulo'       => 'Seleccionar Institución - SIRGDI',
+            'csrf_token'   => $csrf_token,
+            'instituciones' => $_SESSION['instituciones_disponibles'] ?? [],
+            'error'        => $_GET['error'] ?? null,
+        ];
+
+        $this->renderizar_vista('autenticacion/vista_seleccionar_institucion', $datos);
+    }
+
+    /**
+     * Procesar selección de institución (POST)
+     */
+    public function procesar_seleccion_institucion() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion');
+            exit;
+        }
+
+        if (!$this->auth->validar_sesion_vigente()) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=login');
+            exit;
+        }
+
+        $id_institucion = intval($_POST['id_institucion'] ?? 0);
+
+        if (!$id_institucion || !$this->auth->seleccionar_institucion($id_institucion)) {
+            $url = config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion'
+                 . '&error=' . urlencode('Selección inválida. Elige una institución de la lista.');
+            header('Location: ' . $url);
+            exit;
+        }
+
+        header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+        exit;
+    }
+
+    /**
+     * Cambiar institución activa (técnicos con múltiples vínculos) — POST desde el header
+     */
+    public function cambiar_institucion() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+
+        // Solo disponible para técnicos externos (tienen id_institucion_propia)
+        if (empty($_SESSION['id_institucion_propia'])) {
+            header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+            exit;
+        }
+
+        $id_nuevo = intval($_POST['id_institucion'] ?? 0);
+        if (!$id_nuevo) {
+            header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+            exit;
+        }
+
+        // Verificar que la institución elegida sea un vínculo válido del técnico
+        $instituciones = $this->modelo_usuario->obtener_instituciones_tecnico($_SESSION['id_usuario']);
+        $ids_validos = array_column($instituciones, 'id_institucion');
+
+        if (!in_array($id_nuevo, $ids_validos)) {
+            header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+            exit;
+        }
+
+        // Reactivar selector temporal y usar seleccionar_institucion del servicio
+        $_SESSION['pendiente_seleccion_institucion'] = true;
+        $_SESSION['instituciones_disponibles']       = $instituciones;
+        $this->auth->seleccionar_institucion($id_nuevo);
+
+        header('Location: ' . config('app.url_base') . '/?controlador=dashboard&accion=inicio');
+        exit;
     }
 
     // ===== HELPERS =====

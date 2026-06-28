@@ -90,6 +90,8 @@ CREATE TABLE IF NOT EXISTS rol_permiso (
 CREATE TABLE IF NOT EXISTS institucion (
     id_institucion          BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     nombre                  VARCHAR(150)        NOT NULL,
+    tipo                    ENUM('educativa','empresa_mantenimiento') NOT NULL DEFAULT 'educativa'
+                            COMMENT 'educativa=colegio/universidad, empresa_mantenimiento=empresa técnica externa',
     codigo_dane             VARCHAR(13)         NOT NULL DEFAULT '',
     logo_ruta               VARCHAR(500)        NULL,
     es_activa               TINYINT(1)          NOT NULL DEFAULT 1,
@@ -173,6 +175,24 @@ CREATE TABLE IF NOT EXISTS usuario_rol (
     CONSTRAINT fk_ur_inst    FOREIGN KEY (id_institucion) REFERENCES institucion(id_institucion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Tabla intermedia usuario↔rol con contexto de institución';
+
+-- 3.3 Vinculación técnico ↔ institución educativa (M:M cross-tenant)
+-- Solo aplica a usuarios con rol 'tecnico' de una 'empresa_mantenimiento'.
+CREATE TABLE IF NOT EXISTS tecnico_institucion (
+    id_tecnico_inst     BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    id_usuario          BIGINT UNSIGNED     NOT NULL COMMENT 'Técnico (pertenece a empresa_mantenimiento)',
+    id_institucion      BIGINT UNSIGNED     NOT NULL COMMENT 'Institución educativa que puede atender',
+    activo              TINYINT(1)          NOT NULL DEFAULT 1,
+    fecha_vinculacion   DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id_asignado_por     BIGINT UNSIGNED     NULL     COMMENT 'Superadmin que autorizó el vínculo',
+    PRIMARY KEY (id_tecnico_inst),
+    UNIQUE KEY uk_tec_inst (id_usuario, id_institucion),
+    CONSTRAINT fk_ti_usr    FOREIGN KEY (id_usuario)      REFERENCES usuario(id_usuario)      ON DELETE CASCADE,
+    CONSTRAINT fk_ti_inst   FOREIGN KEY (id_institucion)  REFERENCES institucion(id_institucion),
+    CONSTRAINT fk_ti_quien  FOREIGN KEY (id_asignado_por) REFERENCES usuario(id_usuario),
+    INDEX idx_ti_inst (id_institucion)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Técnicos externos (empresa) vinculados a instituciones educativas que pueden atender';
 
 -- ============================================================
 -- BLOQUE 4: ESTRUCTURA DE UBICACIÓN (Sede → Área → Sub-área)

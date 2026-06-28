@@ -51,14 +51,16 @@ class ServicioAutenticacion {
 
     /**
      * Intentar login con email y contraseña
-     * Retorna ['éxito' => bool, 'mensaje' => string, 'requiere_2fa' => bool]
+     * Retorna ['exito' => bool, 'mensaje' => string, 'requiere_2fa' => bool,
+     *          'requiere_seleccion_institucion' => bool]
      */
     public function intentar_login($email, $contrasena, $id_institucion = null) {
         $resultado = [
-            'exito' => false,
-            'mensaje' => '',
-            'requiere_2fa' => false,
-            'id_usuario' => null,
+            'exito'                          => false,
+            'mensaje'                        => '',
+            'requiere_2fa'                   => false,
+            'requiere_seleccion_institucion' => false,
+            'id_usuario'                     => null,
         ];
 
         // Validar entrada
@@ -124,9 +126,13 @@ class ServicioAutenticacion {
         // Login exitoso (sin 2FA): limpiar rate limit
         $this->limpiar_rate_limit($email);
         $this->crear_sesion($usuario);
-        $resultado['exito'] = true;
+        $resultado['exito']      = true;
         $resultado['id_usuario'] = $usuario['id_usuario'];
-        $resultado['mensaje'] = 'Login exitoso.';
+        $resultado['mensaje']    = 'Login exitoso.';
+
+        if (!empty($_SESSION['pendiente_seleccion_institucion'])) {
+            $resultado['requiere_seleccion_institucion'] = true;
+        }
 
         return $resultado;
     }
@@ -189,8 +195,13 @@ class ServicioAutenticacion {
         unset($_SESSION['codigo_2fa_temporal']);
         unset($_SESSION['fecha_expiracion_2fa']);
 
-        $resultado['exito'] = true;
+        $resultado['exito']   = true;
         $resultado['mensaje'] = 'Login 2FA exitoso.';
+
+        if (!empty($_SESSION['pendiente_seleccion_institucion'])) {
+            $resultado['requiere_seleccion_institucion'] = true;
+        }
+
         return $resultado;
     }
 
@@ -199,15 +210,15 @@ class ServicioAutenticacion {
      */
     private function crear_sesion($usuario) {
         // Session security (RNF-05)
-        $_SESSION['id_usuario'] = $usuario['id_usuario'];
-        $_SESSION['id_institucion'] = $usuario['id_institucion'];
-        $_SESSION['correo'] = $usuario['correo_electronico'];
+        $_SESSION['id_usuario']      = $usuario['id_usuario'];
+        $_SESSION['id_institucion']  = $usuario['id_institucion']; // institución "propia" (empresa o colegio)
+        $_SESSION['correo']          = $usuario['correo_electronico'];
         $_SESSION['nombre_completo'] = $usuario['nombre_completo'];
-        $_SESSION['email'] = $usuario['correo_electronico'];
+        $_SESSION['email']           = $usuario['correo_electronico'];
 
         // Timestamps para session timeout
-        $_SESSION['fecha_login'] = time(); // Absolute timeout
-        $_SESSION['ultima_actividad'] = time(); // Inactivity timeout
+        $_SESSION['fecha_login']      = time();
+        $_SESSION['ultima_actividad'] = time();
 
         // User agent para validación adicional
         $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
@@ -215,15 +226,36 @@ class ServicioAutenticacion {
         // Regenerar ID de sesión (prevenir session fixation - OWASP)
         session_regenerate_id(true);
 
-        // Cargar permisos en sesión (después de regenerar)
-        require_once APP_PATH . '/servicios/servicio_autorizacion.php';
-        $autorizacion = new ServicioAutorizacion($usuario['id_usuario'], $usuario['id_institucion']);
-        $_SESSION['permisos'] = $autorizacion->obtener_permisos();
-
-        // Cargar rol(es) para mostrarlos en la cabecera (consistente en todas las vistas)
+        // Cargar rol(es)
         $roles_usuario = $this->modelo_usuario->obtener_roles($usuario['id_usuario'], $usuario['id_institucion']);
         $nombres_roles = array_map(function ($r) { return $r['nombre_rol']; }, $roles_usuario);
         $_SESSION['rol'] = !empty($nombres_roles) ? implode(' · ', $nombres_roles) : 'Usuario';
+
+        // ── Técnico externo: detectar si pertenece a empresa_mantenimiento ──
+        $es_tecnico = in_array('tecnico', $nombres_roles);
+        if ($es_tecnico && $this->modelo_usuario->es_empresa_mantenimiento($usuario['id_institucion'])) {
+            $instituciones = $this->modelo_usuario->obtener_instituciones_tecnico($usuario['id_usuario']);
+            if (!empty($instituciones)) {
+                $_SESSION['id_institucion_propia'] = $usuario['id_institucion'];
+
+                if (count($instituciones) === 1) {
+                    // Auto-seleccionar la única institución vinculada
+                    $_SESSION['id_institucion']             = $instituciones[0]['id_institucion'];
+                    $_SESSION['nombre_institucion_trabajo'] = $instituciones[0]['nombre'];
+                } else {
+                    // Necesita elegir manualmente
+                    $_SESSION['instituciones_disponibles']       = $instituciones;
+                    $_SESSION['pendiente_seleccion_institucion'] = true;
+                }
+            }
+            // Si no hay instituciones vinculadas aún, el técnico opera solo dentro de su empresa
+        }
+
+        // Cargar permisos usando el id_institucion de trabajo final
+        require_once APP_PATH . '/servicios/servicio_autorizacion.php';
+        $id_inst_trabajo = $_SESSION['id_institucion'];
+        $autorizacion = new ServicioAutorizacion($usuario['id_usuario'], $id_inst_trabajo);
+        $_SESSION['permisos'] = $autorizacion->obtener_permisos();
 
         // Actualizar última actividad en BD
         $this->modelo_usuario->actualizar_ultima_actividad($usuario['id_usuario'], $usuario['id_institucion']);
@@ -233,6 +265,45 @@ class ServicioAutenticacion {
 
         // Generar CSRF token
         Validacion::generar_csrf_token();
+    }
+
+    /**
+     * Confirmar la institución de trabajo para técnicos con múltiples vínculos.
+     * Retorna true si la selección fue válida, false si no.
+     */
+    public function seleccionar_institucion($id_institucion) {
+        if (empty($_SESSION['pendiente_seleccion_institucion'])) {
+            return false;
+        }
+
+        $disponibles = $_SESSION['instituciones_disponibles'] ?? [];
+        $ids_validos = array_column($disponibles, 'id_institucion');
+
+        if (!in_array($id_institucion, $ids_validos)) {
+            return false;
+        }
+
+        // Confirmar contexto de trabajo
+        $_SESSION['id_institucion'] = $id_institucion;
+        $nombre_inst = '';
+        foreach ($disponibles as $inst) {
+            if ((int)$inst['id_institucion'] === (int)$id_institucion) {
+                $nombre_inst = $inst['nombre'];
+                break;
+            }
+        }
+        $_SESSION['nombre_institucion_trabajo'] = $nombre_inst;
+
+        // Limpiar datos temporales del selector
+        unset($_SESSION['pendiente_seleccion_institucion']);
+        unset($_SESSION['instituciones_disponibles']);
+
+        // Recargar permisos para la institución seleccionada
+        require_once APP_PATH . '/servicios/servicio_autorizacion.php';
+        $autorizacion = new ServicioAutorizacion($_SESSION['id_usuario'], $id_institucion);
+        $_SESSION['permisos'] = $autorizacion->obtener_permisos();
+
+        return true;
     }
 
     /**
@@ -447,11 +518,16 @@ class ServicioAutenticacion {
     }
 
     /**
-     * Requerir autenticación (redirigir a login si no está autenticado)
+     * Requerir autenticación (redirigir a login si no está autenticado).
+     * También redirige al selector de institución si el técnico no ha elegido contexto aún.
      */
     public function requerir_autenticacion() {
         if (!$this->validar_sesion_vigente()) {
             header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=login');
+            exit;
+        }
+        if (!empty($_SESSION['pendiente_seleccion_institucion'])) {
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion');
             exit;
         }
     }

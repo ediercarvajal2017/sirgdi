@@ -118,6 +118,20 @@
                     <i class="fas fa-chevron-down header-user-caret"></i>
                 </button>
                 <ul class="header-user-menu">
+                    <?php if (!empty($_SESSION['id_institucion_propia'])): ?>
+                        <!-- Técnico externo: nombre de la institución activa y switcher -->
+                        <li class="header-user-inst-label">
+                            <i class="fas fa-building"></i>
+                            <?php echo htmlspecialchars($_SESSION['nombre_institucion_trabajo'] ?? 'Institución'); ?>
+                        </li>
+                        <li class="header-user-divider"></li>
+                        <li>
+                            <a href="#" onclick="document.getElementById('switcherModal').style.display='flex'; return false;">
+                                <i class="fas fa-exchange-alt"></i> Cambiar Institución
+                            </a>
+                        </li>
+                        <li class="header-user-divider"></li>
+                    <?php endif; ?>
                     <li><a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=cambiar_contrasena">
                         <i class="fas fa-key"></i> Cambiar Contraseña
                     </a></li>
@@ -327,6 +341,21 @@
         background: #EDF2F4;
         margin: 6px 4px;
     }
+
+    /* Etiqueta de institución activa (técnico externo) */
+    .header-user-inst-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #3498DB;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        pointer-events: none;
+    }
+    .header-user-inst-label i { color: #3498DB; font-size: 13px; }
 
     /* Cerrar Sesión en rojo */
     .header-menu-logout i { color: #E74C3C !important; }
@@ -583,3 +612,66 @@
         }
     });
 </script>
+
+<?php if (!empty($_SESSION['id_institucion_propia'])): ?>
+<!-- Modal: cambiar institución activa para técnicos externos -->
+<div id="switcherModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+     z-index:9000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:32px; max-width:460px; width:90%;
+                box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <h3 style="margin:0 0 6px; font-size:18px; color:#2C3E50;">
+            <i class="fas fa-exchange-alt" style="color:#3498DB;"></i> Cambiar Institución
+        </h3>
+        <p style="margin:0 0 20px; font-size:14px; color:#7F8C8D;">
+            Selecciona la institución en la que vas a trabajar en esta sesión.
+        </p>
+        <form method="POST"
+              action="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=cambiar_institucion">
+            <input type="hidden" name="csrf_token"
+                   value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+            <?php
+                require_once APP_PATH . '/modelos/modelo_usuario.php';
+                $modelo_sw = new ModeloUsuario();
+                $insts_sw  = $modelo_sw->obtener_instituciones_tecnico($_SESSION['id_usuario']);
+            ?>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <?php foreach ($insts_sw as $inst_sw): ?>
+                    <?php $activa = ((int)$inst_sw['id_institucion'] === (int)$_SESSION['id_institucion']); ?>
+                    <label style="display:flex; align-items:center; gap:12px; padding:14px 16px;
+                                  border:2px solid <?php echo $activa ? '#3498DB' : '#E2E8F0'; ?>;
+                                  border-radius:10px; cursor:pointer;
+                                  background:<?php echo $activa ? '#EBF5FB' : '#F8FBFC'; ?>;">
+                        <input type="radio" name="id_institucion"
+                               value="<?php echo (int)$inst_sw['id_institucion']; ?>"
+                               <?php echo $activa ? 'checked' : ''; ?> required
+                               style="accent-color:#3498DB; width:18px; height:18px;">
+                        <div>
+                            <div style="font-weight:600; color:#2C3E50; font-size:14px;">
+                                <?php echo htmlspecialchars($inst_sw['nombre']); ?>
+                            </div>
+                            <?php if ($activa): ?>
+                                <div style="font-size:11px; color:#3498DB; font-weight:600;">
+                                    <i class="fas fa-check-circle"></i> Institución actual
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <button type="button"
+                        onclick="document.getElementById('switcherModal').style.display='none'"
+                        style="padding:10px 20px; border:1px solid #E2E8F0; background:#fff;
+                               border-radius:8px; cursor:pointer; font-size:14px; color:#7F8C8D;">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        style="padding:10px 20px; background:#3498DB; color:#fff; border:none;
+                               border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>

@@ -346,4 +346,103 @@ class ModeloUsuario {
             'activo' => $activo ? 1 : 0,
         ]);
     }
+
+    // ===== TÉCNICO MULTI-INSTITUCIÓN =====
+
+    /**
+     * Obtener instituciones educativas a las que un técnico externo tiene acceso.
+     * Retorna array vacío si el técnico solo opera dentro de su propia institución.
+     */
+    public function obtener_instituciones_tecnico($id_usuario) {
+        $sql = 'SELECT i.id_institucion, i.nombre, i.tipo, ti.activo, ti.fecha_vinculacion
+                FROM tecnico_institucion ti
+                JOIN institucion i ON i.id_institucion = ti.id_institucion
+                WHERE ti.id_usuario = :id_usuario AND ti.activo = 1
+                ORDER BY i.nombre ASC';
+
+        return $this->bd->obtener_todos($sql, [':id_usuario' => $id_usuario]);
+    }
+
+    /**
+     * Listar técnicos disponibles para una institución educativa.
+     * Incluye técnicos propios del colegio Y técnicos externos vinculados mediante tecnico_institucion.
+     */
+    public function obtener_tecnicos_disponibles($id_institucion) {
+        $sql = 'SELECT u.id_usuario, u.nombre_completo, u.correo_electronico, u.telefono,
+                       i.nombre AS empresa,
+                       COUNT(r.id_reporte) AS asignaciones_activas
+                FROM usuario u
+                JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                JOIN rol ro ON ro.id_rol = ur.id_rol AND ro.nombre_rol = \'tecnico\'
+                JOIN institucion i ON i.id_institucion = u.id_institucion
+                WHERE u.activo = 1
+                  AND (
+                    u.id_institucion = :id_inst_propio
+                    OR EXISTS (
+                        SELECT 1 FROM tecnico_institucion ti
+                        WHERE ti.id_usuario = u.id_usuario
+                          AND ti.id_institucion = :id_inst_externo
+                          AND ti.activo = 1
+                    )
+                  )
+                LEFT JOIN reporte r ON r.id_tecnico_asignado = u.id_usuario
+                    AND r.id_institucion = :id_inst_reporte
+                    AND r.id_estado NOT IN (
+                        SELECT id_estado FROM estado WHERE es_terminal = 1
+                    )
+                GROUP BY u.id_usuario
+                ORDER BY asignaciones_activas ASC, u.nombre_completo ASC';
+
+        return $this->bd->obtener_todos($sql, [
+            ':id_inst_propio'   => $id_institucion,
+            ':id_inst_externo'  => $id_institucion,
+            ':id_inst_reporte'  => $id_institucion,
+        ]);
+    }
+
+    /**
+     * Vincular un técnico externo a una institución educativa.
+     */
+    public function vincular_tecnico_institucion($id_usuario, $id_institucion, $id_asignado_por = null) {
+        $existe = $this->bd->existe(
+            'tecnico_institucion',
+            'id_usuario = :u AND id_institucion = :i',
+            [':u' => $id_usuario, ':i' => $id_institucion]
+        );
+
+        if ($existe) {
+            return $this->bd->ejecutar(
+                'UPDATE tecnico_institucion SET activo = 1 WHERE id_usuario = ? AND id_institucion = ?',
+                [$id_usuario, $id_institucion]
+            );
+        }
+
+        return $this->bd->insertar('tecnico_institucion', [
+            'id_usuario'      => $id_usuario,
+            'id_institucion'  => $id_institucion,
+            'activo'          => 1,
+            'id_asignado_por' => $id_asignado_por,
+        ]);
+    }
+
+    /**
+     * Desvincular (desactivar) un técnico externo de una institución educativa.
+     */
+    public function desvincular_tecnico_institucion($id_usuario, $id_institucion) {
+        return $this->bd->ejecutar(
+            'UPDATE tecnico_institucion SET activo = 0 WHERE id_usuario = ? AND id_institucion = ?',
+            [$id_usuario, $id_institucion]
+        );
+    }
+
+    /**
+     * Verificar si el usuario pertenece a una empresa_mantenimiento.
+     */
+    public function es_empresa_mantenimiento($id_institucion) {
+        $inst = $this->bd->obtener_uno(
+            'SELECT tipo FROM institucion WHERE id_institucion = :id',
+            [':id' => $id_institucion]
+        );
+        return $inst && $inst['tipo'] === 'empresa_mantenimiento';
+    }
 }
