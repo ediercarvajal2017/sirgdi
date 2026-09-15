@@ -22,6 +22,20 @@ define('ETAPA_ANTES', 1);
 define('ETAPA_DURANTE', 2);
 define('ETAPA_DESPUES', 3);
 
+// Transiciones de estado válidas del reporte (RN-12): mapa origen => [destinos permitidos].
+// Usado por ModeloReporte::cambiar_estado() para impedir saltos inconsistentes
+// (ej. Registrado -> Cerrado directo, o reabrir un reporte Cerrado).
+define('TRANSICIONES_ESTADO_REPORTE', [
+    1 /* ESTADO_REGISTRADO */    => [2, 3, 8], // -> Asignado, En Proceso, Anulado
+    2 /* ESTADO_ASIGNADO */      => [3, 8],     // -> En Proceso, Anulado
+    3 /* ESTADO_EN_PROCESO */    => [4, 6, 8],  // -> Solucionado, Devuelto, Anulado
+    4 /* ESTADO_SOLUCIONADO */   => [5, 6],     // -> En Validación, Devuelto
+    5 /* ESTADO_EN_VALIDACION */ => [6, 7],     // -> Devuelto, Cerrado
+    6 /* ESTADO_DEVUELTO */      => [3],        // -> En Proceso
+    7 /* ESTADO_CERRADO */       => [],         // terminal
+    8 /* ESTADO_ANULADO */       => [],         // terminal
+]);
+
 // Roles del sistema (6 roles del ERS)
 define('ROL_REPORTANTE', 1);
 define('ROL_TECNICO', 2);

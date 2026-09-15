@@ -41,8 +41,9 @@
             <label for="id_estado_nuevo"><i class="fas fa-arrow-right"></i> Nuevo Estado <span class="required">*</span></label>
             <select name="id_estado_nuevo" id="id_estado_nuevo" class="input-modern input-select" required>
                 <option value="">-- Seleccionar Estado --</option>
+                <?php $destinos_validos = TRANSICIONES_ESTADO_REPORTE[intval($reporte['id_estado'])] ?? []; ?>
                 <?php foreach ($estados as $id_estado => $nombre_estado): ?>
-                    <?php if ($id_estado !== $reporte['id_estado']): ?>
+                    <?php if (in_array($id_estado, $destinos_validos, true)): ?>
                         <option value="<?php echo intval($id_estado); ?>">
                             <?php echo htmlspecialchars($nombre_estado); ?>
                         </option>

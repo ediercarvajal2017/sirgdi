@@ -265,6 +265,12 @@ class ControladorTecnico {
                 throw new Exception('No tienes acceso a esta intervención.');
             }
 
+            // Límite de fotos por etapa (evita subidas ilimitadas por error o abuso)
+            $fotos_en_etapa = $this->modelo_evidencia->contar_por_etapa($intervension['id_reporte'], $id_institucion, $etapa);
+            if ($fotos_en_etapa >= 5) {
+                throw new Exception('Ya se alcanzó el máximo de 5 fotos para esta etapa.');
+            }
+
             // Procesar archivo (RNF-04: compresión automática)
             $resultado_archivo = $this->servicio_archivos->procesar_foto(
                 $_FILES['foto']['tmp_name'],
@@ -360,21 +366,34 @@ class ControladorTecnico {
         $this->auth->requerir_autenticacion();
 
         $id_evidencia = intval($_GET['id'] ?? 0);
-        $id_institucion = intval($_GET['inst'] ?? 0);
+        $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_evidencia) {
             http_response_code(HTTP_BAD_REQUEST);
             die('ID de evidencia requerido.');
         }
 
+        // RN-01: la institución siempre viene de la sesión, nunca de la URL.
         $evidencia = $this->modelo_evidencia->obtener_por_id($id_evidencia, $id_institucion);
         if (!$evidencia) {
             http_response_code(HTTP_NOT_FOUND);
             die('Evidencia no encontrada.');
         }
 
-        // Validar acceso (RN-01: misma institución)
-        if ($evidencia['id_institucion'] != $this->auth->obtener_id_institucion()) {
+        // Validar acceso al reporte asociado (mismo criterio que ControladorReportes::detalle()):
+        // solo el reportante, el técnico asignado, o quien tenga permiso para ver todos los reportes.
+        $reporte = $this->modelo_reporte->obtener_por_id($evidencia['id_reporte'], $id_institucion);
+        if (!$reporte) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Reporte asociado no encontrado.');
+        }
+
+        $id_usuario = $this->auth->obtener_id_usuario();
+        $tiene_acceso = $reporte['id_reportante'] == $id_usuario
+            || $reporte['id_tecnico_asignado'] == $id_usuario
+            || $this->autorizacion->verificar_permiso(PERMISO_VER_TODOS_REPORTES);
+
+        if (!$tiene_acceso) {
             http_response_code(HTTP_FORBIDDEN);
             die('No tienes acceso a este archivo.');
         }
@@ -390,6 +409,7 @@ class ControladorTecnico {
         $mime = $evidencia['tipo_mime'] ?: 'image/jpeg';
 
         header('Content-Type: ' . $mime);
+        header('X-Content-Type-Options: nosniff');
         header('Content-Disposition: ' . $disposition . '; filename="' . basename($ruta) . '"');
         header('Content-Length: ' . filesize($ruta));
         readfile($ruta);

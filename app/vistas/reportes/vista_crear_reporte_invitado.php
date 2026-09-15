@@ -266,8 +266,7 @@ $urgencias = [
     <form method="POST"
           action="<?php echo $base; ?>/?controlador=reportes&accion=procesar_crear_invitado"
           enctype="multipart/form-data"
-          id="form-invitado"
-          novalidate>
+          id="form-invitado">
 
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
         <input type="hidden" name="id_institucion" value="<?php echo intval($id_institucion); ?>">

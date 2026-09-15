@@ -70,7 +70,7 @@ class ControladorAutenticacion {
 
         // Si requiere 2FA, redirigir a pantalla de 2FA
         if ($resultado['requiere_2fa']) {
-            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=2fa');
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=dos_fa');
             exit;
         }
 
@@ -111,7 +111,7 @@ class ControladorAutenticacion {
      */
     public function procesar_2fa() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=2fa');
+            header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=dos_fa');
             exit;
         }
 
@@ -254,6 +254,20 @@ class ControladorAutenticacion {
             $this->redirigir_recuperar_contrasena('Email requerido.', 'error');
             exit;
         }
+
+        // Anti-abuso: máximo 3 solicitudes de recuperación cada 15 minutos por correo,
+        // para evitar bombardeo de la bandeja de entrada de la víctima y agotamiento de SMTP.
+        require_once LIB_PATH . '/limitador_tasa.php';
+        $clave_rate_limit = 'recuperar_contrasena:' . strtolower(trim($email));
+        if (LimitadorTasa::excede_limite($clave_rate_limit, 3, 900)) {
+            // Mensaje genérico idéntico al de éxito: no revela si el correo existe ni si está bloqueado.
+            $this->redirigir_recuperar_contrasena(
+                'Si el correo está registrado, recibirás un enlace en los próximos minutos. Revisa también la carpeta de spam.',
+                'exito'
+            );
+            exit;
+        }
+        LimitadorTasa::registrar($clave_rate_limit, 900);
 
         // Buscar usuario (sin revelar si existe por seguridad)
         require_once APP_PATH . '/modelos/modelo_usuario.php';
@@ -557,7 +571,7 @@ class ControladorAutenticacion {
      * Redirigir a 2FA con error
      */
     private function redirigir_2fa($error_msg = '') {
-        $url = config('app.url_base') . '/?controlador=autenticacion&accion=2fa';
+        $url = config('app.url_base') . '/?controlador=autenticacion&accion=dos_fa';
         if ($error_msg) {
             $url .= '&error=' . $error_msg;
         }

@@ -234,6 +234,19 @@ class ModeloReporte {
             throw new Exception('Reporte no encontrado.');
         }
 
+        $id_estado_actual = intval($reporte['id_estado']);
+        $id_estado_nuevo = intval($id_estado_nuevo);
+
+        // RN-12: validar que la transición sea una de las permitidas (o que el estado no cambie).
+        // Única fuente de verdad: todos los flujos (asignación, intervención, cierre, cambio
+        // manual de estado) pasan por este método, así que la regla se aplica de forma uniforme.
+        if ($id_estado_actual !== $id_estado_nuevo) {
+            $destinos_validos = TRANSICIONES_ESTADO_REPORTE[$id_estado_actual] ?? [];
+            if (!in_array($id_estado_nuevo, $destinos_validos, true)) {
+                throw new Exception('Transición de estado no válida.');
+            }
+        }
+
         // Actualizar estado
         $this->actualizar($id_reporte, $id_institucion, [
             'id_estado' => $id_estado_nuevo,

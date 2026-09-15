@@ -185,8 +185,11 @@ class ControladorAdministrador {
             $instituciones = [];
         }
 
-        // Obtener roles disponibles
-        $roles = $bd->obtener_todos('SELECT id_rol, nombre_rol FROM rol ORDER BY id_rol', []);
+        // Obtener roles disponibles (Superadministrador solo es visible/asignable por un Superadministrador real)
+        $sql_roles = 'SELECT id_rol, nombre_rol FROM rol'
+            . ($es_superadmin ? '' : ' WHERE id_rol <> ' . ROL_SUPERADMIN)
+            . ' ORDER BY id_rol';
+        $roles = $bd->obtener_todos($sql_roles, []);
 
         $exito = isset($_GET['exito']) ? '✅ Usuario procesado correctamente.' : '';
         $error = isset($_GET['error']) ? $_GET['error'] : '';
@@ -277,6 +280,13 @@ class ControladorAdministrador {
                 if ($id_rol <= 0) {
                     $campo_error = 'id_rol';
                     throw new Exception('Debes seleccionar un rol.');
+                }
+
+                // RBAC: solo un Superadministrador real puede otorgar el rol de Superadministrador.
+                // Evita que un Admin de institución se autoasigne (o asigne a terceros) privilegios globales.
+                if ($id_rol === ROL_SUPERADMIN && !$this->autorizacion->es_superadmin()) {
+                    $campo_error = 'id_rol';
+                    throw new Exception('No tienes permiso para asignar el rol de Superadministrador.');
                 }
 
                 // Unicidad GLOBAL de correo y documento (en todo el sistema, no solo en la institución)
@@ -498,6 +508,7 @@ class ControladorAdministrador {
      */
     public function obtener_matriz_permisos_json() {
         $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_ROLES);
 
         $id_rol = intval($_GET['id_rol'] ?? 0);
 

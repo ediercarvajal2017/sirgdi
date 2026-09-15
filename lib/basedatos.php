@@ -103,7 +103,9 @@ class BaseDatos {
      * Retorna id insertado
      */
     public function insertar($tabla, $datos) {
+        $this->validar_identificador($tabla);
         $columnas = array_keys($datos);
+        array_walk($columnas, [$this, 'validar_identificador']);
         $placeholders = array_map(fn($c) => ":$c", $columnas);
 
         $sql = sprintf(
@@ -128,7 +130,10 @@ class BaseDatos {
      * Retorna número de filas afectadas
      */
     public function actualizar($tabla, $datos, $where, $parametros_where = []) {
-        $sets = array_map(fn($c) => "$c = :$c", array_keys($datos));
+        $this->validar_identificador($tabla);
+        $columnas = array_keys($datos);
+        array_walk($columnas, [$this, 'validar_identificador']);
+        $sets = array_map(fn($c) => "$c = :$c", $columnas);
         $sql = sprintf(
             'UPDATE %s SET %s WHERE %s',
             $tabla,
@@ -153,6 +158,7 @@ class BaseDatos {
      * Retorna número de filas afectadas
      */
     public function eliminar($tabla, $where, $parametros = []) {
+        $this->validar_identificador($tabla);
         $sql = "DELETE FROM $tabla WHERE $where";
 
         try {
@@ -186,6 +192,7 @@ class BaseDatos {
      * Contar registros
      */
     public function contar($tabla, $where = '1=1', $parametros = []) {
+        $this->validar_identificador($tabla);
         $sql = "SELECT COUNT(*) as total FROM $tabla WHERE $where";
         return intval($this->obtener_valor($sql, $parametros));
     }
@@ -203,6 +210,20 @@ class BaseDatos {
     public function obtener_columnas($tabla) {
         $sql = "DESCRIBE $tabla";
         return $this->obtener_todos($sql);
+    }
+
+    /**
+     * Validar que un nombre de tabla/columna sea un identificador SQL seguro
+     * antes de interpolarlo en una query. Defensa en profundidad: hoy ningún
+     * llamador pasa claves de $_POST/$_GET sin filtrar como $tabla o columnas de
+     * $datos, pero esta librería es el único punto donde esa interpolación ocurre,
+     * así que se valida aquí para que un futuro llamador descuidado no reintroduzca
+     * una inyección SQL vía nombre de columna/tabla.
+     */
+    private function validar_identificador($nombre) {
+        if (!is_string($nombre) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $nombre)) {
+            throw new Exception('Nombre de tabla o columna no válido: ' . var_export($nombre, true));
+        }
     }
 
     /**

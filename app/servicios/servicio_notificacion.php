@@ -134,7 +134,11 @@ class ServicioNotificacion {
             </p>
             <p style="font-size:13px;color:#6b7280;">Si no solicitaste este cambio, ignora este mensaje. Tu contraseña no será modificada.</p>');
 
-        $this->enviar_email($email, $nombre, $asunto, $cuerpo, null, null, 'reset_password');
+        // No persistir en la tabla notificacion (registrar_bd=false): ese cuerpo lleva el
+        // token de reseteo en texto plano, y registrar_en_bd() atribuye el registro al
+        // usuario de la sesión actual — no necesariamente al dueño del correo destino,
+        // ya que esta acción no requiere estar autenticado. Se envía solo por SMTP.
+        $this->enviar_email($email, $nombre, $asunto, $cuerpo, null, null, 'reset_password', false);
     }
 
     /** Obtener notificaciones pendientes de un usuario (para campana in-app) */
@@ -193,9 +197,11 @@ class ServicioNotificacion {
     }
 
     /** Envía el email por SMTP y registra en la tabla notificacion */
-    private function enviar_email($destino, $nombre_dest, $asunto, $cuerpo_html, $id_institucion, $id_reporte, $tipo_evento) {
-        // Registrar en BD antes de intentar enviar
-        $id_notif = $this->registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento);
+    private function enviar_email($destino, $nombre_dest, $asunto, $cuerpo_html, $id_institucion, $id_reporte, $tipo_evento, $registrar_bd = true) {
+        // Registrar en BD antes de intentar enviar (salvo que el llamador pida lo contrario)
+        $id_notif = $registrar_bd
+            ? $this->registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento)
+            : null;
 
         // Si no hay SMTP configurado, solo loggear
         if (empty($this->smtp['username'])) {

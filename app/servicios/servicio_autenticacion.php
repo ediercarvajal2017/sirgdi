@@ -6,6 +6,12 @@ class ServicioAutenticacion {
     private $modelo_usuario;
     private $encriptacion;
 
+    // Hash bcrypt "señuelo" (no corresponde a ninguna contraseña real): se usa para
+    // ejecutar un password_verify() de costo equivalente cuando el usuario no existe
+    // o está inactivo, así el tiempo de respuesta no revela si un correo está
+    // registrado en el sistema (mitiga enumeración de usuarios por temporización).
+    private const HASH_SENUELO = '$2y$12$vAZ7oa68yA6qzsEKSE1FsuyR23WHhbfe.xCNWtDfpsFjyHyijjA8S';
+
     public function __construct() {
         require_once APP_PATH . '/modelos/modelo_usuario.php';
         require_once LIB_PATH . '/encriptacion.php';
@@ -85,17 +91,16 @@ class ServicioAutenticacion {
 
         // Buscar usuario
         $usuario = $this->modelo_usuario->obtener_por_email($email, $id_institucion);
-        if (!$usuario) {
-            $this->incrementar_rate_limit($email);
-            $this->registrar_intento_fallido($email, 'usuario_no_encontrado');
-            $resultado['mensaje'] = 'Email o contraseña incorrectos.';
-            return $resultado;
-        }
 
-        // Validar que usuario está activo
-        if (!$usuario['activo']) {
-            $this->registrar_intento_fallido($email, 'usuario_inactivo');
-            $resultado['mensaje'] = 'Usuario inactivo. Contacte al administrador.';
+        // Usuario inexistente o inactivo: mismo mensaje genérico que "contraseña
+        // incorrecta" (evita enumeración de correos registrados), y se ejecuta un
+        // password_verify() contra un hash señuelo para igualar el tiempo de
+        // respuesta con el caso de contraseña incorrecta.
+        if (!$usuario || !$usuario['activo']) {
+            password_verify($contrasena, self::HASH_SENUELO);
+            $this->incrementar_rate_limit($email);
+            $this->registrar_intento_fallido($email, !$usuario ? 'usuario_no_encontrado' : 'usuario_inactivo');
+            $resultado['mensaje'] = 'Email o contraseña incorrectos.';
             return $resultado;
         }
 
@@ -165,6 +170,16 @@ class ServicioAutenticacion {
         $id_usuario = $_SESSION['id_usuario_pendiente_2fa'];
         $id_institucion = $_SESSION['id_institucion_pendiente_2fa'];
 
+        // Rate limiting específico de 2FA (independiente del de login): evita que,
+        // con una contraseña ya comprometida, se pueda fuerza-brutear el código TOTP.
+        $clave_rate_limit_2fa = '2fa:' . $id_usuario;
+        $bloqueo = $this->verificar_rate_limit($clave_rate_limit_2fa);
+        if ($bloqueo['bloqueado']) {
+            $minutos = ceil($bloqueo['segundos_restantes'] / 60);
+            $resultado['mensaje'] = "Demasiados intentos fallidos. Espere {$minutos} minuto(s) e intente de nuevo.";
+            return $resultado;
+        }
+
         // Obtener usuario
         $usuario = $this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion);
         if (!$usuario) {
@@ -181,12 +196,14 @@ class ServicioAutenticacion {
 
         // Validar código TOTP (RFC 6238)
         if (!Encriptacion::validar_totp($secreto_totp, $codigo_totp)) {
+            $this->incrementar_rate_limit($clave_rate_limit_2fa);
             $this->registrar_intento_fallido($usuario['correo_electronico'], '2fa_incorrecto');
             $resultado['mensaje'] = 'Código 2FA incorrecto.';
             return $resultado;
         }
 
         // Código correcto, crear sesión
+        $this->limpiar_rate_limit($clave_rate_limit_2fa);
         $this->crear_sesion($usuario);
 
         // Limpiar datos pendientes de 2FA
@@ -340,6 +357,19 @@ class ServicioAutenticacion {
             return false;
         }
 
+        // Re-verificar periódicamente (cada 5 min) que el usuario sigue activo en BD:
+        // si un admin desactiva la cuenta, la sesión ya abierta se corta en poco tiempo
+        // en vez de seguir siendo válida hasta que expire por timeout normal.
+        $ultima_verificacion = $_SESSION['ultima_verificacion_activo'] ?? 0;
+        if (($tiempo_actual - $ultima_verificacion) > 300) {
+            $usuario_actual = $this->modelo_usuario->obtener_por_id($_SESSION['id_usuario'], $_SESSION['id_institucion']);
+            if (!$usuario_actual || !$usuario_actual['activo']) {
+                $this->destruir_sesion('usuario_desactivado');
+                return false;
+            }
+            $_SESSION['ultima_verificacion_activo'] = $tiempo_actual;
+        }
+
         // Actualizar último acceso
         $_SESSION['ultima_actividad'] = $tiempo_actual;
 
@@ -364,6 +394,14 @@ class ServicioAutenticacion {
 
         // Destruir sesión
         $_SESSION = [];
+
+        // Expirar también la cookie en el navegador (higiene; use_strict_mode ya
+        // evita que un ID de sesión no inicializado se reutilice, pero no está de más).
+        if (ini_get('session.use_cookies')) {
+            $parametros = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $parametros['path'], $parametros['domain'], $parametros['secure'], $parametros['httponly']);
+        }
+
         session_destroy();
     }
 

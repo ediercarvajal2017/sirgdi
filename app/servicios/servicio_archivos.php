@@ -170,7 +170,7 @@ class ServicioArchivos {
         $htaccess_ruta = $this->directorio_almacenamiento . '/.htaccess';
         if (!file_exists($htaccess_ruta)) {
             $htaccess_contenido = <<<'EOT'
-<FilesMatch "\.(?:php|phtml|php3|php4|php5|phps)$">
+<FilesMatch "(?i)\.(?:php|phtml|php\d|phps)$">
     Deny from all
 </FilesMatch>
 

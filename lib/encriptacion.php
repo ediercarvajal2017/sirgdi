@@ -16,29 +16,57 @@ class Encriptacion {
     }
 
     /**
-     * Encriptar string con AES-256-CBC
+     * Encriptar string con AES-256-CBC + HMAC-SHA256 (encrypt-then-MAC).
+     * Formato: IV(16) + HMAC(32) + ciphertext, todo en base64.
+     * El HMAC evita ataques de padding oracle / bit-flipping contra el CBC puro.
      */
     public function encriptar($texto) {
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-        $encriptado = openssl_encrypt($texto, 'aes-256-cbc', $this->clave_encriptacion, OPENSSL_RAW_DATA, $iv);
-        // Retornar IV + ciphertext codificado en base64
-        return base64_encode($iv . $encriptado);
+        $ciphertext = openssl_encrypt($texto, 'aes-256-cbc', $this->clave_encriptacion, OPENSSL_RAW_DATA, $iv);
+        $hmac = hash_hmac('sha256', $iv . $ciphertext, $this->clave_hmac(), true);
+        return base64_encode($iv . $hmac . $ciphertext);
     }
 
     /**
-     * Desencriptar string con AES-256-CBC
+     * Desencriptar string cifrado con encriptar().
+     * Compatible hacia atrás con el formato previo (sin HMAC: IV + ciphertext),
+     * para no romper datos ya cifrados antes de agregar la autenticación.
      */
     public function desencriptar($texto_encriptado) {
         $datos = base64_decode($texto_encriptado);
         $iv_len = openssl_cipher_iv_length('aes-256-cbc');
+        $hmac_len = 32;
+
+        // Formato nuevo (autenticado): IV + HMAC + ciphertext
+        if (strlen($datos) > $iv_len + $hmac_len) {
+            $iv = substr($datos, 0, $iv_len);
+            $hmac_recibido = substr($datos, $iv_len, $hmac_len);
+            $ciphertext = substr($datos, $iv_len + $hmac_len);
+            $hmac_calculado = hash_hmac('sha256', $iv . $ciphertext, $this->clave_hmac(), true);
+
+            if (hash_equals($hmac_calculado, $hmac_recibido)) {
+                $desencriptado = openssl_decrypt($ciphertext, 'aes-256-cbc', $this->clave_encriptacion, OPENSSL_RAW_DATA, $iv);
+                if ($desencriptado !== false) {
+                    return $desencriptado;
+                }
+            }
+        }
+
+        // Formato legado (sin HMAC): IV + ciphertext
         $iv = substr($datos, 0, $iv_len);
         $ciphertext = substr($datos, $iv_len);
-
         $desencriptado = openssl_decrypt($ciphertext, 'aes-256-cbc', $this->clave_encriptacion, OPENSSL_RAW_DATA, $iv);
         if ($desencriptado === false) {
             throw new Exception('Decryption failed. Data may be corrupted or key incorrect.');
         }
         return $desencriptado;
+    }
+
+    /**
+     * Clave derivada exclusivamente para HMAC (nunca la misma clave cruda usada en AES).
+     */
+    private function clave_hmac() {
+        return hash('sha256', $this->clave_encriptacion . '|hmac', true);
     }
 
     /**

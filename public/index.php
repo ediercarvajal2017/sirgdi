@@ -28,8 +28,9 @@ if (session_status() === PHP_SESSION_NONE) {
 // Validar CSRF en POST (excepto login/2FA/AJAX)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rutas_sin_csrf = [
-        'autenticacion/login',
-        'autenticacion/2fa',
+        // Nota: 'autenticacion/login' y 'autenticacion/2fa' (accion=login, accion=dos_fa)
+        // son solo renderizado GET del formulario — no procesan $_POST. Los handlers reales
+        // (procesar_login, procesar_2fa) SÍ exigen CSRF y no están en esta lista.
         'autenticacion/recuperar_contrasena',
         'autenticacion/procesar_recuperar_contrasena',
         'autenticacion/procesar_restablecer_contrasena',

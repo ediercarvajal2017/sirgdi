@@ -128,7 +128,11 @@ class ControladorCierre {
             exit;
 
         } catch (Exception $e) {
-            header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&error=' . urlencode($e->getMessage()));
+            // Volver al formulario de origen (no al Kanban) para no perder el contexto/comentario del gestor.
+            $destino = $id_reporte
+                ? '/?controlador=cierre&accion=validar_solucion&id=' . $id_reporte
+                : '/?controlador=gestion&accion=kanban';
+            header('Location: ' . config('app.url_base') . $destino . '&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
@@ -207,7 +211,10 @@ class ControladorCierre {
             exit;
 
         } catch (Exception $e) {
-            header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&error=' . urlencode($e->getMessage()));
+            $destino = $id_reporte
+                ? '/?controlador=cierre&accion=solicitar_encuesta&id=' . $id_reporte
+                : '/?controlador=gestion&accion=kanban';
+            header('Location: ' . config('app.url_base') . $destino . '&error=' . urlencode($e->getMessage()));
             exit;
         }
     }
@@ -242,6 +249,11 @@ class ControladorCierre {
             die('Reporte no encontrado.');
         }
 
+        if ($reporte['id_estado'] != ESTADO_EN_VALIDACION) {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('El reporte no está en estado En Validación.');
+        }
+
         $datos = [
             'titulo' => 'Cerrar Reporte - SIRGDI',
             'reporte' => $reporte,
@@ -268,6 +280,9 @@ class ControladorCierre {
             $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
             if (!$reporte) {
                 throw new Exception('Reporte no encontrado.');
+            }
+            if ($reporte['id_estado'] != ESTADO_EN_VALIDACION) {
+                throw new Exception('El reporte no está en estado En Validación. No se puede cerrar.');
             }
 
             // Cambiar a CERRADO
@@ -299,7 +314,10 @@ class ControladorCierre {
             exit;
 
         } catch (Exception $e) {
-            header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&error=' . urlencode($e->getMessage()));
+            $destino = $id_reporte
+                ? '/?controlador=cierre&accion=cerrar_reporte&id=' . $id_reporte
+                : '/?controlador=gestion&accion=kanban';
+            header('Location: ' . config('app.url_base') . $destino . '&error=' . urlencode($e->getMessage()));
             exit;
         }
     }

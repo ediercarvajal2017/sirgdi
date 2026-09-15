@@ -16,6 +16,21 @@ class ServicioArchivosInstitucion {
         if (!is_dir($this->directorio_logos)) {
             mkdir($this->directorio_logos, 0755, true);
         }
+
+        // Defensa en profundidad: impedir que un archivo subido a esta carpeta pública
+        // pueda ejecutarse como PHP, igual que en la carpeta de evidencias.
+        $htaccess_ruta = $this->directorio_logos . '/.htaccess';
+        if (!file_exists($htaccess_ruta)) {
+            $htaccess_contenido = <<<'EOT'
+<FilesMatch "(?i)\.(?:php|phtml|php\d|phps)$">
+    Deny from all
+</FilesMatch>
+
+# Prevenir listado de directorio
+Options -Indexes
+EOT;
+            @file_put_contents($htaccess_ruta, $htaccess_contenido);
+        }
     }
 
     /**
@@ -31,24 +46,43 @@ class ServicioArchivosInstitucion {
             return null;
         }
 
+        if (!is_uploaded_file($archivo['tmp_name'])) {
+            throw new Exception("Archivo no válido o no fue cargado correctamente.");
+        }
+
         // Validar tamaño
         if ($archivo['size'] > $this->max_tamaño) {
             throw new Exception("El archivo excede el tamaño máximo permitido (5MB)");
         }
 
-        // Validar tipo de archivo
-        if (!in_array($archivo['type'], $this->tipos_permitidos)) {
+        // Validar tipo real por contenido (finfo), no el Content-Type que envía el
+        // cliente ($archivo['type']), que es trivialmente falsificable.
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime_real = finfo_file($finfo, $archivo['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime_real, $this->tipos_permitidos, true)) {
             throw new Exception("Tipo de archivo no permitido. Use PNG, JPG o WebP");
         }
 
-        // Validar extensión
-        $ext = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, $this->extensiones_permitidas)) {
-            throw new Exception("Extensión de archivo no permitida");
+        // Re-codificar con GD (como con las evidencias): elimina cualquier payload
+        // no-imagen embebido en el archivo (defensa en profundidad ante polyglots).
+        switch ($mime_real) {
+            case 'image/png':
+                $imagen = @imagecreatefrompng($archivo['tmp_name']);
+                $ext = 'png';
+                break;
+            case 'image/webp':
+                $imagen = @imagecreatefromwebp($archivo['tmp_name']);
+                $ext = 'webp';
+                break;
+            default: // image/jpeg, image/jpg
+                $imagen = @imagecreatefromjpeg($archivo['tmp_name']);
+                $ext = 'jpg';
+                break;
         }
 
-        // Validar que sea una imagen real
-        if (!getimagesize($archivo['tmp_name'])) {
+        if (!$imagen) {
             throw new Exception("El archivo no es una imagen válida");
         }
 
@@ -56,14 +90,27 @@ class ServicioArchivosInstitucion {
         $nombre_archivo = 'institucion_' . $id_institucion . '_' . time() . '.' . $ext;
         $ruta_completa = $this->directorio_logos . '/' . $nombre_archivo;
 
+        switch ($ext) {
+            case 'png':
+                imagesavealpha($imagen, true);
+                $guardado = imagepng($imagen, $ruta_completa, 6);
+                break;
+            case 'webp':
+                $guardado = imagewebp($imagen, $ruta_completa, 90);
+                break;
+            default:
+                $guardado = imagejpeg($imagen, $ruta_completa, 90);
+                break;
+        }
+        imagedestroy($imagen);
+
+        if (!$guardado) {
+            throw new Exception("Error al guardar el archivo de logo");
+        }
+
         // Eliminar logo anterior si existe
         if ($logo_actual && file_exists($this->directorio_logos . '/' . $logo_actual)) {
             unlink($this->directorio_logos . '/' . $logo_actual);
-        }
-
-        // Mover archivo
-        if (!move_uploaded_file($archivo['tmp_name'], $ruta_completa)) {
-            throw new Exception("Error al guardar el archivo de logo");
         }
 
         // Hacer el archivo legible para el servidor web

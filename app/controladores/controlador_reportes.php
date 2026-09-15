@@ -411,7 +411,7 @@ class ControladorReportes {
             'categoria' => $categoria,
         ];
 
-        $this->renderizar_vista('reportes/vista_seguimiento_publico', $datos);
+        $this->renderizar_vista_publica('reportes/vista_seguimiento_publico', $datos);
     }
 
     /**
@@ -688,6 +688,22 @@ class ControladorReportes {
         echo ob_get_clean();
     }
 
+    /**
+     * Renderizar una vista pública que ya es un documento HTML completo por sí
+     * misma (doctype/head/body propios), sin envolverla en el layout autenticado
+     * de renderizar_vista() — evita doctype/html/head/body duplicados.
+     */
+    private function renderizar_vista_publica($vista, $datos = []) {
+        extract($datos);
+        $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
+
+        if (!file_exists($archivo_vista)) {
+            die('Vista no encontrada: ' . $archivo_vista);
+        }
+
+        require $archivo_vista;
+    }
+
     private function redirigir_crear($error_msg = '', $tipo = 'error') {
         $url = config('app.url_base') . '/?controlador=reportes&accion=crear';
         if ($error_msg) {
@@ -734,7 +750,7 @@ class ControladorReportes {
             'error' => $_GET['error'] ?? null,
         ];
 
-        $this->renderizar_vista('reportes/vista_crear_reporte_invitado', $datos);
+        $this->renderizar_vista_publica('reportes/vista_crear_reporte_invitado', $datos);
     }
 
     /**
@@ -752,6 +768,16 @@ class ControladorReportes {
             die('Institución requerida.');
         }
 
+        // Anti-spam: máximo 5 reportes de invitado cada 10 minutos por IP.
+        // Cuenta cada intento (éxito o error de validación) para frenar scripts automatizados.
+        require_once LIB_PATH . '/limitador_tasa.php';
+        $clave_rate_limit = 'crear_invitado:' . ($_SERVER['REMOTE_ADDR'] ?? 'desconocida');
+        if (LimitadorTasa::excede_limite($clave_rate_limit, 5, 600)) {
+            $this->redirigir_invitado($id_institucion, 'Has enviado demasiados reportes en poco tiempo. Espera unos minutos e intenta de nuevo.');
+            exit;
+        }
+        LimitadorTasa::registrar($clave_rate_limit, 600);
+
         $nombres   = Validacion::sanitizar_texto($_POST['nombres']   ?? '');
         $apellidos = Validacion::sanitizar_texto($_POST['apellidos']  ?? '');
         $correo    = Validacion::sanitizar_texto($_POST['correo']     ?? '');
@@ -768,8 +794,24 @@ class ControladorReportes {
             $this->redirigir_invitado($id_institucion, 'Ingrese sus nombres y apellidos completos.');
             exit;
         }
+        if (!Validacion::validar_maximo($nombres, 75) || !Validacion::validar_maximo($apellidos, 75)) {
+            $this->redirigir_invitado($id_institucion, 'Nombres y apellidos no pueden superar 75 caracteres cada uno.');
+            exit;
+        }
+        if ($correo !== '' && (!Validacion::validar_maximo($correo, 150) || !Validacion::validar_email($correo))) {
+            $this->redirigir_invitado($id_institucion, 'El correo electrónico ingresado no es válido.');
+            exit;
+        }
+        if ($telefono !== '' && !Validacion::validar_maximo($telefono, 20)) {
+            $this->redirigir_invitado($id_institucion, 'El teléfono no puede superar 20 caracteres.');
+            exit;
+        }
         if (!$id_sede || !$area_texto || !$id_categoria || strlen($descripcion) < 10) {
             $this->redirigir_invitado($id_institucion, 'Complete todos los campos obligatorios del reporte.');
+            exit;
+        }
+        if (!Validacion::validar_maximo($descripcion, 2000)) {
+            $this->redirigir_invitado($id_institucion, 'La descripción no puede superar 2000 caracteres.');
             exit;
         }
 

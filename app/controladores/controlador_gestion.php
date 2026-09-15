@@ -158,10 +158,10 @@ class ControladorGestion {
                 throw new Exception('Técnico no encontrado.');
             }
 
-            // Verificar que el técnico tiene rol de técnico (verificar en tabla usuario_rol)
-            // TODO: Implementar validación de rol en usuario_rol
-            if (!isset($tecnico['id_usuario'])) {
-                throw new Exception('El usuario seleccionado no es válido.');
+            // Verificar que el usuario realmente tiene rol Técnico en esta institución
+            $autorizacion_tecnico = new ServicioAutorizacion($id_tecnico, $id_institucion);
+            if (!$autorizacion_tecnico->tiene_rol(ROL_TECNICO)) {
+                throw new Exception('El usuario seleccionado no tiene rol de Técnico.');
             }
 
             // Asignar
@@ -343,6 +343,7 @@ class ControladorGestion {
      */
     public function obtener_tecnicos_json() {
         $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_ASIGNAR_TECNICO);
 
         $id_institucion = $this->auth->obtener_id_institucion();
 
@@ -372,6 +373,7 @@ class ControladorGestion {
      */
     public function obtener_carga_tecnico_json() {
         $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_ASIGNAR_TECNICO);
 
         $id_tecnico = intval($_POST['id_tecnico'] ?? 0);
         $id_institucion = $this->auth->obtener_id_institucion();

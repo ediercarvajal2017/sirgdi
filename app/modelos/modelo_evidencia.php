@@ -164,8 +164,14 @@ class ModeloEvidencia {
     public function eliminar($id_evidencia, $id_institucion) {
         // Obtener ruta del archivo antes de eliminar BD
         $evidencia = $this->obtener_por_id($id_evidencia, $id_institucion);
-        if ($evidencia && !empty($evidencia['url_archivo']) && file_exists($evidencia['url_archivo'])) {
-            @unlink($evidencia['url_archivo']);
+        if ($evidencia && !empty($evidencia['url_archivo'])) {
+            // Solo borrar si la ruta guardada realmente está dentro del directorio de
+            // almacenamiento (defensa en profundidad, igual que ServicioArchivos::eliminar_archivo()).
+            $directorio_evidencias = STORAGE_PATH . '/archivos/evidencias';
+            $ruta_real = realpath($evidencia['url_archivo']);
+            if ($ruta_real && strpos($ruta_real, realpath($directorio_evidencias)) === 0) {
+                @unlink($ruta_real);
+            }
         }
 
         return $this->bd->eliminar(

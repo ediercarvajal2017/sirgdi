@@ -60,9 +60,19 @@ $smtp_config = [
 ];
 
 // === SEGURIDAD ===
+// ENCRYPTION_KEY cifra datos persistentes (ej. secretos TOTP de 2FA). Si faltara y se
+// generara una clave aleatoria "de emergencia" en cada request, los datos ya cifrados
+// quedarían indescifrables de forma silenciosa e intermitente. Mejor fallar fuerte y
+// claro al arrancar que fallar en silencio más tarde.
+$_encryption_key_env = getenv('ENCRYPTION_KEY');
+if ($_encryption_key_env === false || $_encryption_key_env === '') {
+    die('Configuración incompleta: falta ENCRYPTION_KEY en configuracion/.env. '
+        . 'Genera una con: php -r "echo bin2hex(random_bytes(32));" y agrégala al .env.');
+}
+
 $security_config = [
     // Encryption key: 32 bytes en hexadecimal (256-bit AES)
-    'encryption_key' => getenv('ENCRYPTION_KEY') ?: bin2hex(random_bytes(32)),
+    'encryption_key' => $_encryption_key_env,
 
     // JWT Secret para tokens de acceso (si se implementa)
     'jwt_secret' => getenv('JWT_SECRET') ?: bin2hex(random_bytes(32)),
