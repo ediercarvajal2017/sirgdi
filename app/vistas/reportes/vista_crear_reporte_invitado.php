@@ -15,16 +15,40 @@ $urgencias = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo htmlspecialchars($institucion['nombre']); ?> — Reportar Daño</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --inv-bg-1: #EBF5FB;
+            --inv-bg-2: #F0F9FF;
+            --inv-text: #2C3E50;
+            --inv-text-muted: #85929E;
+            --inv-card-bg: #fff;
+            --inv-input-bg: #F8FBFC;
+            --inv-input-border: #D6EAF8;
+        }
+        /* Tema oscuro (por defecto — ver public/js/tema.js). Cubre el fondo general,
+           las tarjetas y los campos de formulario (lo más usado); los acentos de
+           color (píldoras de urgencia, modal de cámara, pestañas de evidencia)
+           mantienen su estilo original en ambos temas. */
+        :root[data-theme="dark"] {
+            --inv-bg-1: #14181C;
+            --inv-bg-2: #10141A;
+            --inv-text: #E8EDF2;
+            --inv-text-muted: #9AA7B2;
+            --inv-card-bg: #1E242B;
+            --inv-input-bg: #262D35;
+            --inv-input-border: #333C46;
+        }
+
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 16px; scroll-behavior: smooth; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #EBF5FB 0%, #F0F9FF 100%);
+            background: linear-gradient(135deg, var(--inv-bg-1) 0%, var(--inv-bg-2) 100%);
             min-height: 100vh;
-            color: #2C3E50;
+            color: var(--inv-text);
         }
 
         /* ── Barra superior ── */
@@ -78,7 +102,8 @@ $urgencias = [
 
         /* ── Tarjeta sección ── */
         .inv-card {
-            background: #fff;
+            background: var(--inv-card-bg);
+            color: var(--inv-text);
             border-radius: 14px;
             box-shadow: 0 4px 20px rgba(52,152,219,.09);
             overflow: hidden;
@@ -116,19 +141,19 @@ $urgencias = [
         .inv-label .req { color: #E74C3C; margin-left: 2px; }
         .inv-input, .inv-select, .inv-textarea {
             width: 100%; padding: 11px 14px;
-            border: 2px solid #D6EAF8;
+            border: 2px solid var(--inv-input-border, #D6EAF8);
             border-radius: 8px;
             font-family: inherit; font-size: 14px;
-            background: #F8FBFC; color: #2C3E50;
+            background: var(--inv-input-bg, #F8FBFC); color: var(--inv-text);
             transition: border-color .25s, box-shadow .25s;
         }
         .inv-input:focus, .inv-select:focus, .inv-textarea:focus {
             outline: none;
             border-color: #3498DB;
-            background: #fff;
+            background: var(--inv-card-bg);
             box-shadow: 0 0 0 4px rgba(52,152,219,.1);
         }
-        .inv-input::placeholder, .inv-textarea::placeholder { color: #AEB6BF; }
+        .inv-input::placeholder, .inv-textarea::placeholder { color: var(--inv-text-muted, #AEB6BF); }
         .inv-select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233498DB' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -984,5 +1009,6 @@ document.getElementById('form-invitado').addEventListener('submit', function(e) 
     document.getElementById('btn-submit-inv').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
 });
 </script>
+<script src="<?php echo $base; ?>/js/tema.js"></script>
 </body>
 </html>

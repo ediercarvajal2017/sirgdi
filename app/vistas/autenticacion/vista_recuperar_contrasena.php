@@ -40,7 +40,7 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+        background: var(--color-bg);
     }
 
     .form-modern-wrapper {
@@ -50,8 +50,8 @@
     }
 
     .form-modern-card {
-        background: white;
-        border: 2px solid #3498DB;
+        background: var(--color-bg-elevated);
+        border: 2px solid var(--color-primary);
         border-radius: 12px;
         box-shadow: 0 10px 40px rgba(52, 152, 219, 0.3);
         padding: 40px;
@@ -60,13 +60,13 @@
     .form-modern-card h2 {
         text-align: center;
         margin-bottom: 10px;
-        color: #2C3E50;
+        color: var(--color-text);
         font-size: 24px;
     }
 
     .form-modern-subtitle {
         text-align: center;
-        color: #7F8C8D;
+        color: var(--color-text-muted);
         margin-bottom: 30px;
         font-size: 14px;
         font-weight: 500;
@@ -86,12 +86,12 @@
     .form-group label {
         font-weight: 600;
         margin-bottom: 10px;
-        color: #2C3E50;
+        color: var(--color-text);
         font-size: 15px;
     }
 
     .form-group small {
-        color: #7F8C8D;
+        color: var(--color-text-muted);
         font-size: 13px;
         margin-top: 8px;
         font-weight: 500;
@@ -99,8 +99,9 @@
 
     .input-modern {
         padding: 15px;
-        border: 2px solid #3498DB;
-        background: #F8FBFC;
+        border: 2px solid var(--color-primary);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
         border-radius: 8px;
         font-size: 16px;
         font-family: inherit;
@@ -109,8 +110,8 @@
 
     .input-modern:focus {
         outline: none;
-        border-color: #2980B9;
-        background: #F0F8FF;
+        border-color: var(--color-primary-dark);
+        background: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
     }
 
@@ -143,12 +144,12 @@
     .auth-links {
         text-align: center;
         margin-top: 25px;
-        border-top: 2px solid #ECF0F1;
+        border-top: 2px solid var(--color-border-subtle);
         padding-top: 20px;
     }
 
     .auth-links a {
-        color: #3498DB;
+        color: var(--color-primary);
         text-decoration: none;
         font-weight: 600;
         transition: all 0.3s;
@@ -158,7 +159,7 @@
     }
 
     .auth-links a:hover {
-        color: #2980B9;
+        color: var(--color-primary-dark);
         transform: translateX(-3px);
     }
 
@@ -173,14 +174,14 @@
     }
 
     .alert-success {
-        background-color: #D5F4E6;
-        color: #186A3B;
-        border: 2px solid #27AE60;
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+        border: 2px solid var(--color-success);
     }
 
     .alert-error {
-        background-color: #FADBD8;
-        color: #922B21;
-        border: 2px solid #E74C3C;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
+        border: 2px solid var(--color-danger);
     }
 </style>

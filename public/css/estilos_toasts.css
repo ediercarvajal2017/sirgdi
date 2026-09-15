@@ -3,10 +3,10 @@
    ================================ */
 
 :root {
-    --toast-success: #27AE60;
-    --toast-error: #E74C3C;
-    --toast-warning: #F39C12;
-    --toast-info: #3498DB;
+    --toast-success: var(--color-success, #27AE60);
+    --toast-error: var(--color-danger, #E74C3C);
+    --toast-warning: var(--color-warning, #F39C12);
+    --toast-info: var(--color-primary, #3498DB);
     --toast-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
@@ -27,7 +27,7 @@
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    background: white;
+    background: var(--color-bg-elevated, white);
     border-radius: 10px;
     padding: 16px 20px;
     min-width: 320px;
@@ -129,14 +129,14 @@
 
 .toast-title {
     font-weight: 600;
-    color: #2C3E50;
+    color: var(--color-text, #2C3E50);
     font-size: 14px;
     line-height: 1.4;
     margin: 0;
 }
 
 .toast-message {
-    color: #7F8C8D;
+    color: var(--color-text-muted, #7F8C8D);
     font-size: 13px;
     line-height: 1.5;
     margin: 0;
@@ -147,7 +147,7 @@
     flex-shrink: 0;
     background: none;
     border: none;
-    color: #BDC3C7;
+    color: var(--color-border, #BDC3C7);
     font-size: 18px;
     cursor: pointer;
     padding: 0;
@@ -161,7 +161,7 @@
 }
 
 .toast-close:hover {
-    color: #7F8C8D;
+    color: var(--color-text-muted, #7F8C8D);
     transform: scale(1.2);
 }
 

@@ -146,16 +146,12 @@
 </header>
 
 <style>
-    :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --dark-text: #2C3E50;
-        --light-bg: #ECF0F1;
-    }
+    /* Variables de color: ver public/css/estilos_base.css (--color-*, con alias
+       --primary-blue/--dark-blue/--dark-text/--light-bg para este archivo). */
 
     /* Header Modern */
     .header-modern {
-        background: white;
+        background: var(--color-bg-elevated);
         box-shadow: 0 2px 12px rgba(52, 152, 219, 0.1);
         border-bottom: 3px solid var(--primary-blue);
     }
@@ -167,7 +163,7 @@
         justify-content: space-between;
         gap: 24px;
         padding: 10px 30px;
-        background: linear-gradient(135deg, #FFFFFF 0%, #F8FBFC 100%);
+        background: var(--color-bg-elevated);
     }
 
     .header-brand-section {
@@ -185,8 +181,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #fff;
-        border: 1px solid #e2e8f0;
+        background: var(--color-bg-elevated);
+        border: 1px solid var(--color-border-subtle);
         flex-shrink: 0;
     }
     .header-logo img {
@@ -206,7 +202,7 @@
     .brand-subtitle {
         margin: 0;
         font-size: 12px;
-        color: #95A5A6;
+        color: var(--color-text-muted);
         font-weight: 500;
     }
 
@@ -239,7 +235,7 @@
     }
 
     .header-user-info:hover {
-        background: #EDF4FB;
+        background: var(--color-bg-hover);
     }
 
     .header-user-info > .fa-user-circle {
@@ -249,7 +245,7 @@
 
     .header-user-caret {
         font-size: 12px !important;
-        color: #95A5A6;
+        color: var(--color-text-muted);
         transition: transform 0.25s;
         margin-left: 2px;
     }
@@ -287,10 +283,10 @@
         list-style: none;
         margin: 0;
         padding: 8px;
-        background: #fff;
+        background: var(--color-bg-elevated);
         border-radius: 10px;
         box-shadow: 0 8px 24px rgba(44, 62, 80, 0.15);
-        border: 1px solid #EDF2F4;
+        border: 1px solid var(--color-border-subtle);
         opacity: 0;
         visibility: hidden;
         transform: translateY(-6px);
@@ -324,7 +320,7 @@
     }
 
     .header-user-menu a:hover {
-        background: #EDF4FB;
+        background: var(--color-bg-hover);
         color: var(--primary-blue);
     }
 
@@ -338,7 +334,7 @@
 
     .header-user-divider {
         height: 1px;
-        background: #EDF2F4;
+        background: var(--color-border-subtle);
         margin: 6px 4px;
     }
 
@@ -350,20 +346,20 @@
         padding: 10px 14px 6px;
         font-size: 12px;
         font-weight: 700;
-        color: #3498DB;
+        color: var(--primary-blue);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         pointer-events: none;
     }
-    .header-user-inst-label i { color: #3498DB; font-size: 13px; }
+    .header-user-inst-label i { color: var(--primary-blue); font-size: 13px; }
 
     /* Cerrar Sesión en rojo */
-    .header-menu-logout i { color: #E74C3C !important; }
+    .header-menu-logout i { color: var(--color-danger) !important; }
     .header-menu-logout:hover {
-        background: #FDEDEC !important;
-        color: #E74C3C !important;
+        background: var(--color-danger-bg) !important;
+        color: var(--color-danger) !important;
     }
-    .header-menu-logout:hover i { color: #E74C3C !important; }
+    .header-menu-logout:hover i { color: var(--color-danger) !important; }
 
     /* Navigation Modern - elemento central de la barra */
     .header-nav-modern {
@@ -438,7 +434,7 @@
         list-style: none;
         margin: 0;
         padding: 10px 0;
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 0 0 8px 8px;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         min-width: 200px;
@@ -502,7 +498,7 @@
         width: 38px;
         height: 38px;
         border-radius: 6px;
-        background: #E8EDEF;
+        background: var(--color-bg-subtle);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -555,7 +551,7 @@
             height: auto;
             flex-wrap: wrap;
             gap: 10px;
-            border-top: 1px solid #E8EDEF;
+            border-top: 1px solid var(--color-border-subtle);
         }
 
         .nav-menu-primary {
@@ -617,12 +613,12 @@
 <!-- Modal: cambiar institución activa para técnicos externos -->
 <div id="switcherModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
      z-index:9000; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:16px; padding:32px; max-width:460px; width:90%;
+    <div style="background:var(--color-bg-elevated); border-radius:16px; padding:32px; max-width:460px; width:90%;
                 box-shadow:0 20px 60px rgba(0,0,0,.2);">
-        <h3 style="margin:0 0 6px; font-size:18px; color:#2C3E50;">
-            <i class="fas fa-exchange-alt" style="color:#3498DB;"></i> Cambiar Institución
+        <h3 style="margin:0 0 6px; font-size:18px; color:var(--color-text);">
+            <i class="fas fa-exchange-alt" style="color:var(--color-primary);"></i> Cambiar Institución
         </h3>
-        <p style="margin:0 0 20px; font-size:14px; color:#7F8C8D;">
+        <p style="margin:0 0 20px; font-size:14px; color:var(--color-text-muted);">
             Selecciona la institución en la que vas a trabajar en esta sesión.
         </p>
         <form method="POST"
@@ -638,19 +634,19 @@
                 <?php foreach ($insts_sw as $inst_sw): ?>
                     <?php $activa = ((int)$inst_sw['id_institucion'] === (int)$_SESSION['id_institucion']); ?>
                     <label style="display:flex; align-items:center; gap:12px; padding:14px 16px;
-                                  border:2px solid <?php echo $activa ? '#3498DB' : '#E2E8F0'; ?>;
+                                  border:2px solid <?php echo $activa ? 'var(--color-primary)' : 'var(--color-border-subtle)'; ?>;
                                   border-radius:10px; cursor:pointer;
-                                  background:<?php echo $activa ? '#EBF5FB' : '#F8FBFC'; ?>;">
+                                  background:<?php echo $activa ? 'var(--color-bg-hover)' : 'var(--color-bg-subtle)'; ?>;">
                         <input type="radio" name="id_institucion"
                                value="<?php echo (int)$inst_sw['id_institucion']; ?>"
                                <?php echo $activa ? 'checked' : ''; ?> required
-                               style="accent-color:#3498DB; width:18px; height:18px;">
+                               style="accent-color:var(--color-primary); width:18px; height:18px;">
                         <div>
-                            <div style="font-weight:600; color:#2C3E50; font-size:14px;">
+                            <div style="font-weight:600; color:var(--color-text); font-size:14px;">
                                 <?php echo htmlspecialchars($inst_sw['nombre']); ?>
                             </div>
                             <?php if ($activa): ?>
-                                <div style="font-size:11px; color:#3498DB; font-weight:600;">
+                                <div style="font-size:11px; color:var(--color-primary); font-weight:600;">
                                     <i class="fas fa-check-circle"></i> Institución actual
                                 </div>
                             <?php endif; ?>
@@ -661,12 +657,12 @@
             <div style="display:flex; gap:12px; justify-content:flex-end;">
                 <button type="button"
                         onclick="document.getElementById('switcherModal').style.display='none'"
-                        style="padding:10px 20px; border:1px solid #E2E8F0; background:#fff;
-                               border-radius:8px; cursor:pointer; font-size:14px; color:#7F8C8D;">
+                        style="padding:10px 20px; border:1px solid var(--color-border-subtle); background:var(--color-bg-elevated);
+                               border-radius:8px; cursor:pointer; font-size:14px; color:var(--color-text-muted);">
                     Cancelar
                 </button>
                 <button type="submit"
-                        style="padding:10px 20px; background:#3498DB; color:#fff; border:none;
+                        style="padding:10px 20px; background:var(--color-primary); color:var(--color-text-inverse); border:none;
                                border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">
                     <i class="fas fa-check"></i> Confirmar
                 </button>

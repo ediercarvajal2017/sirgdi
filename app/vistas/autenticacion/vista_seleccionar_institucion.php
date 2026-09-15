@@ -97,20 +97,20 @@
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    border: 2px solid #E2E8F0;
+    border: 2px solid var(--color-border-subtle);
     border-radius: 12px;
-    background: #F8FBFC;
+    background: var(--color-bg-subtle);
     transition: all 0.2s ease;
 }
 
 .institucion-card:hover .inst-card-inner {
-    border-color: #3498DB;
-    background: #EBF5FB;
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
 }
 
 .institucion-card input[type="radio"]:checked + .inst-card-inner {
-    border-color: #3498DB;
-    background: #EBF5FB;
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
 }
 
@@ -136,22 +136,22 @@
 .inst-nombre {
     font-weight: 600;
     font-size: 15px;
-    color: #2C3E50;
+    color: var(--color-text);
 }
 
 .inst-desde {
     font-size: 12px;
-    color: #95A5A6;
+    color: var(--color-text-muted);
     margin-top: 2px;
 }
 
 .inst-check {
     font-size: 20px;
-    color: #BDC3C7;
+    color: var(--color-border);
     transition: color 0.2s;
 }
 
 .institucion-card input[type="radio"]:checked + .inst-card-inner .inst-check {
-    color: #3498DB;
+    color: var(--color-primary);
 }
 </style>

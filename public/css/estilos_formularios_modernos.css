@@ -1,19 +1,14 @@
 /* Estilos Modernos para Formularios - SIRGDI v2.0 */
 /* Basado en el diseño del login */
-
-:root {
-    --primary-blue: #3498DB;
-    --light-blue: #D6EAF8;
-    --dark-text: #2C3E50;
-    --gray-text: #95A5A6;
-    --dark-blue: #2980B9;
-}
+/* Variables de color: ver public/css/estilos_base.css (--color-*, con alias
+   --primary-blue/--dark-text/etc. para compatibilidad con este archivo). */
 
 /* Override de estilos base para formularios */
 .form-control,
 .input-modern {
     border: 2px solid var(--primary-blue) !important;
-    background-color: #F8FBFC !important;
+    background-color: var(--color-bg-subtle) !important;
+    color: var(--color-text) !important;
     border-radius: 8px !important;
     padding: 12px 15px !important;
     font-size: 15px !important;
@@ -22,7 +17,7 @@
 
 /* Wrapper para formularios modernos */
 .form-modern-wrapper {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
@@ -68,7 +63,7 @@
     font-size: 15px;
     font-family: inherit;
     transition: all 0.3s ease;
-    background-color: #F8FBFC;
+    background-color: var(--color-bg-subtle);
     color: var(--dark-text);
 }
 
@@ -80,7 +75,7 @@
 .form-modern-wrapper select:focus {
     outline: none;
     border-color: var(--primary-blue);
-    background-color: white;
+    background-color: var(--color-bg-elevated);
     box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
@@ -125,7 +120,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
-    background: white;
+    background: var(--color-bg-elevated);
 }
 
 .form-modern-checkbox input:checked + .checkbox-mark,
@@ -176,7 +171,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
-    background: white;
+    background: var(--color-bg-elevated);
 }
 
 .form-modern-radio input:checked + .radio-mark,
@@ -189,7 +184,7 @@
     content: "";
     width: 8px;
     height: 8px;
-    background: white;
+    background: var(--color-text-inverse);
     border-radius: 50%;
     display: block;
 }
@@ -235,13 +230,13 @@
 /* Botones secundarios */
 .form-modern .btn-secondary,
 .form-modern-wrapper .btn-secondary {
-    background: #BDC3C7;
+    background: var(--color-border);
     color: var(--dark-text);
 }
 
 .form-modern .btn-secondary:hover,
 .form-modern-wrapper .btn-secondary:hover {
-    background: #A6ACAF;
+    background: var(--color-secondary);
 }
 
 /* Botones peligrosos */
@@ -266,7 +261,7 @@
 
 /* Errores en formularios */
 .form-error {
-    color: #E74C3C;
+    color: var(--color-danger);
     font-size: 12px;
     margin-top: 6px;
     display: block;
@@ -278,8 +273,8 @@
 .form-modern-wrapper input.is-invalid,
 .form-modern-wrapper textarea.is-invalid,
 .form-modern-wrapper select.is-invalid {
-    border-color: #E74C3C;
-    background-color: #FADBD8;
+    border-color: var(--color-danger);
+    background-color: var(--color-danger-bg);
 }
 
 /* Textos de ayuda */
@@ -330,7 +325,8 @@
 .card textarea,
 .card select {
     border: 2px solid var(--primary-blue) !important;
-    background-color: #F8FBFC !important;
+    background-color: var(--color-bg-subtle) !important;
+    color: var(--color-text) !important;
     border-radius: 8px !important;
 }
 
@@ -380,7 +376,7 @@
 
 /* Formularios con tabla */
 .table-form-wrapper {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);

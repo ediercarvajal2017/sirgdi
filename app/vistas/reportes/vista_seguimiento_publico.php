@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title>Seguimiento de Reporte — SIRGDI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -21,6 +22,17 @@
             --border:      #E2E8F0;
             --shadow:      0 4px 24px rgba(26,82,118,.10);
             --radius:      14px;
+        }
+
+        /* Tema oscuro (por defecto — ver public/js/tema.js). Solo se oscurecen las
+           superficies principales (fondo, tarjetas, texto, bordes); las insignias de
+           estado/urgencia conservan su color pastel de acento en ambos temas. */
+        :root[data-theme="dark"] {
+            --text:        #E8EDF2;
+            --text-light:  #9AA7B2;
+            --bg:          #14181C;
+            --white:       #1E242B;
+            --border:      #333C46;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -815,6 +827,7 @@ function mostrarToast() {
     setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 </script>
+<script src="<?php echo config('app.url_base'); ?>/js/tema.js"></script>
 
 </body>
 </html>

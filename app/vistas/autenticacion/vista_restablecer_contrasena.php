@@ -66,11 +66,11 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #1a3a5c 0%, #2563eb 100%);
+        background: var(--color-bg);
     }
     .form-modern-wrapper { width: 100%; max-width: 420px; padding: 20px; }
     .form-modern-card {
-        background: #fff;
+        background: var(--color-bg-elevated);
         border-radius: 16px;
         box-shadow: 0 12px 48px rgba(0,0,0,.18);
         padding: 40px;
@@ -79,24 +79,26 @@
     .login-logo img { max-width: 200px; height: auto; border-radius: 12px; }
     .form-modern-card h2 {
         text-align: center;
-        color: #111827;
+        color: var(--color-text);
         font-size: 22px;
         margin-bottom: 6px;
     }
     .form-modern-subtitle {
         text-align: center;
-        color: #6b7280;
+        color: var(--color-text-muted);
         font-size: 14px;
         margin-bottom: 28px;
     }
     .auth-form { display: flex; flex-direction: column; gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-weight: 600; color: #374151; font-size: 14px; }
+    .form-group label { font-weight: 600; color: var(--color-text); font-size: 14px; }
     .input-con-icono { position: relative; }
     .input-modern {
         width: 100%;
         padding: 13px 44px 13px 14px;
-        border: 2px solid #d1d5db;
+        border: 2px solid var(--color-border);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
         border-radius: 8px;
         font-size: 15px;
         font-family: inherit;
@@ -105,7 +107,7 @@
     }
     .input-modern:focus {
         outline: none;
-        border-color: #2563eb;
+        border-color: var(--color-primary);
         box-shadow: 0 0 0 3px rgba(37,99,235,.15);
     }
     .toggle-pass {
@@ -113,13 +115,13 @@
         right: 14px;
         top: 50%;
         transform: translateY(-50%);
-        color: #9ca3af;
+        color: var(--color-text-muted);
         cursor: pointer;
         font-size: 16px;
     }
     .password-strength {
         height: 4px;
-        background: #e5e7eb;
+        background: var(--color-border-subtle);
         border-radius: 4px;
         margin-top: 6px;
         overflow: hidden;
@@ -130,12 +132,12 @@
         border-radius: 4px;
         transition: width .3s, background .3s;
     }
-    small { font-size: 12px; color: #6b7280; }
-    #match-msg.ok  { color: #16a34a; }
-    #match-msg.err { color: #dc2626; }
+    small { font-size: 12px; color: var(--color-text-muted); }
+    #match-msg.ok  { color: var(--color-success); }
+    #match-msg.err { color: var(--color-danger); }
     .btn-modern {
         padding: 13px;
-        background: linear-gradient(135deg, #1d4ed8, #2563eb);
+        background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -151,11 +153,11 @@
     .btn-modern:hover { opacity: .9; transform: translateY(-1px); }
     .btn-modern:disabled { opacity: .5; cursor: not-allowed; transform: none; }
     .btn-block { width: 100%; }
-    .auth-links { text-align: center; margin-top: 22px; border-top: 1px solid #e5e7eb; padding-top: 18px; }
-    .auth-links a { color: #2563eb; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+    .auth-links { text-align: center; margin-top: 22px; border-top: 1px solid var(--color-border-subtle); padding-top: 18px; }
+    .auth-links a { color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
     .auth-links a:hover { text-decoration: underline; }
     .alert { padding: 13px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
-    .alert-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .alert-error   { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid var(--color-danger); }
 </style>
 
 <script>

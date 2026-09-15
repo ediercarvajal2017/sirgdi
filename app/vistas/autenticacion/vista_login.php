@@ -59,7 +59,7 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #E8F4F8 0%, #D6EAF8 100%);
+        background: var(--color-bg);
         margin: 0;
         padding: 20px;
     }
@@ -72,8 +72,8 @@
     }
 
     .form-modern-card {
-        background: white;
-        border: 2px solid #3498DB;
+        background: var(--color-bg-elevated);
+        border: 2px solid var(--color-primary);
         padding: 40px;
         border-radius: 12px;
         box-shadow: 0 8px 32px rgba(52, 152, 219, 0.15);
@@ -91,7 +91,7 @@
     }
 
     .form-modern-card h2 {
-        color: #2C3E50;
+        color: var(--color-text);
         margin-bottom: 30px;
         font-size: 26px;
         text-align: center;
@@ -105,15 +105,16 @@
         display: block;
         font-weight: 600;
         margin-bottom: 10px;
-        color: #2C3E50;
+        color: var(--color-text);
         font-size: 15px;
     }
 
     .input-modern {
         width: 100%;
         padding: 15px;
-        border: 2px solid #3498DB;
-        background: #F8FBFC;
+        border: 2px solid var(--color-primary);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
         border-radius: 8px;
         font-size: 16px;
         font-family: inherit;
@@ -123,13 +124,13 @@
 
     .input-modern:focus {
         outline: none;
-        border-color: #2980B9;
-        background: #F0F8FF;
+        border-color: var(--color-primary-dark);
+        background: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
     }
 
     .input-modern::placeholder {
-        color: #95A5A6;
+        color: var(--color-text-muted);
     }
 
     /* Campo con ícono mostrar/ocultar contraseña */
@@ -146,7 +147,7 @@
     .toggle-password {
         position: absolute;
         right: 16px;
-        color: #3498DB;
+        color: var(--color-primary);
         cursor: pointer;
         font-size: 18px;
         transition: all 0.3s;
@@ -157,7 +158,7 @@
     }
 
     .field-error {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-size: 13px;
         margin-top: 8px;
         display: none;
@@ -179,7 +180,7 @@
         gap: 8px;
         cursor: pointer;
         user-select: none;
-        color: #3498DB;
+        color: var(--color-primary);
         font-weight: 600;
         font-size: 14px;
     }
@@ -192,16 +193,16 @@
         display: inline-flex;
         width: 20px;
         height: 20px;
-        border: 2px solid #3498DB;
+        border: 2px solid var(--color-primary);
         border-radius: 4px;
         align-items: center;
         justify-content: center;
         transition: all 0.3s;
-        background: white;
+        background: var(--color-bg-elevated);
     }
 
     .remember-checkbox input:checked + .checkmark {
-        background: #3498DB;
+        background: var(--color-primary);
         color: white;
     }
 
@@ -212,7 +213,7 @@
     }
 
     .forgot-password {
-        color: #3498DB;
+        color: var(--color-primary);
         text-decoration: none;
         font-weight: 600;
         font-size: 14px;
@@ -221,7 +222,7 @@
 
     .forgot-password:hover {
         text-decoration: underline;
-        color: #2980B9;
+        color: var(--color-primary-dark);
     }
 
     .form-actions {
@@ -265,15 +266,15 @@
     }
 
     .alert-success {
-        background-color: #D5F5E3;
-        color: #1a6b3a;
-        border: 2px solid #27AE60;
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+        border: 2px solid var(--color-success);
     }
 
     .alert-error {
-        background-color: #FADBD8;
-        color: #922B21;
-        border: 2px solid #E74C3C;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
+        border: 2px solid var(--color-danger);
     }
 
     @media (max-width: 480px) {

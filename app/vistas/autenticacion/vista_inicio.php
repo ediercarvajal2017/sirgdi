@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo config('app.app_name'); ?> - Sistema de Reportes de Daños</title>
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo config('app.url_base'); ?>/img/favicon.png">
     <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
@@ -21,6 +22,24 @@
             --text-light:  #7F8C8D;
             --bg-light:    #F4F9FD;
             --white:       #ffffff;
+            --surface-2:   #EBF5FB;
+            --surface-3:   #F4F9FD;
+            --surface-4:   #EAF4FF;
+            --card-border: #D6EAF8;
+        }
+
+        /* Tema oscuro (por defecto — ver public/js/tema.js). El hero y el CTA ya
+           usan un degradé azul-marino fijo y siguen igual en ambos temas; aquí solo
+           se oscurecen las secciones claras (features, steps, roles, tarjetas). */
+        :root[data-theme="dark"] {
+            --text:        #E8EDF2;
+            --text-light:  #9AA7B2;
+            --bg-light:    #161C23;
+            --white:       #1E242B;
+            --surface-2:   #171E27;
+            --surface-3:   #14181C;
+            --surface-4:   #1A222B;
+            --card-border: #2A3B4D;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -272,7 +291,7 @@
         }
         .inst-overlay.open { display: flex; }
         .inst-modal {
-            background: #fff;
+            background: var(--white);
             border-radius: 16px;
             padding: 32px 28px;
             max-width: 440px; width: 100%;
@@ -281,26 +300,26 @@
         }
         @keyframes modalIn { from { opacity:0; transform:scale(.94) translateY(10px); } to { opacity:1; transform:none; } }
         .inst-modal h3 {
-            font-size: 20px; font-weight: 800; color: #1A5276;
+            font-size: 20px; font-weight: 800; color: var(--text);
             margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
         }
         .inst-modal h3 i { color: var(--teal); }
-        .inst-modal p  { font-size: 14px; color: #7F8C8D; margin-bottom: 22px; }
+        .inst-modal p  { font-size: 14px; color: var(--text-light); margin-bottom: 22px; }
         .inst-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .inst-item {
             display: flex; align-items: center; gap: 14px;
-            padding: 14px 18px; border: 2px solid #D6EAF8;
-            border-radius: 10px; text-decoration: none; color: #2C3E50;
+            padding: 14px 18px; border: 2px solid var(--card-border);
+            border-radius: 10px; text-decoration: none; color: var(--text);
             font-weight: 600; font-size: 14px; transition: all .18s;
         }
         .inst-item i { color: var(--blue); font-size: 18px; flex-shrink: 0; }
-        .inst-item:hover { border-color: var(--teal); background: #EAFAF1; color: #1E8449; }
+        .inst-item:hover { border-color: var(--teal); background: var(--surface-2); color: var(--teal-dark); }
         .inst-cancel {
-            width: 100%; padding: 11px; border: none; background: #ECF0F1;
-            border-radius: 8px; color: #7F8C8D; font-size: 14px; font-weight: 600;
+            width: 100%; padding: 11px; border: none; background: var(--bg-light);
+            border-radius: 8px; color: var(--text-light); font-size: 14px; font-weight: 600;
             cursor: pointer; transition: background .18s;
         }
-        .inst-cancel:hover { background: #D5D8DC; }
+        .inst-cancel:hover { background: var(--card-border); }
 
         .hero-stats {
             display: flex;
@@ -351,7 +370,7 @@
         .sh-line {
             flex: 1;
             height: 2px;
-            background: linear-gradient(90deg, transparent, #AED6F1, transparent);
+            background: linear-gradient(90deg, transparent, var(--card-border), transparent);
         }
 
         .sh-center { text-align: center; flex-shrink: 0; }
@@ -390,7 +409,7 @@
         /* ========== FEATURES ========== */
         .features {
             padding: 72px 20px;
-            background: linear-gradient(170deg, #EBF5FB 0%, #F4F9FD 60%, #EAF4FF 100%);
+            background: linear-gradient(170deg, var(--surface-2) 0%, var(--surface-3) 60%, var(--surface-4) 100%);
         }
 
         .features-container { max-width: 1140px; margin: 0 auto; }
@@ -458,21 +477,21 @@
         .fc-footer span i { font-size:11px; opacity:.85; }
 
         .features-stats {
-            background:#fff; border-radius:16px; padding:22px 34px;
+            background:var(--white); border-radius:16px; padding:22px 34px;
             display:flex; align-items:center;
-            box-shadow:0 3px 14px rgba(41,128,185,.1); border:1px solid #D6EAF8;
+            box-shadow:0 3px 14px rgba(41,128,185,.1); border:1px solid var(--card-border);
         }
 
         .fstat { flex:1; display:flex; align-items:center; gap:14px; }
         .fstat-icon { font-size:28px; color:var(--blue); flex-shrink:0; opacity:.85; }
         .fstat strong { display:block; font-size:15px; font-weight:700; color:var(--text); margin-bottom:2px; }
         .fstat span  { font-size:12.5px; color:var(--text-light); line-height:1.4; }
-        .fstat-divider { width:1px; height:46px; background:#D6EAF8; margin:0 28px; flex-shrink:0; }
+        .fstat-divider { width:1px; height:46px; background:var(--card-border); margin:0 28px; flex-shrink:0; }
 
         /* ========== HOW IT WORKS ========== */
         .steps {
             padding: 72px 20px;
-            background: #fff;
+            background: var(--white);
         }
 
         .steps-container { max-width: 1140px; margin: 0 auto; }
@@ -529,7 +548,7 @@
             position: absolute;
             top: -6px; right: -4px;
             width: 24px; height: 24px;
-            background: var(--text);
+            background: var(--blue-deep);
             color: #fff;
             border-radius: 50%;
             font-size: 11px;
@@ -576,7 +595,7 @@
         /* ========== ROLES ========== */
         .roles {
             padding: 72px 20px;
-            background: linear-gradient(170deg, #EBF5FB 0%, #F4F9FD 100%);
+            background: linear-gradient(170deg, var(--surface-2) 0%, var(--surface-3) 100%);
         }
 
         .roles-container { max-width: 1140px; margin: 0 auto; }
@@ -588,10 +607,10 @@
         }
 
         .role-card {
-            background: #fff;
+            background: var(--white);
             border-radius: 18px;
             padding: 28px 26px;
-            border: 1px solid #D6EAF8;
+            border: 1px solid var(--card-border);
             box-shadow: 0 4px 16px rgba(41,128,185,.08);
             display: flex;
             align-items: flex-start;
@@ -1165,5 +1184,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSelect
 </script>
 <?php endif; ?>
 
+<script src="<?php echo config('app.url_base'); ?>/js/tema.js"></script>
 </body>
 </html>

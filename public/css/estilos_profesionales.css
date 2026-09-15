@@ -1,26 +1,20 @@
 /* Estilos Profesionales - SIRGDI v2.0 */
-/* Colores: Azul #3498DB, Gris #808B96 */
-
-:root {
-    --primary: #3498DB;
-    --secondary: #808B96;
-    --dark: #2C3E50;
-    --light: #ECF0F1;
-    --border: #BDC3C7;
-}
+/* Variables de color: ver public/css/estilos_base.css (--color-*). Este archivo
+   solo mantenía alias locales (--primary, --secondary, --dark, --light, --border),
+   ahora centralizados allí para que el tema claro/oscuro sea consistente. */
 
 /* Tables */
 .table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--color-bg-elevated);
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
     border-radius: 8px;
     overflow: hidden;
 }
 
 .table thead {
-    background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--dark-blue) 100%);
     color: white;
 }
 
@@ -34,10 +28,11 @@
 .table td {
     padding: 12px 15px;
     border-bottom: 1px solid var(--border);
+    color: var(--color-text);
 }
 
 .table tbody tr:hover {
-    background-color: #F8F9FA;
+    background-color: var(--color-bg-hover);
 }
 
 .table tbody tr:last-child td {
@@ -54,18 +49,18 @@
 }
 
 .badge-active {
-    background-color: #D5F4E6;
-    color: #0B5345;
+    background-color: var(--color-success-bg);
+    color: var(--color-success-text);
 }
 
 .badge-inactive {
-    background-color: #FADBD8;
-    color: #78281F;
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger-text);
 }
 
 /* Forms */
 .form-section {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 8px;
     padding: 25px;
     margin-top: 30px;
@@ -118,7 +113,7 @@
 }
 
 .required {
-    color: #E74C3C;
+    color: var(--color-danger);
 }
 
 /* Buttons in Forms */
@@ -154,7 +149,7 @@
 
 /* Kanban Cards */
 .card-container {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 8px;
     border: 1px solid var(--border);
     padding: 15px;
@@ -192,18 +187,18 @@
 }
 
 .status-badge.pending {
-    background: #FEF5E7;
-    color: #7D6608;
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
 }
 
 .status-badge.in-progress {
-    background: #D6EAF8;
-    color: #1A5276;
+    background: var(--color-info-bg);
+    color: var(--color-info-text);
 }
 
 .status-badge.completed {
-    background: #D5F4E6;
-    color: #0B5345;
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
 }
 
 /* Admin Cards */
@@ -214,7 +209,7 @@
 }
 
 .admin-card {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);

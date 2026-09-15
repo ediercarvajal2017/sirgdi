@@ -46,15 +46,15 @@
     }
 
     .form-modern-card {
-        background: white;
-        border: 2px solid #3498DB;
+        background: var(--color-bg-elevated);
+        border: 2px solid var(--color-primary);
         padding: 40px;
         border-radius: 12px;
         box-shadow: 0 4px 15px rgba(52, 152, 219, 0.15);
     }
 
     .form-modern-card h2 {
-        color: #2C3E50;
+        color: var(--color-text);
         margin-bottom: 30px;
         font-size: 28px;
         text-align: center;
@@ -68,15 +68,16 @@
         display: block;
         font-weight: 600;
         margin-bottom: 10px;
-        color: #2C3E50;
+        color: var(--color-text);
         font-size: 15px;
     }
 
     .input-modern {
         width: 100%;
         padding: 15px;
-        border: 2px solid #3498DB;
-        background: #F8FBFC;
+        border: 2px solid var(--color-primary);
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
         border-radius: 8px;
         font-size: 16px;
         font-family: inherit;
@@ -86,14 +87,14 @@
 
     .input-modern:focus {
         outline: none;
-        border-color: #2980B9;
-        background: #F0F8FF;
+        border-color: var(--color-primary-dark);
+        background: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
     }
 
     .form-group small {
         display: block;
-        color: #7F8C8D;
+        color: var(--color-text-muted);
         font-size: 13px;
         margin-top: 8px;
         font-weight: 500;
@@ -131,9 +132,9 @@
     .btn-modern-secondary {
         flex: 1;
         padding: 12px 28px;
-        background: #ECF0F1;
-        color: #2C3E50;
-        border: 2px solid #3498DB;
+        background: var(--color-bg-subtle);
+        color: var(--color-text);
+        border: 2px solid var(--color-primary);
         border-radius: 8px;
         cursor: pointer;
         font-weight: 600;
@@ -148,7 +149,7 @@
     }
 
     .btn-modern-secondary:hover {
-        background: #D5DBDB;
+        background: var(--color-bg-hover);
         transform: translateY(-2px);
     }
 
@@ -163,14 +164,14 @@
     }
 
     .alert-error {
-        background-color: #FADBD8;
-        color: #922B21;
-        border: 2px solid #E74C3C;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
+        border: 2px solid var(--color-danger);
     }
 
     .alert-success {
-        background-color: #D5F4E6;
-        color: #186A3B;
-        border: 2px solid #27AE60;
+        background-color: var(--color-success-bg);
+        color: var(--color-success-text);
+        border: 2px solid var(--color-success);
     }
 </style>

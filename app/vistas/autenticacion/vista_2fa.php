@@ -39,9 +39,9 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --light-blue: #D6EAF8;
-        --very-light-blue: #E8F4F8;
+        --primary-blue: var(--color-primary);
+        --light-blue: var(--color-info-bg);
+        --very-light-blue: var(--color-bg);
     }
 
     body {
@@ -49,7 +49,7 @@
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, var(--very-light-blue) 0%, var(--light-blue) 100%);
+        background: var(--color-bg);
         margin: 0;
         padding: 20px;
     }
@@ -60,7 +60,7 @@
     }
 
     .auth-card {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         box-shadow: 0 8px 32px rgba(52, 152, 219, 0.15);
         padding: 50px 40px;
@@ -79,14 +79,14 @@
     }
 
     .auth-card h2 {
-        color: #2C3E50;
+        color: var(--color-text);
         font-size: 28px;
         margin: 20px 0 0;
         font-weight: 700;
     }
 
     .auth-subtitle {
-        color: #95A5A6;
+        color: var(--color-text-muted);
         margin-bottom: 30px;
         font-size: 14px;
     }
@@ -120,7 +120,8 @@
         font-size: 16px;
         font-family: inherit;
         transition: all 0.3s ease;
-        background-color: #F8FBFC;
+        background-color: var(--color-bg-subtle);
+        color: var(--color-text);
     }
 
     .input-2fa {
@@ -134,12 +135,12 @@
     .input-modern:focus {
         outline: none;
         border-color: var(--primary-blue);
-        background-color: white;
+        background-color: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
     }
 
     .auth-help {
-        color: #95A5A6;
+        color: var(--color-text-muted);
         font-size: 12px;
         margin: 0;
         display: flex;
@@ -172,7 +173,7 @@
         text-align: center;
         margin-top: 25px;
         padding-top: 25px;
-        border-top: 1px solid #BDC3C7;
+        border-top: 1px solid var(--color-border);
     }
 
     .auth-links a {
@@ -201,9 +202,9 @@
     }
 
     .alert-error {
-        background-color: #FADBD8;
-        color: #78281F;
-        border-left: 4px solid #E74C3C;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
+        border-left: 4px solid var(--color-danger);
     }
 
     .alert i {
