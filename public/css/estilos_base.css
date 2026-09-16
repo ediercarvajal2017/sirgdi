@@ -46,6 +46,11 @@
     --accent: #2E86C1;
     --accent-strong: #216694;
     --accent-soft: rgba(52, 152, 219, .12);
+    /* Azul de relleno para superficies que llevan texto blanco encima.
+       Es más oscuro que --accent a propósito: garantiza contraste AA. */
+    --accent-solid: #1F77B0;
+    --accent-solid-hover: #17618F;
+    --teal-accent: #117A65;
 
     /* Enlaces */
     --link: #1F6FA8;
@@ -122,6 +127,11 @@
     --accent: #4DA3E0;
     --accent-strong: #7CBFEC;
     --accent-soft: rgba(77, 163, 224, .16);
+    /* En oscuro --accent es claro, así que no sirve como fondo de texto
+       blanco; este tono sólido sí mantiene contraste AA. */
+    --accent-solid: #1F77B0;
+    --accent-solid-hover: #2A8AC9;
+    --teal-accent: #2ECC71;
 
     /* Enlaces */
     --link: #6FB8EA;

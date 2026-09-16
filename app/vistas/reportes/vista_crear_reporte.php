@@ -226,7 +226,9 @@
     .form-modern-wrapper { max-width: 760px; margin: 36px auto; padding: 20px; }
     .form-modern-card { background:var(--color-bg-elevated); border-radius:14px; padding:0; box-shadow:0 8px 28px rgba(52,152,219,.12); overflow:hidden; border:1px solid var(--color-border-subtle); }
 
-    .form-head { display:flex; align-items:center; gap:18px; padding:26px 32px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; }
+    /* Degradado algo más oscuro que el original para que el texto blanco
+       del título y del subtítulo cumpla contraste AA. */
+    .form-head { display:flex; align-items:center; gap:18px; padding:26px 32px; background:linear-gradient(135deg,#1A5F8F,#1F77B0); color:#fff; }
     .form-head-icon { width:54px; height:54px; flex-shrink:0; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; }
     .form-head-text { flex:1; }
     .form-head-text h2 { margin:0 0 4px; font-size:23px; font-weight:700; }
@@ -386,16 +388,26 @@
         box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
     }
 
+    /* La especificidad de `.form-modern-wrapper .btn-modern` (hoja global)
+       le ganaba a este selector y pintaba el botón Cancelar con el mismo
+       degradado azul del botón principal. Se iguala la especificidad para
+       que el secundario se distinga del primario. */
+    .form-modern-wrapper .btn-secondary-modern,
     .btn-secondary-modern {
-        background: rgba(128, 139, 150, 0.15);
-        color: var(--gray-text);
+        background: var(--btn-neutral-bg);
+        background-image: none;
+        color: var(--btn-neutral-text);
+        border: 1.5px solid var(--btn-neutral-border);
         min-width: 200px;
         justify-content: center;
     }
 
+    .form-modern-wrapper .btn-secondary-modern:hover,
     .btn-secondary-modern:hover {
-        background: var(--gray-text);
-        color: white;
+        background: var(--btn-neutral-bg-hover);
+        background-image: none;
+        color: var(--btn-neutral-text);
+        border-color: var(--color-border);
         transform: translateY(-2px);
     }
 
@@ -437,13 +449,13 @@
     .ev-tab:hover { background: var(--color-bg-hover); color: var(--dark-text); }
 
     .ev-tab-active {
-        background: var(--primary-blue);
+        background: var(--accent-solid);
         color: #fff;
-        border-color: var(--primary-blue);
+        border-color: var(--accent-solid);
     }
 
     .ev-tab-badge {
-        background: rgba(255,255,255,.25);
+        background: rgba(0,0,0,.28);
         color: #fff;
         border-radius: 10px;
         font-size: 11px;
@@ -451,7 +463,7 @@
         font-weight: 700;
     }
 
-    .ev-tab-badge-rec { background: #E74C3C; }
+    .ev-tab-badge-rec { background: var(--btn-danger-bg); }
 
     /* ── SOURCE ROW ── */
     .ev-source-row {
@@ -488,14 +500,14 @@
     .ev-source-card:hover i { transform: scale(1.1); }
 
     .ev-source-cam {
-        border-color: #C5EAE0;
+        border-color: var(--teal-accent);
         background: var(--color-bg-subtle);
     }
 
-    .ev-source-cam i { color: #16A085; }
+    .ev-source-cam i { color: var(--teal-accent); }
 
     .ev-source-cam:hover {
-        border-color: #1ABC9C;
+        border-color: var(--teal-accent);
         background: var(--color-bg-hover);
     }
 
@@ -542,7 +554,7 @@
         transition: background .2s;
     }
 
-    .ev-preview-item .ev-remove:hover { background: #E74C3C; }
+    .ev-preview-item .ev-remove:hover { background: var(--btn-danger-bg); }
 
     .ev-preview-item .ev-label {
         position: absolute;
@@ -593,7 +605,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        background: linear-gradient(135deg, #2980B9, #3498DB);
+        background: linear-gradient(135deg, #1A5F8F, #1F77B0);
         color: #fff;
         font-weight: 700;
         font-size: 15px;
@@ -675,7 +687,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: linear-gradient(135deg, #2980B9, #3498DB);
+        background: linear-gradient(135deg, #1A5F8F, #1F77B0);
         color: #fff;
         border: none;
         border-radius: 10px;
@@ -694,7 +706,7 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #E74C3C;
+        background: var(--btn-danger-bg);
         color: #fff;
         border: none;
         border-radius: 10px;
@@ -706,7 +718,7 @@
         transition: all .2s;
     }
 
-    .cam-btn-stop:hover { background: #C0392B; }
+    .cam-btn-stop:hover { background: var(--btn-danger-bg-hover); }
 
     .cam-btn-switch {
         background: var(--color-bg-subtle);
@@ -1145,7 +1157,7 @@ function mostrarOverlayCarga(tieneArchivos) {
 function mostrarAlerta(msg) {
     // Toast no-intrusivo en lugar de alert()
     const t = document.createElement('div');
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#C0392B;color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.2);z-index:9999;';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--btn-danger-bg,#C0392B);color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.2);z-index:9999;';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 3500);
