@@ -2,7 +2,7 @@
     <div class="page-banner">
         <div class="page-banner__icon"><i class="fas fa-crown"></i></div>
         <div class="page-banner__text">
-            <h2>Administración Global - SIRGDI</h2>
+            <h2>Administración Global - <?php echo htmlspecialchars(config('app.app_name')); ?></h2>
             <p>Gestión de todas las instituciones educativas.</p>
         </div>
     </div>

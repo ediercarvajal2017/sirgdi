@@ -34,7 +34,7 @@ class ControladorAdministrador {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         $datos = [
-            'titulo' => 'Admin Panel - SIRGDI',
+            'titulo' => 'Admin Panel - ' . config('app.app_name'),
             'id_institucion' => $id_institucion,
         ];
 
@@ -75,7 +75,7 @@ class ControladorAdministrador {
         }
 
         $datos = [
-            'titulo' => 'Gestionar SLA - SIRGDI',
+            'titulo' => 'Gestionar SLA - ' . config('app.app_name'),
             'slas' => $slas,
             'categorias' => $categorias,
             'urgencias' => $urgencias,
@@ -204,7 +204,7 @@ class ControladorAdministrador {
         unset($_SESSION['form_usuario_old'], $_SESSION['form_usuario_campo']);
 
         $datos = [
-            'titulo' => 'Gestionar Usuarios - SIRGDI',
+            'titulo' => 'Gestionar Usuarios - ' . config('app.app_name'),
             'usuarios' => $usuarios,
             'roles' => $roles,
             'csrf_token' => Validacion::generar_csrf_token(),
@@ -495,7 +495,7 @@ class ControladorAdministrador {
         $permisos = $bd->obtener_todos($sql_permisos, []);
 
         $datos = [
-            'titulo' => 'Gestionar Roles y Permisos - SIRGDI',
+            'titulo' => 'Gestionar Roles y Permisos - ' . config('app.app_name'),
             'roles' => $roles,
             'permisos' => $permisos,
         ];
@@ -547,7 +547,7 @@ class ControladorAdministrador {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
+    <title><?php echo htmlspecialchars($titulo ?? config('app.app_name')); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_formularios_modernos.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_profesionales.css'); ?>">

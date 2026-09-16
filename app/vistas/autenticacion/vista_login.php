@@ -2,10 +2,10 @@
 <div class="form-modern-wrapper">
     <div class="form-modern-card">
         <div class="login-logo">
-            <img src="<?php echo config('app.url_base'); ?>/img/logo_sirgdi.png" alt="SIRGDI">
+            <img src="<?php echo config('app.url_base'); ?>/img/logo_sirgdi.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
         </div>
 
-        <h2><?php echo config('app.app_name'); ?></h2>
+        <h2><?php echo htmlspecialchars(config('app.app_name_version')); ?></h2>
 
         <?php if (!empty($exito)): ?>
             <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($exito); ?></div>

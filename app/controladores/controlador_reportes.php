@@ -54,7 +54,7 @@ class ControladorReportes {
         $categorias = $this->modelo_categoria->listar_por_institucion($id_institucion);
 
         $datos = [
-            'titulo' => 'Crear Reporte - SIRGDI',
+            'titulo' => 'Crear Reporte - ' . config('app.app_name'),
             'csrf_token' => $csrf_token,
             'sedes' => $sedes,
             'categorias' => $categorias,
@@ -264,7 +264,7 @@ class ControladorReportes {
                 : [];
 
             $datos = [
-                'titulo' => 'Editar Reporte - SIRGDI',
+                'titulo' => 'Editar Reporte - ' . config('app.app_name'),
                 'csrf_token' => Validacion::generar_csrf_token(),
                 'reporte' => $reporte,
                 'sedes' => $sedes,
@@ -405,7 +405,7 @@ class ControladorReportes {
         $categoria = $this->modelo_categoria->obtener_por_id($reporte['id_categoria'], $reporte['id_institucion']);
 
         $datos = [
-            'titulo' => 'Seguimiento de Reporte - SIRGDI',
+            'titulo' => 'Seguimiento de Reporte - ' . config('app.app_name'),
             'reporte' => $reporte,
             'sede' => $sede,
             'categoria' => $categoria,
@@ -447,7 +447,7 @@ class ControladorReportes {
         $reportes = $this->modelo_reporte->listar_por_institucion($id_institucion, $filtros, $limite, $offset);
 
         $datos = [
-            'titulo' => 'Mis Reportes - SIRGDI',
+            'titulo' => 'Mis Reportes - ' . config('app.app_name'),
             'reportes' => $reportes,
             'pagina' => $pagina,
             'filtros' => $filtros,
@@ -503,7 +503,7 @@ class ControladorReportes {
             : null;
 
         $datos = [
-            'titulo' => 'Detalle de Reporte - SIRGDI',
+            'titulo' => 'Detalle de Reporte - ' . config('app.app_name'),
             'reporte' => $reporte,
             'evidencias' => $evidencias,
             'intervencion' => $intervencion,
@@ -648,7 +648,7 @@ class ControladorReportes {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
+    <title><?php echo htmlspecialchars($titulo ?? config('app.app_name')); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_formularios_modernos.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_profesionales.css'); ?>">

@@ -30,7 +30,7 @@ class ControladorAutenticacion {
 
         // Preparar datos para la vista
         $datos = [
-            'titulo'     => 'Login - SIRGDI',
+            'titulo'     => 'Login - ' . config('app.app_name'),
             'csrf_token' => $csrf_token,
             'error'      => $_GET['error'] ?? null,
             'exito'      => $_GET['exito'] ?? null,
@@ -98,7 +98,7 @@ class ControladorAutenticacion {
         $csrf_token = Validacion::generar_csrf_token();
 
         $datos = [
-            'titulo' => 'Autenticación de Dos Factores - SIRGDI',
+            'titulo' => 'Autenticación de Dos Factores - ' . config('app.app_name'),
             'csrf_token' => $csrf_token,
             'error' => $_GET['error'] ?? null,
         ];
@@ -162,7 +162,7 @@ class ControladorAutenticacion {
         $csrf_token = Validacion::generar_csrf_token();
 
         $datos = [
-            'titulo' => 'Cambiar Contraseña - SIRGDI',
+            'titulo' => 'Cambiar Contraseña - ' . config('app.app_name'),
             'csrf_token' => $csrf_token,
             'error' => $_GET['error'] ?? null,
             'exito' => $_GET['exito'] ?? null,
@@ -231,7 +231,7 @@ class ControladorAutenticacion {
         $csrf_token = Validacion::generar_csrf_token();
 
         $datos = [
-            'titulo' => 'Recuperar Contraseña - SIRGDI',
+            'titulo' => 'Recuperar Contraseña - ' . config('app.app_name'),
             'csrf_token' => $csrf_token,
             'error' => $_GET['error'] ?? null,
             'exito' => $_GET['exito'] ?? null,
@@ -334,7 +334,7 @@ class ControladorAutenticacion {
         }
 
         $datos = [
-            'titulo'    => 'Nueva Contraseña - SIRGDI',
+            'titulo'    => 'Nueva Contraseña - ' . config('app.app_name'),
             'token'     => $token,
             'error'     => $_GET['error'] ?? null,
         ];
@@ -410,7 +410,7 @@ class ControladorAutenticacion {
 
         // Renderizar página de inicio pública
         $datos = [
-            'titulo'                 => 'Bienvenido - SIRGDI v2.0',
+            'titulo'                 => 'Bienvenido - ' . config('app.app_name_version'),
             'app_name'               => config('app.app_name'),
             'instituciones_publicas' => $instituciones_publicas,
         ];
@@ -437,7 +437,7 @@ class ControladorAutenticacion {
         $csrf_token = Validacion::generar_csrf_token();
 
         $datos = [
-            'titulo'       => 'Seleccionar Institución - SIRGDI',
+            'titulo'       => 'Seleccionar Institución - ' . config('app.app_name'),
             'csrf_token'   => $csrf_token,
             'instituciones' => $_SESSION['instituciones_disponibles'] ?? [],
             'error'        => $_GET['error'] ?? null,
@@ -534,7 +534,7 @@ class ControladorAutenticacion {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
+    <title><?php echo htmlspecialchars($titulo ?? config('app.app_name')); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_formularios_modernos.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_profesionales.css'); ?>">

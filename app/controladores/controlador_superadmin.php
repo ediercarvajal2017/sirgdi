@@ -34,7 +34,7 @@ class ControladorSuperadmin {
         unset($_SESSION['credenciales_admin_institucion']);
 
         $datos = [
-            'titulo' => 'Administración Global - SIRGDI',
+            'titulo' => 'Administración Global - ' . config('app.app_name'),
             'instituciones' => $instituciones,
             'cred_admin' => $cred_admin,
         ];
@@ -53,7 +53,7 @@ class ControladorSuperadmin {
             unset($_SESSION['form_inst_old'], $_SESSION['form_inst_campo']);
 
             $datos = [
-                'titulo' => 'Crear Institución - SIRGDI',
+                'titulo' => 'Crear Institución - ' . config('app.app_name'),
                 'csrf_token' => Validacion::generar_csrf_token(),
                 'form_old' => $form_old,
                 'form_campo_error' => $form_campo_error,
@@ -332,7 +332,7 @@ class ControladorSuperadmin {
         }
 
         $datos = [
-            'titulo' => 'Editar Institución - SIRGDI',
+            'titulo' => 'Editar Institución - ' . config('app.app_name'),
             'institucion' => $institucion,
             'csrf_token' => Validacion::generar_csrf_token(),
             'error' => $error ?? '',
@@ -676,7 +676,7 @@ class ControladorSuperadmin {
         ) ?? [];
 
         $datos = [
-            'titulo'                  => 'Técnicos Externos - SIRGDI',
+            'titulo'                  => 'Técnicos Externos - ' . config('app.app_name'),
             'tecnicos'                => array_values($tecnicos),
             'instituciones_educativas'=> $instituciones_educativas,
             'csrf_token'              => Validacion::generar_csrf_token(),
@@ -848,7 +848,7 @@ class ControladorSuperadmin {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
+    <title><?php echo htmlspecialchars($titulo ?? config('app.app_name')); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_formularios_modernos.css'); ?>">
     <link rel="stylesheet" href="<?php echo asset_url('css/estilos_profesionales.css'); ?>">

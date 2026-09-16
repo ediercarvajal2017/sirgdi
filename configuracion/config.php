@@ -1,5 +1,5 @@
 <?php
-// Configuración global de SIRGDI
+// Configuración global de ANA (Asistente de Necesidades de Ambientes Escolares)
 
 // Cargar variables de entorno desde .env
 // parse_ini_file en PHP 7+ no reconoce # como comentario y falla silenciosamente;
@@ -56,7 +56,7 @@ $smtp_config = [
     'username' => getenv('SMTP_USER') ?: '',
     'password' => getenv('SMTP_PASS') ?: '',
     'from_email' => getenv('SMTP_FROM_EMAIL') ?: 'noreply@sirgdi.local',
-    'from_name' => getenv('SMTP_FROM_NAME') ?: 'SIRGDI - Reportes de Daños',
+    'from_name' => getenv('SMTP_FROM_NAME') ?: 'ANA - Asistente de Necesidades de Ambientes Escolares',
 ];
 
 // === SEGURIDAD ===
@@ -103,7 +103,11 @@ $app_config = [
     'debug' => getenv('DEBUG') !== false
         ? filter_var(getenv('DEBUG'), FILTER_VALIDATE_BOOLEAN)
         : ($env_actual !== 'production'),
-    'app_name' => 'SIRGDI v2.0',
+    // Identidad del producto. Todo texto visible que nombre la aplicación
+    // debe salir de aquí, nunca escribirse en duro en vistas o controladores.
+    'app_name' => 'ANA',
+    'app_full_name' => 'Asistente de Necesidades de Ambientes Escolares',
+    'app_name_version' => 'ANA v2.0',
     'version' => '2.0.0',
     'environment' => $env_actual, // development, staging, production
     'url_base' => getenv('APP_URL') ?: 'http://localhost/reporte_danos/public',
@@ -185,15 +189,15 @@ function asset_url($ruta) {
 
 // === VALIDAR REQUERIMIENTOS ===
 if (version_compare(PHP_VERSION, '7.4', '<')) {
-    die('SIRGDI requiere PHP 7.4 o superior. Versión actual: ' . PHP_VERSION);
+    die('ANA requiere PHP 7.4 o superior. Versión actual: ' . PHP_VERSION);
 }
 
 if (!extension_loaded('pdo_mysql')) {
-    die('SIRGDI requiere la extensión pdo_mysql.');
+    die('ANA requiere la extensión pdo_mysql.');
 }
 
 if (!extension_loaded('openssl')) {
-    die('SIRGDI requiere la extensión openssl para encriptación.');
+    die('ANA requiere la extensión openssl para encriptación.');
 }
 
 return [

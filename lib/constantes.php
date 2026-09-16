@@ -1,5 +1,5 @@
 <?php
-// Constantes globales del sistema SIRGDI
+// Constantes globales del sistema ANA
 
 // Estados del reporte (RN-12: inmutables)
 define('ESTADO_REGISTRADO', 1);
@@ -96,7 +96,7 @@ define('PASSWORD_ALGO', PASSWORD_BCRYPT);
 define('PASSWORD_COST', 12);
 
 // Formato de ticket (RN-07)
-define('TICKET_PREFIX', 'SIR'); // SIRGDI Reporte
+define('TICKET_PREFIX', 'SIR'); // Prefijo histórico de tickets (se conserva para no romper los existentes)
 
 // Ubicación de logs
 define('LOG_DIR', ROOT_PATH . '/almacenamiento/logs');

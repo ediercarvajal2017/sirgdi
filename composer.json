@@ -1,6 +1,6 @@
 {
-    "name": "sirgdi/sirgdi",
-    "description": "Sistema de Reporte y Gestión de Daños en Instituciones Educativas",
+    "name": "ana/ana",
+    "description": "ANA - Asistente de Necesidades de Ambientes Escolares",
     "type": "project",
     "require": {
         "php": ">=7.4",
@@ -8,7 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "SIRGDI\\": "app/"
+            "ANA\\": "app/"
         }
     },
     "config": {

@@ -285,7 +285,7 @@ $urgencias = [
     <div class="inv-navbar-icon"><i class="fas fa-clipboard-list"></i></div>
     <div>
         <div class="inv-navbar-title"><?php echo htmlspecialchars($institucion['nombre']); ?></div>
-        <div class="inv-navbar-sub">Sistema de Reporte de Daños</div>
+        <div class="inv-navbar-sub"><?php echo htmlspecialchars(config('app.app_full_name')); ?></div>
     </div>
     <span class="inv-navbar-badge"><i class="fas fa-pen-to-square"></i> Nuevo Reporte</span>
 </nav>
@@ -629,7 +629,7 @@ $urgencias = [
 
     <div class="inv-footer">
         ¿Ya tiene cuenta? <a href="<?php echo $base; ?>/?controlador=autenticacion&accion=inicio">Iniciar sesión</a>
-        &nbsp;·&nbsp; SIRGDI v2.0
+        &nbsp;·&nbsp; <?php echo htmlspecialchars(config('app.app_name_version')); ?>
     </div>
 </div>
 

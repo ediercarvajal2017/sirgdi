@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title><?php echo config('app.app_name'); ?> - Sistema de Reportes de Daños</title>
+    <title><?php echo htmlspecialchars(config('app.app_name')); ?> - <?php echo htmlspecialchars(config('app.app_full_name')); ?></title>
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo config('app.url_base'); ?>/img/favicon.png">
     <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -844,10 +844,10 @@
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar">
         <a href="#" class="nav-brand">
-            <div class="nav-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI"></div>
+            <div class="nav-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>"></div>
             <div>
-                <div class="nav-brand-name">SIRGDI v2.0</div>
-                <div class="nav-brand-sub">Sistema de Reportes</div>
+                <div class="nav-brand-name"><?php echo htmlspecialchars(config('app.app_name_version')); ?></div>
+                <div class="nav-brand-sub"><?php echo htmlspecialchars(config('app.app_full_name')); ?></div>
             </div>
         </a>
         <div class="nav-links">
@@ -866,7 +866,7 @@
             <div class="hero-badge">
                 <i class="fas fa-bolt"></i> Sistema Institucional v2.0
             </div>
-            <h1>Gestión de Daños<br><span>Inteligente y Trazable</span></h1>
+            <h1>Gestión de Necesidades<br><span>Inteligente y Trazable</span></h1>
             <p class="hero-sub">
                 Plataforma integral para reportar, asignar y resolver incidencias de infraestructura
                 escolar con evidencia fotográfica, SLA automático y auditoría completa.
@@ -1154,10 +1154,10 @@
         <div class="footer-container">
             <div>
                 <div class="footer-brand">
-                    <div class="footer-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI"></div>
-                    <span class="footer-brand-name">SIRGDI v2.0</span>
+                    <div class="footer-logo-icon"><img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>"></div>
+                    <span class="footer-brand-name"><?php echo htmlspecialchars(config('app.app_name_version')); ?></span>
                 </div>
-                <p class="footer-copy">&copy; 2026 Sistema de Reportes y Gestión de Daños e Incidencias. Todos los derechos reservados.</p>
+                <p class="footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars(config('app.app_full_name')); ?>. Todos los derechos reservados.</p>
             </div>
             <div class="footer-links">
                 <a href="#">Privacidad</a>

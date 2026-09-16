@@ -1,9 +1,9 @@
-// Base JavaScript - SIRGDI
+// Base JavaScript - ANA
 
-console.log('SIRGDI v2.0 - Sistema de Reportes de Daños');
+console.log('ANA v2.0 - Asistente de Necesidades de Ambientes Escolares');
 
 // Utility Functions
-const SIRGDI = {
+const ANA = {
     /**
      * Make API call
      */

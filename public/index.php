@@ -1,6 +1,6 @@
 <?php
 /**
- * SIRGDI v2.0 - Front Controller (Router)
+ * ANA v2.0 - Front Controller (Router)
  * Punto de entrada único para toda la aplicación
  * Todos los requests son dirigidos aquí por .htaccess
  */

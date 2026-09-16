@@ -1,4 +1,4 @@
-<!-- Página de Inicio - Presentación SIRGDI + Institución -->
+<!-- Página de Inicio - Presentación ANA + Institución -->
 <div class="inicio-wrap">
 
     <!-- HERO: Presentación de la plataforma -->
@@ -6,12 +6,12 @@
         <div class="hero-bg-deco"></div>
         <div class="hero-content">
             <span class="hero-badge"><i class="fas fa-bolt"></i> Versión 2.0</span>
-            <h1 class="hero-titulo">SIRGDI <span>v2.0</span></h1>
+            <h1 class="hero-titulo"><?php echo htmlspecialchars(config('app.app_name')); ?> <span>v2.0</span></h1>
             <p class="hero-texto">
-                <strong>SIRGDI v2.0</strong> es la versión mejorada del <strong>Sistema de Registro y Gestión
-                de Daños e Incidencias</strong>, una plataforma diseñada para que las instituciones educativas
-                puedan reportar, administrar y hacer seguimiento a fallas, daños, solicitudes o incidencias
-                dentro de la infraestructura escolar.
+                <strong><?php echo htmlspecialchars(config('app.app_name')); ?></strong>, el
+                <strong><?php echo htmlspecialchars(config('app.app_full_name')); ?></strong>, es una plataforma
+                diseñada para que las instituciones educativas puedan reportar, administrar y hacer seguimiento
+                a fallas, daños, solicitudes o incidencias dentro de la infraestructura escolar.
             </p>
         </div>
     </section>
@@ -30,7 +30,7 @@
         <div class="institucion-info">
             <span class="institucion-bienvenida"><i class="fas fa-hand-sparkles"></i> Bienvenido a</span>
             <h2 class="institucion-nombre"><?php echo htmlspecialchars($institucion['nombre'] ?? 'Institución Educativa'); ?></h2>
-            <p class="institucion-sub">Plataforma de Reporte y Gestión de Daños e Incidencias</p>
+            <p class="institucion-sub"><?php echo htmlspecialchars(config('app.app_full_name')); ?></p>
         </div>
     </section>
 

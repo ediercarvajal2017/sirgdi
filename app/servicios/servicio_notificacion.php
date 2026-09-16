@@ -121,7 +121,7 @@ class ServicioNotificacion {
 
     /** Recuperación de contraseña — envía link de reset al usuario */
     public function enviar_recuperacion_contrasena($email, $nombre, $link_reset) {
-        $asunto = 'Recuperación de contraseña — SIRGDI';
+        $asunto = 'Recuperación de contraseña — ' . config('app.app_name');
         $cuerpo = $this->plantilla('Recuperación de Contraseña', [
             'Usuario' => htmlspecialchars($nombre),
         ], 'Recibimos una solicitud para restablecer la contraseña de tu cuenta.
@@ -272,6 +272,9 @@ class ServicioNotificacion {
     /** Genera el HTML del email con plantilla corporativa */
     private function plantilla($titulo, array $datos, $intro = '') {
         $url_base = config('app.url_base');
+        $app_nombre = htmlspecialchars(config('app.app_name'));
+        $app_nombre_completo = htmlspecialchars(config('app.app_full_name'));
+        $app_nombre_version = htmlspecialchars(config('app.app_name_version'));
         $filas = '';
         foreach ($datos as $campo => $valor) {
             $filas .= "<tr>
@@ -292,9 +295,9 @@ class ServicioNotificacion {
         <!-- Cabecera -->
         <tr>
           <td style="background:#0b1929;padding:24px 32px;text-align:center;">
-            <img src="{$url_base}/img/logo_sirgdi.png" alt="SIRGDI" style="height:50px;border-radius:8px;">
-            <p style="margin:8px 0 0;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:1px;">
-              SISTEMA DE REPORTE Y GESTIÓN DE DAÑOS
+            <img src="{$url_base}/img/logo_sirgdi.png" alt="{$app_nombre}" style="height:50px;border-radius:8px;">
+            <p style="margin:8px 0 0;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:1px;text-transform:uppercase;">
+              {$app_nombre_completo}
             </p>
           </td>
         </tr>
@@ -316,7 +319,7 @@ class ServicioNotificacion {
         <tr>
           <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:16px 32px;text-align:center;">
             <p style="margin:0;color:#9ca3af;font-size:12px;">
-              Este es un mensaje automático de SIRGDI v2.0. No responda a este correo.
+              Este es un mensaje automático de {$app_nombre_version}. No responda a este correo.
             </p>
           </td>
         </tr>

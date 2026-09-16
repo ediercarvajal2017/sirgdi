@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
-    <title>Seguimiento de Reporte — SIRGDI</title>
+    <title>Seguimiento de Reporte — <?php echo htmlspecialchars(config('app.app_name')); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -537,7 +537,7 @@
         <div class="nav-logo"><i class="fas fa-shield-halved"></i></div>
         <div class="nav-brand-text">
             <span class="nav-brand-name"><?php echo htmlspecialchars(config('app.app_name')); ?></span>
-            <span class="nav-brand-sub">Sistema de Reportes</span>
+            <span class="nav-brand-sub"><?php echo htmlspecialchars(config('app.app_full_name')); ?></span>
         </div>
     </a>
     <div class="nav-pill">
@@ -804,7 +804,7 @@ $es_devuelto = ($id_estado_actual === 6);
 </div><!-- /page-body -->
 
 <div class="page-footer">
-    <p><strong><?php echo htmlspecialchars(config('app.app_name')); ?></strong> &mdash; Sistema Institucional de Reporte y Gestión de Daños en Infraestructura</p>
+    <p><strong><?php echo htmlspecialchars(config('app.app_name')); ?></strong> &mdash; <?php echo htmlspecialchars(config('app.app_full_name')); ?></p>
     <p style="margin-top:4px;">&copy; <?php echo date('Y'); ?> &mdash; Esta página es de acceso público. No comparta este enlace con personas no autorizadas.</p>
 </div>
 

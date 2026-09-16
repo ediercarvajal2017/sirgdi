@@ -1,5 +1,5 @@
 /**
- * Selector de tema claro/oscuro — SIRGDI
+ * Selector de tema claro/oscuro — ANA
  *
  * Orden de prioridad para decidir el tema:
  *   1. La elección explícita del usuario (guardada en localStorage).
@@ -168,7 +168,7 @@
         crearBoton();
     }
 
-    window.SirgdiTema = {
+    window.AnaTema = {
         alternar: alternarTema,
         actual: temaActual,
         usarAutomatico: usarAutomatico,

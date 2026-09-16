@@ -3,11 +3,11 @@
     <div class="header-bar">
         <div class="header-brand-section">
             <div class="header-logo">
-                <img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="SIRGDI">
+                <img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
             </div>
             <div class="header-title">
-                <h1><?php echo config('app.app_name'); ?></h1>
-                <p class="brand-subtitle">Sistema de Reporte de Daños</p>
+                <h1><?php echo htmlspecialchars(config('app.app_name_version')); ?></h1>
+                <p class="brand-subtitle"><?php echo htmlspecialchars(config('app.app_full_name')); ?></p>
             </div>
         </div>
 
