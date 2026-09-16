@@ -14,6 +14,13 @@
         <a href="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=gestionar_tecnicos" class="btn-modern btn-tecnicos-modern">
             <i class="fas fa-user-cog"></i> Técnicos Externos
         </a>
+        <form method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=cargar_catalogo" style="display:inline;"
+              onsubmit="return confirm('Se añadirán a todas las instituciones activas las categorías y subcategorías del catálogo que aún no tengan.\n\nLo que ya existe se conserva sin cambios. ¿Continuar?');">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Validacion::generar_csrf_token()); ?>">
+            <button type="submit" class="btn-modern btn-catalogo-modern" title="Añade las categorías del catálogo que falten en cada institución">
+                <i class="fas fa-tags"></i> Cargar Catálogo de Categorías
+            </button>
+        </form>
     </div>
 
     <?php if (!empty($cred_admin)): ?>
@@ -150,6 +157,7 @@ function copiarCredAdmin() {
         margin-bottom: 30px;
         display: flex;
         gap: 12px;
+        flex-wrap: wrap;
     }
 
     .btn-modern {
@@ -176,6 +184,17 @@ function copiarCredAdmin() {
     .btn-primary-modern:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-catalogo-modern {
+        background: linear-gradient(135deg, #1E8449 0%, #166236 100%);
+        color: white;
+        font-family: inherit;
+    }
+
+    .btn-catalogo-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 132, 73, 0.3);
     }
 
     .btn-tecnicos-modern {

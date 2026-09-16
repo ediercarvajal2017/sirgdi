@@ -774,45 +774,7 @@ class ControladorSuperadmin {
             'activa' => 1,
         ]);
 
-        // Categorías base: [nombre, descripción, es_critica_escalada, orden, [subcategorías...]]
-        $catalogo = [
-            ['Infraestructura', 'Techos, muros, pisos, puertas y ventanas.', 0, 1,
-                ['Techos y cubierta', 'Muros y paredes', 'Pisos y pavimento', 'Puertas y marcos', 'Ventanas y vidrios', 'Escaleras y rampas']],
-            ['Mobiliario', 'Sillas, mesas, tableros, estantes y lockers.', 0, 2,
-                ['Sillas y pupitres', 'Mesas y escritorios', 'Tableros (pizarrones)', 'Estantes y armarios']],
-            ['Eléctrico', 'Tomas, luminarias, tableros eléctricos, cableado.', 1, 3,
-                ['Tomas y enchufes', 'Luminarias y bombillas', 'Tablero eléctrico', 'Cableado y ductos', 'Sistemas de emergencia']],
-            ['Sanitario', 'Inodoros, lavamanos, tuberías y fugas de agua.', 0, 4,
-                ['Inodoros y sanitarios', 'Lavamanos y grifería', 'Tuberías y desagües', 'Fugas de agua', 'Tanques y cisternas']],
-            ['Tecnológico', 'Computadores, proyectores, red y sistemas de audio.', 0, 5,
-                ['Computadores y portátiles', 'Proyectores y pantallas', 'Red e internet', 'Sistemas de audio']],
-            ['Seguridad', 'Cercas, extintores, cámaras y salidas de emergencia.', 1, 6,
-                ['Cercas y rejas', 'Extintores', 'Cámaras de seguridad', 'Salidas de emergencia', 'Señalización']],
-        ];
-
-        foreach ($catalogo as $cat) {
-            list($nombre, $descripcion, $critica, $orden, $subcats) = $cat;
-
-            $id_categoria = $bd->insertar('categoria', [
-                'id_institucion' => $id_institucion,
-                'nombre' => $nombre,
-                'descripcion' => $descripcion,
-                'es_critica_escalada' => $critica,
-                'activa' => 1,
-                'orden' => $orden,
-            ]);
-
-            $i = 1;
-            foreach ($subcats as $sub) {
-                $bd->insertar('subcategoria', [
-                    'id_institucion' => $id_institucion,
-                    'id_categoria' => $id_categoria,
-                    'nombre' => $sub,
-                    'activa' => 1,
-                    'orden' => $i++,
-                ]);
-            }
-        }
+        $this->aplicar_catalogo_categorias($bd, $id_institucion);
 
         // SLA base por urgencia (id_categoria NULL = aplica a todas)
         $slas = [
@@ -831,6 +793,118 @@ class ControladorSuperadmin {
                 'activo' => 1,
             ]);
         }
+    }
+
+    /**
+     * Aplica el catálogo de configuracion/catalogo_categorias.php a una institución.
+     *
+     * Es idempotente: solo crea lo que falta. Una categoría o subcategoría que ya
+     * exista con el mismo nombre se conserva tal cual, incluidos los ajustes que el
+     * administrador haya hecho (crítica, descripción, orden), así que puede volver a
+     * ejecutarse sin duplicar ni pisar nada.
+     *
+     * Devuelve ['categorias' => creadas, 'subcategorias' => creadas].
+     */
+    private function aplicar_catalogo_categorias($bd, $id_institucion) {
+        $catalogo = require CONFIG_PATH . '/catalogo_categorias.php';
+        $creadas = ['categorias' => 0, 'subcategorias' => 0];
+
+        $existentes = [];
+        $filas = $bd->obtener_todos('SELECT id_categoria, nombre FROM categoria WHERE id_institucion = :i', [':i' => $id_institucion]);
+        foreach ($filas as $f) {
+            $existentes[mb_strtolower(trim($f['nombre']))] = (int)$f['id_categoria'];
+        }
+
+        foreach ($catalogo as $entrada) {
+            list($nombre, $descripcion, $critica, $orden, $subcats) = $entrada;
+            $clave = mb_strtolower(trim($nombre));
+
+            if (isset($existentes[$clave])) {
+                $id_categoria = $existentes[$clave];
+            } else {
+                $id_categoria = (int)$bd->insertar('categoria', [
+                    'id_institucion' => $id_institucion,
+                    'nombre' => $nombre,
+                    'descripcion' => $descripcion,
+                    'es_critica_escalada' => $critica,
+                    'activa' => 1,
+                    'orden' => $orden,
+                ]);
+                $existentes[$clave] = $id_categoria;
+                $creadas['categorias']++;
+            }
+
+            $subs_existentes = [];
+            $filas_sub = $bd->obtener_todos(
+                'SELECT nombre FROM subcategoria WHERE id_institucion = :i AND id_categoria = :c',
+                [':i' => $id_institucion, ':c' => $id_categoria]
+            );
+            foreach ($filas_sub as $s) {
+                $subs_existentes[mb_strtolower(trim($s['nombre']))] = true;
+            }
+
+            $posicion = count($subs_existentes);
+            foreach ($subcats as $sub) {
+                if (isset($subs_existentes[mb_strtolower(trim($sub))])) {
+                    continue;
+                }
+                $bd->insertar('subcategoria', [
+                    'id_institucion' => $id_institucion,
+                    'id_categoria' => $id_categoria,
+                    'nombre' => $sub,
+                    'activa' => 1,
+                    'orden' => ++$posicion,
+                ]);
+                $creadas['subcategorias']++;
+            }
+        }
+
+        return $creadas;
+    }
+
+    /**
+     * Aplica el catálogo de categorías a todas las instituciones activas.
+     * Pensado para instituciones creadas antes de que existiera el catálogo actual;
+     * las nuevas lo reciben solas al crearse.
+     */
+    public function cargar_catalogo() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_INSTITUCIONES);
+
+        try {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token CSRF inválido.');
+            }
+
+            $bd = BaseDatos::obtener();
+            $instituciones = $bd->obtener_todos('SELECT id_institucion FROM institucion WHERE es_activa = 1');
+
+            $total = ['categorias' => 0, 'subcategorias' => 0];
+            foreach ($instituciones as $inst) {
+                $r = $this->aplicar_catalogo_categorias($bd, (int)$inst['id_institucion']);
+                $total['categorias'] += $r['categorias'];
+                $total['subcategorias'] += $r['subcategorias'];
+            }
+
+            if ($total['categorias'] === 0 && $total['subcategorias'] === 0) {
+                $_SESSION['exito'] = 'El catálogo ya estaba completo en las ' . count($instituciones) . ' instituciones activas. No hubo cambios.';
+            } else {
+                $_SESSION['exito'] = sprintf(
+                    'Catálogo aplicado a %d institución(es): %d categorías y %d subcategorías nuevas.',
+                    count($instituciones), $total['categorias'], $total['subcategorias']
+                );
+            }
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
+        exit;
     }
 
     private function renderizar_vista($vista, $datos = []) {
