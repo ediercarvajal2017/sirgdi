@@ -35,7 +35,7 @@
                             <?php endforeach; ?>
                         </select>
                         <?php if (empty($sedes)): ?>
-                            <small style="color:#E74C3C;"><i class="fas fa-exclamation-circle"></i> No hay sedes registradas. Pide al administrador que cree una sede.</small>
+                            <small style="color:var(--color-danger);"><i class="fas fa-exclamation-circle"></i> No hay sedes registradas. Pide al administrador que cree una sede.</small>
                         <?php endif; ?>
                     </div>
                     <div class="form-group">
@@ -137,7 +137,7 @@
                             <small>MP4 / WebM · máx 50 MB</small>
                         </div>
                         <div class="ev-source-card ev-source-cam" onclick="abrirCamaraVideo()">
-                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i>
+                            <i class="fas fa-circle-dot" style="color:var(--color-danger);"></i>
                             <strong>Grabar video</strong>
                             <small>Cámara · máx 20 segundos</small>
                         </div>
@@ -191,7 +191,7 @@
                             <i class="fas fa-rotate"></i>
                         </button>
                         <button type="button" class="cam-btn-capture" id="btn-rec-start" onclick="iniciarGrabacion()">
-                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i> Iniciar grabación
+                            <i class="fas fa-circle-dot" style="color:var(--color-danger);"></i> Iniciar grabación
                         </button>
                         <button type="button" class="cam-btn-stop" id="btn-rec-stop" onclick="detenerGrabacion()" style="display:none;">
                             <i class="fas fa-square"></i> Detener
@@ -215,16 +215,16 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
     }
 
     /* ===== Nuevo layout (encabezado + secciones) ===== */
     .form-modern-wrapper { max-width: 760px; margin: 36px auto; padding: 20px; }
-    .form-modern-card { background:#fff; border-radius:14px; padding:0; box-shadow:0 8px 28px rgba(52,152,219,.12); overflow:hidden; border:1px solid #E6F0F8; }
+    .form-modern-card { background:var(--color-bg-elevated); border-radius:14px; padding:0; box-shadow:0 8px 28px rgba(52,152,219,.12); overflow:hidden; border:1px solid var(--color-border-subtle); }
 
     .form-head { display:flex; align-items:center; gap:18px; padding:26px 32px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; }
     .form-head-icon { width:54px; height:54px; flex-shrink:0; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; }
@@ -234,8 +234,8 @@
 
     .form { padding: 28px 32px 32px; }
 
-    .form-section { border:1px solid #E6EDF2; border-radius:12px; padding:20px 22px 8px; margin:0 0 22px; }
-    .form-section legend { padding:0 10px; font-size:13px; font-weight:700; color:#2980B9; text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:8px; }
+    .form-section { border:1px solid var(--color-border-subtle); border-radius:12px; padding:20px 22px 8px; margin:0 0 22px; }
+    .form-section legend { padding:0 10px; font-size:13px; font-weight:700; color:var(--color-primary-dark); text-transform:uppercase; letter-spacing:.5px; display:flex; align-items:center; gap:8px; }
     .form-section legend i { font-size:14px; }
     .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 
@@ -282,7 +282,7 @@
     }
 
     .form-modern {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 40px;
         box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
@@ -309,7 +309,7 @@
     }
 
     .form-group .required {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-weight: 700;
     }
 
@@ -333,7 +333,7 @@
     .input-modern:focus {
         outline: none;
         border-color: var(--dark-blue);
-        background-color: white;
+        background-color: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
     }
 
@@ -403,12 +403,12 @@
         padding: 12px 16px;
         border-radius: 8px;
         margin-bottom: 20px;
-        border-left: 4px solid #E74C3C;
+        border-left: 4px solid var(--color-danger);
     }
 
     .alert-error {
-        background-color: rgba(231, 76, 60, 0.1);
-        color: #C0392B;
+        background-color: var(--color-danger-bg);
+        color: var(--color-danger-text);
     }
 
     /* ── TABS EVIDENCIA ── */
@@ -423,9 +423,9 @@
         align-items: center;
         gap: 7px;
         padding: 8px 18px;
-        border: 1.5px solid #D5E8F5;
+        border: 1.5px solid var(--color-border-subtle);
         border-radius: 8px;
-        background: #F4F9FD;
+        background: var(--color-bg-subtle);
         color: var(--gray-text);
         font-size: 13px;
         font-weight: 600;
@@ -434,7 +434,7 @@
         font-family: inherit;
     }
 
-    .ev-tab:hover { background: #EBF5FB; color: var(--dark-text); }
+    .ev-tab:hover { background: var(--color-bg-hover); color: var(--dark-text); }
 
     .ev-tab-active {
         background: var(--primary-blue);
@@ -468,9 +468,9 @@
         justify-content: center;
         gap: 6px;
         padding: 22px 16px;
-        border: 2px dashed #C8DDEF;
+        border: 2px dashed var(--color-border-subtle);
         border-radius: 12px;
-        background: #F8FBFE;
+        background: var(--color-bg-subtle);
         cursor: pointer;
         transition: all .2s;
         text-align: center;
@@ -482,26 +482,26 @@
 
     .ev-source-card:hover {
         border-color: var(--primary-blue);
-        background: #EBF5FB;
+        background: var(--color-bg-hover);
     }
 
     .ev-source-card:hover i { transform: scale(1.1); }
 
     .ev-source-cam {
         border-color: #C5EAE0;
-        background: #F0FAF7;
+        background: var(--color-bg-subtle);
     }
 
     .ev-source-cam i { color: #16A085; }
 
     .ev-source-cam:hover {
         border-color: #1ABC9C;
-        background: #E8F8F5;
+        background: var(--color-bg-hover);
     }
 
     .ev-source-card.dragover {
         border-color: var(--primary-blue);
-        background: #EBF5FB;
+        background: var(--color-bg-hover);
     }
 
     /* ── PREVIEW GRID ── */
@@ -516,7 +516,7 @@
         position: relative;
         border-radius: 10px;
         overflow: hidden;
-        background: #EEF2F5;
+        background: var(--color-bg-subtle);
         aspect-ratio: 1;
         box-shadow: 0 2px 8px rgba(0,0,0,.08);
     }
@@ -580,7 +580,7 @@
     }
 
     .cam-box {
-        background: #fff;
+        background: var(--color-bg-elevated);
         border-radius: 16px;
         width: 100%;
         max-width: 520px;
@@ -668,7 +668,7 @@
         align-items: center;
         justify-content: center;
         gap: 12px;
-        background: #F8FBFC;
+        background: var(--color-bg-subtle);
     }
 
     .cam-btn-capture {
@@ -709,8 +709,8 @@
     .cam-btn-stop:hover { background: #C0392B; }
 
     .cam-btn-switch {
-        background: #EBF5FB;
-        border: 1.5px solid #D5E8F5;
+        background: var(--color-bg-subtle);
+        border: 1.5px solid var(--color-border-subtle);
         border-radius: 10px;
         color: var(--primary-blue);
         width: 44px; height: 44px;
@@ -720,13 +720,13 @@
         transition: all .2s;
     }
 
-    .cam-btn-switch:hover { background: #D5E8F5; }
+    .cam-btn-switch:hover { background: var(--color-bg-hover); }
 
     .cam-error {
         margin: 0;
         padding: 10px 20px 14px;
-        background: #FDF0EF;
-        color: #C0392B;
+        background: var(--color-danger-bg);
+        color: var(--color-danger-text);
         font-size: 13px;
         text-align: center;
     }
@@ -1178,25 +1178,25 @@ window.addEventListener('pageshow', () => {
 <!-- Overlay de carga al enviar el formulario -->
 <div id="overlay-carga" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75); z-index:99999;
      flex-direction:column; align-items:center; justify-content:center; gap:20px; backdrop-filter:blur(3px);">
-    <div style="background:#fff; border-radius:18px; padding:36px 44px; text-align:center;
+    <div style="background:var(--color-bg-elevated); border-radius:18px; padding:36px 44px; text-align:center;
                 box-shadow:0 24px 60px rgba(0,0,0,.25); max-width:320px; width:90%;">
         <!-- Spinner -->
         <div style="margin:0 auto 20px; width:56px; height:56px; border-radius:50%;
-                    border:5px solid #E8F4FD; border-top-color:#3498DB;
+                    border:5px solid var(--color-border-subtle); border-top-color:var(--color-primary);
                     animation:spin-overlay 0.8s linear infinite;"></div>
         <!-- Título animado -->
-        <p id="overlay-carga-label" style="font-size:16px; font-weight:700; color:#2C3E50; margin:0 0 8px;">
+        <p id="overlay-carga-label" style="font-size:16px; font-weight:700; color:var(--color-text); margin:0 0 8px;">
             Guardando reporte...
         </p>
         <!-- Mensaje dinámico (archivos) -->
-        <p id="overlay-carga-msg" style="font-size:13px; color:#7F8C8D; margin:0; line-height:1.5;"></p>
+        <p id="overlay-carga-msg" style="font-size:13px; color:var(--color-text-muted); margin:0; line-height:1.5;"></p>
         <!-- Barra de progreso indeterminada -->
-        <div style="margin-top:18px; height:4px; background:#E8EDEF; border-radius:4px; overflow:hidden;">
+        <div style="margin-top:18px; height:4px; background:var(--color-border-subtle); border-radius:4px; overflow:hidden;">
             <div style="height:100%; background:linear-gradient(90deg,#3498DB,#2ECC71,#3498DB);
                         background-size:200% 100%; animation:progress-slide 1.5s linear infinite;
                         border-radius:4px;"></div>
         </div>
-        <p style="font-size:11px; color:#BDC3C7; margin:10px 0 0;">Por favor, no cierres esta ventana</p>
+        <p style="font-size:11px; color:var(--color-text-muted); margin:10px 0 0;">Por favor, no cierres esta ventana</p>
     </div>
 </div>
 

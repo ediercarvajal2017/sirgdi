@@ -195,11 +195,11 @@ $faltantes = $completitud['faltantes'] ?? [];
 
 <style>
 :root {
-    --primary-blue: #3498DB;
-    --dark-blue:    #2980B9;
-    --gray-text:    #7F8C8D;
-    --dark-text:    #2C3E50;
-    --light-bg:     #F8FBFC;
+    --primary-blue: var(--color-primary);
+    --dark-blue:    var(--color-primary-dark);
+    --gray-text:    var(--color-text-muted);
+    --dark-text:    var(--color-text);
+    --light-bg:     var(--color-bg-subtle);
 }
 
 /* ── Layout ── */
@@ -214,11 +214,12 @@ $faltantes = $completitud['faltantes'] ?? [];
 .etapas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:25px; }
 
 .etapa-card {
-    background:#fff;
+    background:var(--color-bg-elevated);
+    color:var(--color-text);
     border-radius:14px;
     padding:20px;
     box-shadow:0 4px 18px rgba(52,152,219,.09);
-    border-top:4px solid #BDC3C7;
+    border-top:4px solid var(--color-border);
     display:flex; flex-direction:column; gap:14px;
 }
 .etapa-ok { border-top-color:#27AE60; }
@@ -231,7 +232,7 @@ $faltantes = $completitud['faltantes'] ?? [];
 .etapa-titulo i { color: var(--etapa-color, var(--primary-blue)); }
 .etapa-count { font-size:11px; font-weight:600; padding:4px 10px; border-radius:12px; }
 .badge-ok   { background:rgba(39,174,96,.15);    color:#27AE60; }
-.badge-pend { background:rgba(189,195,199,.3);   color:#7F8C8D; }
+.badge-pend { background:rgba(189,195,199,.3);   color:var(--color-text); }
 
 /* ── Lista fotos subidas ── */
 .fotos-lista { display:flex; flex-direction:column; gap:8px; }
@@ -242,7 +243,7 @@ $faltantes = $completitud['faltantes'] ?? [];
 .foto-desc   { font-size:11px; color:var(--gray-text); }
 
 /* ── Formulario carga ── */
-.form-foto { display:flex; flex-direction:column; gap:10px; border-top:1px dashed #E8EDEF; padding-top:14px; }
+.form-foto { display:flex; flex-direction:column; gap:10px; border-top:1px dashed var(--color-border-subtle); padding-top:14px; }
 
 /* Preview de foto seleccionada */
 .ev-preview-wrap {
@@ -276,8 +277,8 @@ $faltantes = $completitud['faltantes'] ?? [];
 .ev-source-card {
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:5px; padding:16px 10px;
-    border:2px dashed #C8DDEF; border-radius:10px;
-    background:#F8FBFE; cursor:pointer;
+    border:2px dashed var(--color-border); border-radius:10px;
+    background:var(--color-bg-subtle); cursor:pointer;
     transition:all .2s; text-align:center;
 }
 .ev-source-card i      { font-size:22px; color:var(--primary-blue); transition:transform .2s; }
@@ -299,7 +300,7 @@ $faltantes = $completitud['faltantes'] ?? [];
     box-sizing:border-box;
     font-family:inherit;
 }
-.input-foto:focus { outline:none; border-color:var(--dark-blue); background:#fff; }
+.input-foto:focus { outline:none; border-color:var(--dark-blue); background:var(--color-bg-elevated); }
 
 .btn-subir {
     padding:10px;
@@ -328,7 +329,7 @@ $faltantes = $completitud['faltantes'] ?? [];
 .btn-modern:disabled { background:#BDC3C7; cursor:not-allowed; }
 .btn-modern-secondary {
     padding:14px 24px;
-    background:#ECF0F1; color:var(--dark-text);
+    background:var(--color-bg-subtle); color:var(--dark-text);
     border:2px solid var(--primary-blue); border-radius:8px;
     cursor:pointer; font-weight:600; text-transform:uppercase;
     font-size:14px; transition:all .3s;
@@ -346,7 +347,7 @@ $faltantes = $completitud['faltantes'] ?? [];
     padding:16px;
 }
 .cam-box {
-    background:#fff; border-radius:16px;
+    background:var(--color-bg-elevated); border-radius:16px;
     width:100%; max-width:520px;
     overflow:hidden;
     box-shadow:0 20px 60px rgba(0,0,0,.3);
@@ -375,7 +376,7 @@ $faltantes = $completitud['faltantes'] ?? [];
 .cam-footer {
     padding:14px 20px;
     display:flex; align-items:center; justify-content:center; gap:12px;
-    background:#F8FBFC;
+    background:var(--color-bg-subtle);
 }
 .cam-btn-capture {
     display:inline-flex; align-items:center; gap:8px;
@@ -579,21 +580,21 @@ function mensajeErrorCamara(err) {
 <div id="overlay-ev-carga" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.75);
      z-index:99999; flex-direction:column; align-items:center; justify-content:center;
      backdrop-filter:blur(3px);">
-    <div style="background:#fff; border-radius:18px; padding:36px 44px; text-align:center;
+    <div style="background:var(--color-bg-elevated); border-radius:18px; padding:36px 44px; text-align:center;
                 box-shadow:0 24px 60px rgba(0,0,0,.25); max-width:300px; width:90%;">
         <div style="margin:0 auto 20px; width:56px; height:56px; border-radius:50%;
-                    border:5px solid #E8F4FD; border-top-color:#3498DB;
+                    border:5px solid var(--color-border-subtle); border-top-color:#3498DB;
                     animation:spin-ev 0.8s linear infinite;"></div>
-        <p style="font-size:16px; font-weight:700; color:#2C3E50; margin:0 0 8px;">
+        <p style="font-size:16px; font-weight:700; color:var(--color-text); margin:0 0 8px;">
             Subiendo foto…
         </p>
-        <p id="overlay-ev-etapa" style="font-size:13px; color:#7F8C8D; margin:0 0 18px; line-height:1.5;"></p>
-        <div style="height:4px; background:#E8EDEF; border-radius:4px; overflow:hidden;">
+        <p id="overlay-ev-etapa" style="font-size:13px; color:var(--color-text-muted); margin:0 0 18px; line-height:1.5;"></p>
+        <div style="height:4px; background:var(--color-border-subtle); border-radius:4px; overflow:hidden;">
             <div style="height:100%; background:linear-gradient(90deg,#3498DB,#2ECC71,#3498DB);
                         background-size:200% 100%; animation:progress-ev 1.5s linear infinite;
                         border-radius:4px;"></div>
         </div>
-        <p style="font-size:11px; color:#BDC3C7; margin:10px 0 0;">Por favor, no cierres esta ventana</p>
+        <p style="font-size:11px; color:var(--color-text-muted); margin:10px 0 0;">Por favor, no cierres esta ventana</p>
     </div>
 </div>
 

@@ -152,11 +152,11 @@
 
 <style>
 :root {
-    --primary-blue: #3498DB;
-    --dark-blue: #2980B9;
-    --gray-text: #7F8C8D;
-    --dark-text: #2C3E50;
-    --light-bg: #F8FBFC;
+    --primary-blue: var(--color-primary);
+    --dark-blue: var(--color-primary-dark);
+    --gray-text: var(--color-text-muted);
+    --dark-text: var(--color-text);
+    --light-bg: var(--color-bg-subtle);
 }
 
 .sla-container {
@@ -193,7 +193,7 @@
 
 /* ===== FORMULARIO ===== */
 .form-modern-card {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
@@ -260,7 +260,7 @@
 .input-modern:focus {
     outline: none;
     border-color: var(--dark-blue);
-    background: white;
+    background: var(--color-bg-elevated);
     box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
@@ -309,7 +309,7 @@ select.input-modern {
     flex: 1;
     min-width: 150px;
     padding: 12px 24px;
-    background: #ECF0F1;
+    background: var(--color-bg-subtle);
     color: var(--dark-text);
     border: 2px solid var(--primary-blue);
     border-radius: 8px;
@@ -335,21 +335,21 @@ select.input-modern {
 
 .tabla-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
 .tabla-toolbar .buscador { position:relative; flex:1; max-width:420px; }
-.tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#7F8C8D; font-size:14px; }
-.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--light-bg); box-sizing:border-box; }
-.tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:#fff; box-shadow:0 0 0 4px rgba(52,152,219,.1); }
-.total-sla { color:#7F8C8D; font-size:14px; }
+.tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:14px; }
+.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--light-bg); color:var(--color-text); box-sizing:border-box; }
+.tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
+.total-sla { color:var(--color-text-muted); font-size:14px; }
 .total-sla strong { color:var(--dark-text); }
 
-.tabla-wrap { background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:hidden; }
+.tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:hidden; }
 .tabla-sla { width:100%; border-collapse:collapse; }
-.tabla-sla thead th { background:#F4F9FD; color:var(--dark-text); font-size:12px; text-transform:uppercase; letter-spacing:.4px; text-align:left; padding:14px 16px; border-bottom:2px solid #E8EDEF; white-space:nowrap; }
+.tabla-sla thead th { background:var(--color-bg-subtle); color:var(--dark-text); font-size:12px; text-transform:uppercase; letter-spacing:.4px; text-align:left; padding:14px 16px; border-bottom:2px solid var(--color-border-subtle); white-space:nowrap; }
 .tabla-sla th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }
-.tabla-sla th.th-sort:hover { background:#D6EAF8; }
+.tabla-sla th.th-sort:hover { background:var(--color-border-subtle); }
 .tabla-sla th.th-sort i { margin-left:5px; font-size:11px; color:var(--primary-blue); opacity:.7; }
 .tabla-sla th.th-center, .tabla-sla td.td-center { text-align:center; }
-.tabla-sla tbody td { padding:13px 16px; border-bottom:1px solid #EEF2F4; font-size:13.5px; color:var(--dark-text); }
-.tabla-sla tbody tr:hover { background:#F8FBFC; }
+.tabla-sla tbody td { padding:13px 16px; border-bottom:1px solid var(--color-border-subtle); font-size:13.5px; color:var(--dark-text); }
+.tabla-sla tbody tr:hover { background:var(--color-bg-subtle); }
 .td-acciones { white-space:nowrap; }
 .td-acciones .btn-action-compact, .td-acciones form { display:inline-flex; margin:0 2px; vertical-align:middle; }
 
@@ -442,7 +442,7 @@ select.input-modern {
 .empty-state {
     text-align: center;
     padding: 60px 40px;
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     color: var(--gray-text);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

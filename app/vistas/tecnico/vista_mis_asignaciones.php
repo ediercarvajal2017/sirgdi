@@ -88,19 +88,19 @@ $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_to
 <?php require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
 
 <style>
-:root{--primary-blue:#3498DB;--dark-blue:#2980B9;--gray-text:#7F8C8D;--dark-text:#2C3E50;--light-bg:#F8FBFC;}
+:root{--primary-blue:var(--color-primary);--dark-blue:var(--color-primary-dark);--gray-text:var(--color-text-muted);--dark-text:var(--color-text);--light-bg:var(--color-bg-subtle);}
 .tec-container{max-width:1200px;margin:30px auto;padding:20px;}
 .tec-header{margin-bottom:35px;}
 .tec-header h2{font-size:32px;font-weight:700;color:var(--dark-text);margin:0 0 8px;display:flex;align-items:center;gap:12px;}
 .tec-header h2 i{color:var(--primary-blue);}
 .subtitle{color:var(--gray-text);font-size:14px;margin:0;font-weight:500;}
-.tec-list{background:#fff;border-radius:12px;box-shadow:0 4px 16px rgba(52,152,219,.08);overflow:hidden;}
+.tec-list{background:var(--color-bg-elevated);color:var(--color-text);border-radius:12px;box-shadow:0 4px 16px rgba(52,152,219,.08);overflow:hidden;}
 .tec-header-row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:linear-gradient(135deg,rgba(52,152,219,.08),rgba(41,128,185,.08));border-bottom:2px solid var(--primary-blue);font-weight:600;color:var(--dark-text);font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
 .th-info{display:flex;flex-direction:column;gap:4px;flex:1;}
 .header-secondary{font-weight:400!important;color:var(--gray-text);font-size:11px;text-transform:none;letter-spacing:normal;}
 .th-estado{margin:0 20px;}
 .th-actions{min-width:200px;text-align:center;}
-.tec-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #E8EDEF;transition:background .2s;}
+.tec-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--color-border-subtle);transition:background .2s;}
 .tec-row:last-child{border-bottom:none;}
 .tec-row:hover{background:rgba(52,152,219,.03);}
 .tec-info{display:flex;flex-direction:column;gap:6px;flex:1;}
@@ -117,20 +117,20 @@ $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_to
 .urg-3{background:rgba(230,126,34,.18);color:#E67E22;}
 .urg-4{background:rgba(231,76,60,.15);color:#E74C3C;}
 .badge-estado{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;}
-.est-1{background:rgba(127,140,141,.15);color:#7F8C8D;}
+.est-1{background:rgba(127,140,141,.15);color:var(--color-text);}
 .est-2{background:rgba(52,152,219,.15);color:#3498DB;}
 .est-3{background:rgba(41,128,185,.15);color:#2980B9;}
 .est-4{background:rgba(39,174,96,.15);color:#27AE60;}
 .est-5{background:rgba(155,89,182,.15);color:#8E44AD;}
 .est-6{background:rgba(230,126,34,.15);color:#E67E22;}
-.est-7{background:rgba(44,62,80,.12);color:#2C3E50;}
+.est-7{background:rgba(127,140,141,.18);color:var(--color-text);}
 .est-8{background:rgba(231,76,60,.15);color:#E74C3C;}
 .btn-accion{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:all .3s;text-transform:uppercase;letter-spacing:.3px;}
 .btn-atender{background:rgba(52,152,219,.12);color:var(--primary-blue);}
 .btn-atender:hover{background:var(--primary-blue);color:#fff;transform:translateY(-2px);}
 .btn-solucionar{background:rgba(39,174,96,.12);color:#27AE60;}
 .btn-solucionar:hover{background:#27AE60;color:#fff;transform:translateY(-2px);}
-.empty-state{text-align:center;padding:60px 40px;background:#fff;border-radius:12px;color:var(--gray-text);box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.empty-state{text-align:center;padding:60px 40px;background:var(--color-bg-elevated);border-radius:12px;color:var(--gray-text);box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .empty-state i{font-size:48px;margin-bottom:16px;opacity:.5;display:block;}
 @media(max-width:768px){.tec-header h2{font-size:24px;}.tec-row{flex-direction:column;align-items:flex-start;gap:12px;}.tec-actions{justify-content:flex-start;}}
 </style>

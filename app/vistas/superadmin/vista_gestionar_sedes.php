@@ -99,12 +99,12 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
-        --light-gray: #ECF0F1;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
+        --light-gray: var(--color-bg-subtle);
         --success-green: #27AE60;
         --danger-red: #E74C3C;
     }
@@ -143,7 +143,7 @@
 
     /* Sección de Formulario */
     .form-section {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 30px;
         margin-bottom: 35px;
@@ -199,7 +199,7 @@
         border-radius: 6px;
         font-family: inherit;
         font-size: 14px;
-        background-color: white;
+        background-color: var(--color-bg-subtle);
         color: var(--dark-text);
         transition: all 0.3s ease;
     }
@@ -255,7 +255,7 @@
 
     /* Sección de Lista de Sedes */
     .sedes-list-section {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 30px;
         margin-bottom: 30px;
@@ -285,7 +285,7 @@
         border: 2px solid var(--light-gray);
         border-radius: 10px;
         padding: 20px;
-        background: white;
+        background: var(--color-bg-elevated);
         transition: all 0.3s ease;
     }
 

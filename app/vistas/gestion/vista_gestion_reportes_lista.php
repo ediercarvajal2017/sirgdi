@@ -111,12 +111,12 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
-        --light-gray: #ECF0F1;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
+        --light-gray: var(--color-bg-subtle);
     }
 
     .gestion-container {
@@ -153,7 +153,7 @@
 
     /* Filtros */
     .filters-section {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 24px;
         margin-bottom: 30px;
@@ -213,7 +213,7 @@
     .input-select:focus {
         outline: none;
         border-color: var(--dark-blue);
-        background-color: white;
+        background-color: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
     }
 
@@ -262,7 +262,7 @@
 
     /* Lista de Reportes Compacta */
     .gestion-list {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
         overflow: hidden;
@@ -274,7 +274,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 14px 20px;
-        border-bottom: 1px solid #E8EDEF;
+        border-bottom: 1px solid var(--color-border-subtle);
         transition: background-color 0.2s ease;
     }
 
@@ -409,7 +409,7 @@
         align-items: center;
         gap: 20px;
         padding: 20px;
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(52, 152, 219, 0.08);
         flex-wrap: wrap;
@@ -453,7 +453,7 @@
     .empty-state {
         text-align: center;
         padding: 80px 40px;
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         color: var(--gray-text);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

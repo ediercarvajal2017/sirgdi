@@ -49,7 +49,7 @@
 }
 
 .subtitle {
-    color: #666;
+    color: var(--color-text-muted);
     font-size: 0.95em;
     margin-bottom: 30px;
 }
@@ -61,8 +61,8 @@
 }
 
 .role-card {
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -70,11 +70,11 @@
 
 .role-card h3 {
     margin-bottom: 5px;
-    color: #333;
+    color: var(--color-text);
 }
 
 .role-id {
-    color: #999;
+    color: var(--color-text-muted);
     font-size: 0.9em;
     margin-bottom: 15px;
 }
@@ -87,7 +87,7 @@
 
 .permisos-list li {
     padding: 10px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .permisos-list li:last-child {
@@ -107,12 +107,12 @@
 }
 
 .permisos-list strong {
-    color: #333;
+    color: var(--color-text);
     font-size: 0.9em;
 }
 
 .permisos-list small {
-    color: #666;
+    color: var(--color-text-muted);
     display: block;
     margin-top: 3px;
 }
@@ -120,8 +120,8 @@
 .empty-state {
     text-align: center;
     padding: 40px;
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 4px;
-    color: #999;
+    color: var(--color-text-muted);
 }
 </style>

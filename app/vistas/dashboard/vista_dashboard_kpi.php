@@ -122,12 +122,12 @@
 
             <div class="stat">
                 <div class="stat-title">Satisfechos</div>
-                <div class="stat-value" style="color: #4caf50;"><?php echo $satisfaccion['satisfechos']; ?></div>
+                <div class="stat-value" style="color: var(--color-success);"><?php echo $satisfaccion['satisfechos']; ?></div>
             </div>
 
             <div class="stat">
                 <div class="stat-title">Insatisfechos</div>
-                <div class="stat-value" style="color: #f44336;"><?php echo $satisfaccion['insatisfechos']; ?></div>
+                <div class="stat-value" style="color: var(--color-danger);"><?php echo $satisfaccion['insatisfechos']; ?></div>
             </div>
         </div>
     </div>
@@ -192,7 +192,7 @@
 
     .dashboard-container h2 {
         margin-bottom: 30px;
-        color: #333;
+        color: var(--color-text);
     }
 
     /* KPI Grid */
@@ -204,7 +204,7 @@
     }
 
     .kpi-card {
-        background: white;
+        background: var(--color-bg-elevated);
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -226,7 +226,7 @@
 
     .kpi-title {
         font-size: 12px;
-        color: #999;
+        color: var(--color-text-muted);
         text-transform: uppercase;
         margin-bottom: 10px;
     }
@@ -234,13 +234,13 @@
     .kpi-value {
         font-size: 36px;
         font-weight: bold;
-        color: #333;
+        color: var(--color-text);
         margin-bottom: 10px;
     }
 
     .kpi-subtitle {
         font-size: 12px;
-        color: #bbb;
+        color: var(--color-text-muted);
     }
 
     /* Charts Grid */
@@ -252,7 +252,7 @@
     }
 
     .chart-card {
-        background: white;
+        background: var(--color-bg-elevated);
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -260,31 +260,32 @@
 
     .chart-card h3 {
         margin-bottom: 20px;
-        color: #333;
+        color: var(--color-text);
     }
 
     .mini-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
+        color: var(--color-text);
     }
 
     .mini-table th {
-        background: #f5f5f5;
+        background: var(--color-bg-subtle);
         padding: 10px;
         text-align: left;
         font-weight: 600;
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid var(--color-border);
     }
 
     .mini-table td {
         padding: 10px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--color-border-subtle);
     }
 
     .progress-bar {
         height: 6px;
-        background: #eee;
+        background: var(--color-bg-subtle);
         border-radius: 3px;
         overflow: hidden;
         margin: 5px 0;
@@ -298,7 +299,7 @@
 
     /* Satisfaction */
     .satisfaction-card {
-        background: white;
+        background: var(--color-bg-elevated);
         padding: 30px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -321,7 +322,7 @@
 
     .stat-title {
         font-size: 12px;
-        color: #999;
+        color: var(--color-text-muted);
         text-transform: uppercase;
         margin-bottom: 10px;
     }
@@ -329,13 +330,13 @@
     .stat-value {
         font-size: 28px;
         font-weight: bold;
-        color: #333;
+        color: var(--color-text);
         margin-bottom: 10px;
     }
 
     .stat-subtitle {
         font-size: 12px;
-        color: #bbb;
+        color: var(--color-text-muted);
     }
 
     .rating {
@@ -344,7 +345,7 @@
     }
 
     .star {
-        color: #ddd;
+        color: var(--color-border);
         margin: 0 2px;
     }
 
@@ -354,16 +355,16 @@
 
     /* Alert Card */
     .alert-card {
-        background: white;
+        background: var(--color-bg-elevated);
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-left: 4px solid #f44336;
+        border-left: 4px solid var(--color-danger);
         margin-bottom: 40px;
     }
 
     .alert-card h3 {
-        color: #f44336;
+        color: var(--color-danger);
         margin-bottom: 15px;
     }
 
@@ -371,23 +372,25 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
+        color: var(--color-text);
     }
 
     .critical-table th {
-        background: #ffebee;
+        background: var(--color-danger-bg);
+        color: var(--color-danger-text);
         padding: 10px;
         text-align: left;
-        border-bottom: 1px solid #ffcdd2;
+        border-bottom: 1px solid var(--color-danger);
     }
 
     .critical-table td {
         padding: 10px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--color-border-subtle);
     }
 
     /* Export Section */
     .export-section {
-        background: white;
+        background: var(--color-bg-elevated);
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -422,8 +425,8 @@
         padding: 4px 8px;
         border-radius: 3px;
         font-size: 11px;
-        background: #fff3e0;
-        color: #f57c00;
+        background: var(--color-warning-bg);
+        color: var(--color-warning-text);
     }
 
     .btn-small {

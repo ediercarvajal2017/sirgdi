@@ -76,12 +76,12 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
-        --light-gray: #ECF0F1;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
+        --light-gray: var(--color-bg-subtle);
     }
 
     .cambiar-estado-container {
@@ -120,7 +120,7 @@
 
     /* Información del Reporte */
     .reporte-info-modern {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 24px;
         margin-bottom: 30px;
@@ -203,7 +203,7 @@
 
     /* Formulario */
     .form-modern {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 30px;
         box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
@@ -229,7 +229,7 @@
     }
 
     .form-group .required {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-weight: 700;
     }
 
@@ -253,7 +253,7 @@
     .input-modern:focus {
         outline: none;
         border-color: var(--dark-blue);
-        background-color: white;
+        background-color: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
     }
 

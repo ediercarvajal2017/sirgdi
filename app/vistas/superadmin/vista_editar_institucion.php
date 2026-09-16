@@ -98,11 +98,11 @@
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
     }
 
     .form-container-modern {
@@ -140,7 +140,7 @@
     }
 
     .form-modern {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         padding: 40px;
         box-shadow: 0 8px 32px rgba(52, 152, 219, 0.1);
@@ -190,7 +190,7 @@
     .input-modern:focus {
         outline: none;
         border-color: var(--dark-blue);
-        background-color: white;
+        background-color: var(--color-bg-elevated);
         box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
     }
 
@@ -221,7 +221,7 @@
         align-items: center;
         justify-content: center;
         transition: all 0.3s;
-        background: white;
+        background: var(--color-bg-elevated);
         flex-shrink: 0;
     }
 

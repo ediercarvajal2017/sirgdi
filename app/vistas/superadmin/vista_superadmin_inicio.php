@@ -91,26 +91,26 @@ function copiarCredAdmin() {
 <?php $toast_exito_msg = 'Operación realizada correctamente.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
 
 <style>
-    .cred-card { background:#fff; border-radius:12px; margin-bottom:25px; overflow:hidden; box-shadow:0 4px 16px rgba(39,174,96,.15); border-left:4px solid #27AE60; }
+    .cred-card { background:var(--color-bg-elevated); border-radius:12px; margin-bottom:25px; overflow:hidden; box-shadow:0 4px 16px rgba(39,174,96,.15); border-left:4px solid #27AE60; }
     .cred-head { display:flex; align-items:center; gap:12px; padding:16px 20px; background:rgba(39,174,96,.1); color:#1E8449; font-size:14px; }
     .cred-head i { font-size:22px; }
     .cred-body { display:flex; align-items:flex-end; gap:20px; padding:18px 20px; flex-wrap:wrap; }
     .cred-item { display:flex; flex-direction:column; gap:4px; }
-    .cred-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#7F8C8D; font-weight:600; display:flex; align-items:center; gap:6px; }
+    .cred-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-muted); font-weight:600; display:flex; align-items:center; gap:6px; }
     .cred-label i { color:#3498DB; }
-    .cred-value { font-family:'Courier New',monospace; font-size:16px; font-weight:700; color:#2C3E50; background:#F8FBFC; padding:8px 14px; border-radius:6px; border:1px dashed #3498DB; }
+    .cred-value { font-family:'Courier New',monospace; font-size:16px; font-weight:700; color:var(--color-text); background:var(--color-bg-subtle); padding:8px 14px; border-radius:6px; border:1px dashed #3498DB; }
     .btn-copiar { padding:10px 18px; background:linear-gradient(135deg,#3498DB,#2980B9); color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px; transition:all .3s; }
     .btn-copiar:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(52,152,219,.35); }
 </style>
 
 <style>
     :root {
-        --primary-blue: #3498DB;
-        --dark-blue: #2980B9;
-        --gray-text: #808B96;
-        --dark-text: #2C3E50;
-        --light-bg: #F8FBFC;
-        --success-color: #27AE60;
+        --primary-blue: var(--color-primary);
+        --dark-blue: var(--color-primary-dark);
+        --gray-text: var(--color-text-muted);
+        --dark-text: var(--color-text);
+        --light-bg: var(--color-bg-subtle);
+        --success-color: var(--color-success);
         --danger-color: #E74C3C;
     }
 
@@ -189,7 +189,7 @@ function copiarCredAdmin() {
     }
 
     .institutions-list {
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
         overflow: hidden;
@@ -200,7 +200,7 @@ function copiarCredAdmin() {
         align-items: center;
         justify-content: space-between;
         padding: 14px 20px;
-        border-bottom: 1px solid #E8EDEF;
+        border-bottom: 1px solid var(--color-border-subtle);
         transition: background-color 0.2s ease;
     }
 
@@ -303,7 +303,7 @@ function copiarCredAdmin() {
     .empty-state {
         text-align: center;
         padding: 80px 40px;
-        background: white;
+        background: var(--color-bg-elevated);
         border-radius: 12px;
         color: var(--gray-text);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

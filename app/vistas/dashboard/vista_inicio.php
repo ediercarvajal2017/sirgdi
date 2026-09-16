@@ -128,6 +128,27 @@
         --primary-blue: #3498DB;
         --dark-blue: #2980B9;
         --dark-text: #2C3E50;
+        --text-light: #7F8C8D;
+        --white: #fff;
+        --surface-2: #EBF5FB;
+        --surface-3: #F4F9FD;
+        --surface-4: #EAF4FF;
+        --card-border: #D6EAF8;
+        --card-border-subtle: #EDF4FB;
+    }
+
+    /* Tema oscuro (por defecto — ver public/js/tema.js) */
+    :root[data-theme="dark"] {
+        --primary-blue: #4DA3E0;
+        --dark-blue: #3498DB;
+        --dark-text: #E8EDF2;
+        --text-light: #9AA7B2;
+        --white: #1E242B;
+        --surface-2: #171E27;
+        --surface-3: #14181C;
+        --surface-4: #1A222B;
+        --card-border: #2A3B4D;
+        --card-border-subtle: #262D35;
     }
 
     .inicio-wrap {
@@ -209,14 +230,14 @@
 
     /* ===== INSTITUCIÓN ===== */
     .institucion-card {
-        background: #fff;
+        background: var(--white);
         border-radius: 18px;
         padding: 36px 44px;
         box-shadow: 0 6px 24px rgba(52, 152, 219, 0.1);
         display: flex;
         align-items: center;
         gap: 40px;
-        border: 1px solid #EDF4FB;
+        border: 1px solid var(--card-border-subtle);
     }
 
     .institucion-logo img {
@@ -271,17 +292,17 @@
     }
 
     .institucion-sub {
-        color: #7F8C8D;
+        color: var(--text-light);
         font-size: 15px;
         margin: 0;
     }
 
     /* ===== FEATURES SECTION ===== */
     .features-section {
-        background: linear-gradient(170deg, #EBF5FB 0%, #F4F9FD 60%, #EAF4FF 100%);
+        background: linear-gradient(170deg, var(--surface-2) 0%, var(--surface-3) 60%, var(--surface-4) 100%);
         border-radius: 24px;
         padding: 48px 40px 40px;
-        border: 1px solid #D6EAF8;
+        border: 1px solid var(--card-border);
         box-shadow: 0 6px 28px rgba(41,128,185,.07);
     }
 
@@ -296,7 +317,7 @@
     .features-header-line {
         flex: 1;
         height: 2px;
-        background: linear-gradient(90deg, transparent, #AED6F1, transparent);
+        background: linear-gradient(90deg, transparent, var(--card-border), transparent);
     }
 
     .features-header-text {
@@ -330,7 +351,7 @@
 
     .features-subtitulo {
         font-size: 14px;
-        color: #7F8C8D;
+        color: var(--text-light);
         margin: 0;
         max-width: 480px;
     }
@@ -462,14 +483,14 @@
 
     /* Stats bar */
     .features-stats {
-        background: #fff;
+        background: var(--white);
         border-radius: 16px;
         padding: 20px 30px;
         display: flex;
         align-items: center;
         gap: 0;
         box-shadow: 0 3px 14px rgba(41,128,185,.1);
-        border: 1px solid #D6EAF8;
+        border: 1px solid var(--card-border);
     }
 
     .fstat {
@@ -496,14 +517,14 @@
 
     .fstat span {
         font-size: 12.5px;
-        color: #7F8C8D;
+        color: var(--text-light);
         line-height: 1.4;
     }
 
     .fstat-divider {
         width: 1px;
         height: 46px;
-        background: #D6EAF8;
+        background: var(--card-border);
         margin: 0 28px;
         flex-shrink: 0;
     }

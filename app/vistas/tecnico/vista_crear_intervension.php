@@ -24,7 +24,7 @@ $ahora = date('Y-m-d\TH:i');
         <!-- YA EXISTE INFORME -->
         <div class="form-modern-card">
             <h3><i class="fas fa-circle-info"></i> Informe ya registrado</h3>
-            <p style="color:#7F8C8D;margin-bottom:20px;">Este reporte ya tiene un informe de intervención. Puedes continuar cargando las evidencias fotográficas.</p>
+            <p style="color:var(--color-text-muted);margin-bottom:20px;">Este reporte ya tiene un informe de intervención. Puedes continuar cargando las evidencias fotográficas.</p>
             <a href="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=cargar_evidencia&id_intervension=<?php echo $intervension_existente['id_informe']; ?>" class="btn-modern" style="text-decoration:none;max-width:320px;">
                 <i class="fas fa-camera"></i> Cargar Evidencias
             </a>
@@ -86,19 +86,19 @@ $ahora = date('Y-m-d\TH:i');
 <?php $toast_exito_msg = 'Intervención guardada. Ahora carga las evidencias.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
 
 <style>
-:root{--primary-blue:#3498DB;--dark-blue:#2980B9;--gray-text:#7F8C8D;--dark-text:#2C3E50;--light-bg:#F8FBFC;}
+:root{--primary-blue:var(--color-primary);--dark-blue:var(--color-primary-dark);--gray-text:var(--color-text-muted);--dark-text:var(--color-text);--light-bg:var(--color-bg-subtle);}
 .int-container{max-width:900px;margin:30px auto;padding:20px;}
 .int-header{margin-bottom:25px;}
 .int-header h2{font-size:30px;font-weight:700;color:var(--dark-text);margin:0 0 8px;display:flex;align-items:center;gap:12px;}
 .int-header h2 i{color:var(--primary-blue);}
 .subtitle{color:var(--gray-text);font-size:14px;margin:0;font-weight:500;}
-.reporte-resumen{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 16px rgba(52,152,219,.08);border-left:4px solid var(--primary-blue);margin-bottom:25px;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.reporte-resumen{background:var(--color-bg-elevated);color:var(--color-text);border-radius:12px;padding:20px;box-shadow:0 4px 16px rgba(52,152,219,.08);border-left:4px solid var(--primary-blue);margin-bottom:25px;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .rr-item{display:flex;flex-direction:column;gap:3px;}
 .rr-full{grid-column:1/-1;}
 .rr-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray-text);font-weight:600;display:flex;align-items:center;gap:6px;}
 .rr-label i{color:var(--primary-blue);}
 .rr-value{font-size:14px;color:var(--dark-text);}
-.form-modern-card{background:#fff;border-radius:12px;padding:30px;box-shadow:0 4px 16px rgba(52,152,219,.08);border-left:4px solid var(--primary-blue);}
+.form-modern-card{background:var(--color-bg-elevated);color:var(--color-text);border-radius:12px;padding:30px;box-shadow:0 4px 16px rgba(52,152,219,.08);border-left:4px solid var(--primary-blue);}
 .form-modern-card h3{margin-bottom:22px;color:var(--dark-text);font-size:20px;display:flex;align-items:center;gap:10px;}
 .form-modern-card h3 i{color:var(--primary-blue);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
@@ -108,11 +108,11 @@ $ahora = date('Y-m-d\TH:i');
 .form-group .required{color:#E74C3C;font-weight:700;}
 .hint{margin-top:6px;font-size:12px;color:var(--gray-text);}
 .input-modern{padding:12px 15px;border:2px solid var(--primary-blue);background:var(--light-bg);border-radius:8px;font-family:inherit;font-size:14px;transition:all .3s;box-sizing:border-box;width:100%;resize:vertical;}
-.input-modern:focus{outline:none;border-color:var(--dark-blue);background:#fff;box-shadow:0 0 0 4px rgba(52,152,219,.1);}
+.input-modern:focus{outline:none;border-color:var(--dark-blue);background:var(--color-bg-elevated);box-shadow:0 0 0 4px rgba(52,152,219,.1);}
 .form-actions{display:flex;gap:15px;margin-top:10px;flex-wrap:wrap;}
 .btn-modern{flex:1;min-width:200px;padding:12px 24px;background:linear-gradient(135deg,var(--primary-blue),var(--dark-blue));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;text-transform:uppercase;font-size:14px;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-modern:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(52,152,219,.4);}
-.btn-modern-secondary{flex:1;min-width:150px;padding:12px 24px;background:#ECF0F1;color:var(--dark-text);border:2px solid var(--primary-blue);border-radius:8px;cursor:pointer;font-weight:600;text-transform:uppercase;font-size:14px;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-modern-secondary{flex:1;min-width:150px;padding:12px 24px;background:var(--color-bg-subtle);color:var(--dark-text);border:2px solid var(--primary-blue);border-radius:8px;cursor:pointer;font-weight:600;text-transform:uppercase;font-size:14px;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-modern-secondary:hover{background:var(--gray-text);color:#fff;transform:translateY(-2px);}
 @media(max-width:768px){.reporte-resumen,.form-row{grid-template-columns:1fr;}.int-header h2{font-size:24px;}.form-actions{flex-direction:column;}.btn-modern,.btn-modern-secondary{flex:none;width:100%;}}
 </style>

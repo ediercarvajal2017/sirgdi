@@ -28,7 +28,7 @@
 }
 
 .subtitle {
-    color: #808B96;
+    color: var(--color-text-muted);
     font-size: 0.95em;
     margin-bottom: 30px;
 }

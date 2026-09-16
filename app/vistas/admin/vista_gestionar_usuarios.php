@@ -211,11 +211,11 @@
 
 <style>
 :root {
-    --primary-blue: #3498DB;
-    --dark-blue: #2980B9;
-    --gray-text: #7F8C8D;
-    --dark-text: #2C3E50;
-    --light-bg: #F8FBFC;
+    --primary-blue: var(--color-primary);
+    --dark-blue: var(--color-primary-dark);
+    --gray-text: var(--color-text-muted);
+    --dark-text: var(--color-text);
+    --light-bg: var(--color-bg-subtle);
 }
 
 .usuarios-container {
@@ -257,13 +257,13 @@
 /* ===== TABLA DE USUARIOS (ordenable) ===== */
 .tabla-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
 .tabla-toolbar .buscador { position:relative; flex:1; max-width:420px; }
-.tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#7F8C8D; font-size:14px; }
-.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--light-bg); box-sizing:border-box; }
-.tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:#fff; box-shadow:0 0 0 4px rgba(52,152,219,.1); }
-.total-usuarios { color:#7F8C8D; font-size:14px; }
+.tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:14px; }
+.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--light-bg); color:var(--color-text); box-sizing:border-box; }
+.tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
+.total-usuarios { color:var(--color-text-muted); font-size:14px; }
 .total-usuarios strong { color:var(--dark-text); }
 
-.tabla-wrap { background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:auto; max-height:72vh; }
+.tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:auto; max-height:72vh; }
 .tabla-usuarios { width:100%; border-collapse:collapse; font-size:13px; }
 .tabla-usuarios thead th {
     position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#EBF5FB,#D6EAF8);
@@ -274,19 +274,19 @@
 .tabla-usuarios th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }
 .tabla-usuarios th.th-sort:hover { background:#D6EAF8; }
 .tabla-usuarios th.th-sort i { margin-left:5px; font-size:11px; color:var(--primary-blue); opacity:.7; }
-.tabla-usuarios tbody td { padding:12px 14px; border-bottom:1px solid #ECF0F1; color:var(--dark-text); vertical-align:middle; }
+.tabla-usuarios tbody td { padding:12px 14px; border-bottom:1px solid var(--color-border-subtle); color:var(--dark-text); vertical-align:middle; }
 .tabla-usuarios tbody tr:hover { background:var(--light-bg); }
 .tabla-usuarios .td-center { text-align:center; }
 .tabla-usuarios .td-nombre { font-weight:600; }
 .tabla-usuarios .td-acciones { white-space:nowrap; }
 .tabla-usuarios .td-acciones .btn-action-compact { display:inline-flex; vertical-align:middle; margin:0 2px; }
 .tabla-usuarios .td-acciones form { display:inline; }
-.tec-na { color:#B0B7BC; }
+.tec-na { color:var(--color-text-muted); }
 
 @media(max-width:768px){ .tabla-wrap{ max-height:none; } }
 
 .usuarios-list {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
     overflow: hidden;
@@ -297,7 +297,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 20px;
-    border-bottom: 1px solid #E8EDEF;
+    border-bottom: 1px solid var(--color-border-subtle);
     transition: background-color 0.2s ease;
 }
 
@@ -498,7 +498,7 @@
 }
 
 .form-modern-card {
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 16px rgba(52, 152, 219, 0.08);
@@ -565,7 +565,7 @@
 .input-modern:focus {
     outline: none;
     border-color: var(--dark-blue);
-    background: white;
+    background: var(--color-bg-elevated);
     box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
@@ -593,7 +593,7 @@ select.input-modern {
 }
 
 select.input-modern option {
-    background: white;
+    background: var(--color-bg-elevated);
     color: var(--dark-text);
     padding: 8px;
 }
@@ -611,7 +611,7 @@ select.input-modern option {
 
 /* Tarjeta de credenciales */
 .cred-card {
-    background: #fff; border-radius: 12px; margin-bottom: 25px; overflow: hidden;
+    background: var(--color-bg-elevated); border-radius: 12px; margin-bottom: 25px; overflow: hidden;
     box-shadow: 0 4px 16px rgba(39,174,96,.15); border-left: 4px solid #27AE60;
 }
 .cred-head {
@@ -719,7 +719,7 @@ select.input-modern option {
     flex: 1;
     min-width: 150px;
     padding: 12px 24px;
-    background: #ECF0F1;
+    background: var(--color-bg-subtle);
     color: var(--dark-text);
     border: 2px solid var(--primary-blue);
     border-radius: 8px;
@@ -744,7 +744,7 @@ select.input-modern option {
 .empty-state {
     text-align: center;
     padding: 60px 40px;
-    background: white;
+    background: var(--color-bg-elevated);
     border-radius: 12px;
     color: var(--gray-text);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);

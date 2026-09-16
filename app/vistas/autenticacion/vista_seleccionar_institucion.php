@@ -64,7 +64,7 @@
 
         <div class="auth-footer" style="margin-top: 20px; text-align: center;">
             <a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=logout"
-               style="font-size: 13px; color: #95A5A6; text-decoration: none;">
+               style="font-size: 13px; color: var(--color-text-muted); text-decoration: none;">
                 <i class="fas fa-sign-out-alt"></i> Cerrar sesión
             </a>
         </div>

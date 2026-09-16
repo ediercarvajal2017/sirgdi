@@ -134,11 +134,12 @@
 }
 
 .tecnico-card {
-    background: #fff;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(52,152,219,.08);
     overflow: hidden;
-    border: 1px solid #E8EDEF;
+    border: 1px solid var(--color-border-subtle);
 }
 
 .tecnico-header {
@@ -173,12 +174,12 @@
 .tecnico-nombre {
     font-weight: 700;
     font-size: 15px;
-    color: #2C3E50;
+    color: var(--color-text);
 }
 
 .tecnico-email {
     font-size: 13px;
-    color: #7F8C8D;
+    color: var(--color-text-muted);
 }
 
 .tecnico-empresa {
@@ -206,7 +207,7 @@
 
 .counter-label {
     font-size: 11px;
-    color: #7F8C8D;
+    color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: .5px;
 }
@@ -220,7 +221,7 @@
 
 .sin-vinculos {
     font-size: 13px;
-    color: #95A5A6;
+    color: var(--color-text-muted);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -238,9 +239,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px;
-    background: #F8FBFC;
+    background: var(--color-bg-subtle);
     border-radius: 8px;
-    border: 1px solid #E2E8F0;
+    border: 1px solid var(--color-border-subtle);
 }
 
 .vinculo-info {
@@ -248,7 +249,7 @@
     align-items: center;
     gap: 10px;
     font-size: 14px;
-    color: #2C3E50;
+    color: var(--color-text);
 }
 
 .vinculo-info i {
@@ -262,7 +263,7 @@
 
 .vinculo-fecha {
     font-size: 12px;
-    color: #95A5A6;
+    color: var(--color-text-muted);
 }
 
 .btn-desvincular {
@@ -298,18 +299,18 @@
     flex: 1;
     min-width: 220px;
     padding: 9px 14px;
-    border: 1.5px solid #D0D7E0;
+    border: 1.5px solid var(--color-border);
     border-radius: 8px;
     font-size: 14px;
-    color: #2C3E50;
-    background: #F8FBFC;
+    color: var(--color-text);
+    background: var(--color-bg-subtle);
     outline: none;
     transition: border-color .2s;
 }
 
 .select-institucion:focus {
     border-color: #3498DB;
-    background: #fff;
+    background: var(--color-bg-elevated);
 }
 
 .btn-vincular {

@@ -134,7 +134,7 @@ $urgencias = [
         .inv-field { display: flex; flex-direction: column; gap: 7px; }
         .inv-label {
             font-size: 12px; font-weight: 700; text-transform: uppercase;
-            letter-spacing: .4px; color: #5D6D7E;
+            letter-spacing: .4px; color: var(--inv-text-muted);
             display: flex; align-items: center; gap: 6px;
         }
         .inv-label i { color: #3498DB; font-size: 13px; }
@@ -161,7 +161,7 @@ $urgencias = [
             padding-right: 38px;
         }
         .inv-textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
-        .inv-hint { font-size: 11px; color: #85929E; margin-top: 2px; }
+        .inv-hint { font-size: 11px; color: var(--inv-text-muted); margin-top: 2px; }
 
         /* ── Urgencia pills ── */
         .urgencia-pills { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -183,37 +183,37 @@ $urgencias = [
 
         /* ── Evidencia tabs ── */
         .ev-tabs { display:flex; gap:6px; margin-bottom:16px; }
-        .ev-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 18px; border:1.5px solid #D5E8F5; border-radius:8px; background:#F4F9FD; color:#808B96; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
-        .ev-tab:hover { background:#EBF5FB; color:#2C3E50; }
+        .ev-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 18px; border:1.5px solid var(--inv-input-border); border-radius:8px; background:var(--inv-input-bg); color:var(--inv-text-muted); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
+        .ev-tab:hover { background:var(--inv-card-bg); color:var(--inv-text); }
         .ev-tab-active { background:#3498DB; color:#fff; border-color:#3498DB; }
         .ev-tab-badge { background:rgba(255,255,255,.25); color:#fff; border-radius:10px; font-size:11px; padding:1px 6px; font-weight:700; }
         .ev-tab-badge-rec { background:#E74C3C; }
 
         /* ── Source row ── */
         .ev-source-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-        .ev-source-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:22px 16px; border:2px dashed #C8DDEF; border-radius:12px; background:#F8FBFE; cursor:pointer; transition:all .2s; text-align:center; }
+        .ev-source-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:22px 16px; border:2px dashed var(--inv-input-border); border-radius:12px; background:var(--inv-input-bg); cursor:pointer; transition:all .2s; text-align:center; }
         .ev-source-card i { font-size:26px; color:#3498DB; transition:transform .2s; }
-        .ev-source-card strong { font-size:13px; font-weight:700; color:#2C3E50; }
-        .ev-source-card small { font-size:11px; color:#808B96; }
-        .ev-source-card:hover { border-color:#3498DB; background:#EBF5FB; }
+        .ev-source-card strong { font-size:13px; font-weight:700; color:var(--inv-text); }
+        .ev-source-card small { font-size:11px; color:var(--inv-text-muted); }
+        .ev-source-card:hover { border-color:#3498DB; background:var(--inv-card-bg); }
         .ev-source-card:hover i { transform:scale(1.1); }
-        .ev-source-cam { border-color:#C5EAE0; background:#F0FAF7; }
+        .ev-source-cam { border-color:#C5EAE0; }
         .ev-source-cam i { color:#16A085; }
-        .ev-source-cam:hover { border-color:#1ABC9C; background:#E8F8F5; }
-        .ev-source-card.dragover { border-color:#3498DB; background:#EBF5FB; }
+        .ev-source-cam:hover { border-color:#1ABC9C; }
+        .ev-source-card.dragover { border-color:#3498DB; background:var(--inv-card-bg); }
 
         /* ── Preview grid ── */
         .ev-preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px; margin-bottom:10px; }
-        .ev-preview-item { position:relative; border-radius:10px; overflow:hidden; background:#EEF2F5; aspect-ratio:1; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+        .ev-preview-item { position:relative; border-radius:10px; overflow:hidden; background:var(--inv-input-bg); aspect-ratio:1; box-shadow:0 2px 8px rgba(0,0,0,.08); }
         .ev-preview-item img, .ev-preview-item video { width:100%; height:100%; object-fit:cover; display:block; }
         .ev-preview-item .ev-remove { position:absolute; top:5px; right:5px; background:rgba(231,76,60,.9); color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; }
         .ev-preview-item .ev-remove:hover { background:#E74C3C; }
         .ev-preview-item .ev-label { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.5); color:#fff; font-size:10px; padding:3px 6px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .ev-hint { font-size:11.5px; color:#808B96; display:flex; align-items:center; gap:5px; margin-top:4px; }
+        .ev-hint { font-size:11.5px; color:var(--inv-text-muted); display:flex; align-items:center; gap:5px; margin-top:4px; }
 
         /* ── Camera modal ── */
         .cam-modal { position:fixed; inset:0; background:rgba(15,25,40,.7); backdrop-filter:blur(4px); z-index:9000; display:flex; align-items:center; justify-content:center; padding:16px; }
-        .cam-box { background:#fff; border-radius:16px; width:100%; max-width:520px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+        .cam-box { background:var(--inv-card-bg); border-radius:16px; width:100%; max-width:520px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
         .cam-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; font-weight:700; font-size:15px; }
         .cam-close { background:rgba(255,255,255,.15); border:none; border-radius:8px; color:#fff; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:background .2s; }
         .cam-close:hover { background:rgba(255,255,255,.3); }
@@ -224,13 +224,13 @@ $urgencias = [
         .rec-indicator { position:absolute; top:12px; left:12px; background:rgba(231,76,60,.9); color:#fff; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; display:flex; align-items:center; gap:6px; }
         .rec-dot { width:8px; height:8px; background:#fff; border-radius:50%; animation:blink 1s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .cam-footer { padding:16px 20px; display:flex; align-items:center; justify-content:center; gap:12px; background:#F8FBFC; }
+        .cam-footer { padding:16px 20px; display:flex; align-items:center; justify-content:center; gap:12px; background:var(--inv-input-bg); }
         .cam-btn-capture { display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg,#2980B9,#3498DB); color:#fff; border:none; border-radius:10px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; box-shadow:0 4px 14px rgba(52,152,219,.35); }
         .cam-btn-capture:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(52,152,219,.45); }
         .cam-btn-stop { display:inline-flex; align-items:center; gap:8px; background:#E74C3C; color:#fff; border:none; border-radius:10px; padding:12px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; }
         .cam-btn-stop:hover { background:#C0392B; }
-        .cam-btn-switch { background:#EBF5FB; border:1.5px solid #D5E8F5; border-radius:10px; color:#3498DB; width:44px; height:44px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
-        .cam-btn-switch:hover { background:#D5E8F5; }
+        .cam-btn-switch { background:var(--inv-input-bg); border:1.5px solid var(--inv-input-border); border-radius:10px; color:#3498DB; width:44px; height:44px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+        .cam-btn-switch:hover { background:var(--inv-card-bg); }
         .cam-error { margin:0; padding:10px 20px 14px; background:#FDF0EF; color:#C0392B; font-size:13px; text-align:center; }
 
         /* ── Botón de envío ── */
@@ -261,7 +261,7 @@ $urgencias = [
         /* ── Footer info ── */
         .inv-footer {
             text-align: center; margin-top: 40px;
-            font-size: 12px; color: #AEB6BF;
+            font-size: 12px; color: var(--inv-text-muted);
         }
         .inv-footer a { color: #3498DB; text-decoration: none; }
     </style>
