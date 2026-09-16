@@ -8,7 +8,7 @@
     <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
 
     <!-- CSS Base -->
-    <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_base.css">
+    <link rel="stylesheet" href="<?php echo asset_url('css/estilos_base.css'); ?>">
 
     <!-- CSS por vista (si existe) -->
     <?php

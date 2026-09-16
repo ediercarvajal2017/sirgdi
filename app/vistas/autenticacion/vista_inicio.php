@@ -1192,6 +1192,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarSelect
 </script>
 <?php endif; ?>
 
-<script src="<?php echo config('app.url_base'); ?>/js/tema.js"></script>
+<script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 </body>
 </html>

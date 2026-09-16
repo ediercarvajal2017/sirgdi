@@ -833,7 +833,7 @@ function mostrarToast() {
     setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 </script>
-<script src="<?php echo config('app.url_base'); ?>/js/tema.js"></script>
+<script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 
 </body>
 </html>

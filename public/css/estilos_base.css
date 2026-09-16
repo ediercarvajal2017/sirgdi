@@ -295,16 +295,33 @@ input, select, textarea, button {
 /* Chrome pinta el autocompletado con fondo blanco y texto negro, lo que
    rompe el modo oscuro. Se neutraliza con una sombra interna del color
    de la superficie del tema. */
+/* !important es deliberado: el navegador aplica el estilo de autocompletado
+   con máxima prioridad y cualquier regla de foco con más especificidad
+   (por ejemplo .input-modern:focus) volvería a dejar el campo claro. */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
-    -webkit-text-fill-color: var(--input-text);
-    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
-    box-shadow: 0 0 0 1000px var(--input-bg) inset;
-    caret-color: var(--input-text);
-    transition: background-color 9999s ease-in-out 0s;
+    -webkit-text-fill-color: var(--input-text) !important;
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    background-color: var(--input-bg) !important;
+    background-clip: content-box !important;
+    caret-color: var(--input-text) !important;
+    transition: background-color 9999s ease-in-out 0s !important;
+}
+
+/* Selector estándar; va en bloque aparte para que un navegador que no lo
+   reconozca no descarte también la regla -webkit- de arriba. */
+input:autofill,
+textarea:autofill,
+select:autofill {
+    -webkit-text-fill-color: var(--input-text) !important;
+    box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+    background-color: var(--input-bg) !important;
+    caret-color: var(--input-text) !important;
 }
 
 /* Las opciones de un <select> se dibujan fuera del documento: sin esto

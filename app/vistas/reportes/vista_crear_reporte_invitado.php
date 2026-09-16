@@ -1021,6 +1021,6 @@ document.getElementById('form-invitado').addEventListener('submit', function(e) 
     document.getElementById('btn-submit-inv').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
 });
 </script>
-<script src="<?php echo $base; ?>/js/tema.js"></script>
+<script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 </body>
 </html>

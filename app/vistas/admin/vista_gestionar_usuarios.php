@@ -1,4 +1,4 @@
-<script src="<?php echo config('app.url_base'); ?>/js/toast.js"></script>
+<script src="<?php echo asset_url('js/toast.js'); ?>"></script>
 
 <?php
     // Repoblación de formulario tras error de validación

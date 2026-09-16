@@ -8,7 +8,7 @@
  */
 $toast_exito_msg = $toast_exito_msg ?? 'Operación realizada correctamente.';
 ?>
-<script src="<?php echo config('app.url_base'); ?>/js/toast.js"></script>
+<script src="<?php echo asset_url('js/toast.js'); ?>"></script>
 <script>
 (function() {
     var intentos = 0;

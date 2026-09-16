@@ -650,10 +650,10 @@ class ControladorReportes {
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo htmlspecialchars($titulo ?? 'SIRGDI'); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_formularios_modernos.css">
-    <link rel="stylesheet" href="<?php echo config("app.url_base"); ?>/css/estilos_profesionales.css">
-    <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_base.css">
-    <link rel="stylesheet" href="<?php echo config('app.url_base'); ?>/css/estilos_toasts.css">
+    <link rel="stylesheet" href="<?php echo asset_url('css/estilos_formularios_modernos.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/estilos_profesionales.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/estilos_base.css'); ?>">
+    <link rel="stylesheet" href="<?php echo asset_url('css/estilos_toasts.css'); ?>">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { font-size: 16px; }
@@ -668,9 +668,9 @@ class ControladorReportes {
         <?php require $archivo_vista; ?>
     </main>
     <?php if (isset($_SESSION['id_usuario'])): require_once APP_PATH . '/vistas/comunes/vista_footer.php'; endif; ?>
-    <script src="<?php echo config('app.url_base'); ?>/js/script_base.js"></script>
-    <script src="<?php echo config('app.url_base'); ?>/js/tema.js"></script>
-    <script src="<?php echo config('app.url_base'); ?>/js/toast.js"></script>
+    <script src="<?php echo asset_url('js/script_base.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/tema.js'); ?>"></script>
+    <script src="<?php echo asset_url('js/toast.js'); ?>"></script>
     <?php if (!empty($_SESSION['exito'])): ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {

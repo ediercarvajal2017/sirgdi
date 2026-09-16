@@ -172,6 +172,17 @@ function config($key, $default = null) {
     return $value;
 }
 
+// === FUNCIÓN HELPER: URL de un asset propio (css/js) con versión ===
+// Añade ?v=<fecha de modificación> para que cada despliegue que cambie el
+// archivo produzca una URL nueva. Sin esto, el navegador y el CDN del hosting
+// (Cache-Control de 30 días) siguen sirviendo la versión anterior.
+function asset_url($ruta) {
+    $ruta = ltrim($ruta, '/');
+    $archivo = PUBLIC_PATH . '/' . $ruta;
+    $version = is_file($archivo) ? filemtime($archivo) : null;
+    return config('app.url_base') . '/' . $ruta . ($version ? '?v=' . $version : '');
+}
+
 // === VALIDAR REQUERIMIENTOS ===
 if (version_compare(PHP_VERSION, '7.4', '<')) {
     die('SIRGDI requiere PHP 7.4 o superior. Versión actual: ' . PHP_VERSION);
