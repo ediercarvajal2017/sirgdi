@@ -242,7 +242,7 @@
 }
 
 .form-group .required {
-    color: #E74C3C;
+    color: var(--color-danger);
     font-weight: 700;
 }
 
@@ -375,10 +375,10 @@ select.input-modern {
     font-size: 10px;
 }
 
-.urg-1 { background: rgba(39, 174, 96, 0.15); color: #27AE60; }
+.urg-1 { background: rgba(39, 174, 96, 0.15); color: var(--color-success); }
 .urg-2 { background: rgba(243, 156, 18, 0.15); color: #F39C12; }
 .urg-3 { background: rgba(230, 126, 34, 0.18); color: #E67E22; }
-.urg-4 { background: rgba(231, 76, 60, 0.15); color: #E74C3C; }
+.urg-4 { background: rgba(231, 76, 60, 0.15); color: var(--color-danger); }
 
 .badge {
     display: inline-flex;
@@ -392,12 +392,12 @@ select.input-modern {
 
 .badge-active {
     background: rgba(39, 174, 96, 0.15);
-    color: #27AE60;
+    color: var(--color-success);
 }
 
 .badge-inactive {
     background: rgba(231, 76, 60, 0.15);
-    color: #E74C3C;
+    color: var(--color-danger);
 }
 
 /* ===== BOTONES COMPACTOS ===== */
@@ -428,7 +428,7 @@ select.input-modern {
 }
 
 .btn-action-compact.btn-delete {
-    color: #E74C3C;
+    color: var(--color-danger);
     background: rgba(231, 76, 60, 0.1);
 }
 

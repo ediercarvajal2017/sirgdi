@@ -15,31 +15,41 @@ $urgencias = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo htmlspecialchars($institucion['nombre']); ?> — Reportar Daño</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --inv-bg-1: #EBF5FB;
             --inv-bg-2: #F0F9FF;
-            --inv-text: #2C3E50;
-            --inv-text-muted: #85929E;
+            --inv-text: #111827;
+            --inv-text-muted: #4B5563;
             --inv-card-bg: #fff;
-            --inv-input-bg: #F8FBFC;
-            --inv-input-border: #D6EAF8;
+            --inv-input-bg: #F6F8FA;
+            --inv-input-border: #CBD5E1;
+            /* Esta vista es autónoma (no carga estilos_base.css), así que
+               declara aquí los colores de estado que usa. */
+            --color-danger: #C0392B;
+            --color-success: #1E8449;
+            --urg-2-text: #8F4A0B;
+            --urg-3-text: #AB4500;
         }
         /* Tema oscuro (por defecto — ver public/js/tema.js). Cubre el fondo general,
            las tarjetas y los campos de formulario (lo más usado); los acentos de
            color (píldoras de urgencia, modal de cámara, pestañas de evidencia)
            mantienen su estilo original en ambos temas. */
         :root[data-theme="dark"] {
-            --inv-bg-1: #14181C;
-            --inv-bg-2: #10141A;
-            --inv-text: #E8EDF2;
-            --inv-text-muted: #9AA7B2;
-            --inv-card-bg: #1E242B;
-            --inv-input-bg: #262D35;
-            --inv-input-border: #333C46;
+            --inv-bg-1: #0F1419;
+            --inv-bg-2: #0B0F14;
+            --inv-text: #F9FAFB;
+            --inv-text-muted: #D1D5DB;
+            --inv-card-bg: #1A212B;
+            --inv-input-bg: #232C38;
+            --inv-input-border: #3A4757;
+            --color-danger: #FF6B5E;
+            --color-success: #2ECC71;
+            --urg-2-text: #F5B041;
+            --urg-3-text: #F09A5B;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -112,7 +122,7 @@ $urgencias = [
         .inv-card-head {
             display: flex; align-items: center; gap: 12px;
             padding: 18px 24px;
-            background: linear-gradient(135deg, #EBF5FB, #D6EAF8);
+            background: var(--inv-input-bg);
             border-bottom: 2px solid #3498DB;
         }
         .inv-card-head-icon {
@@ -121,8 +131,8 @@ $urgencias = [
             display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 18px; flex-shrink: 0;
         }
-        .inv-card-head h3 { font-size: 16px; font-weight: 700; color: #1A5276; margin: 0; }
-        .inv-card-head p  { font-size: 12px; color: #5D6D7E; margin: 2px 0 0; }
+        .inv-card-head h3 { font-size: 16px; font-weight: 700; color: var(--inv-text); margin: 0; }
+        .inv-card-head p  { font-size: 12px; color: var(--inv-text-muted); margin: 2px 0 0; }
         .inv-card-body { padding: 24px; }
 
         /* ── Grid de campos ── */
@@ -138,7 +148,7 @@ $urgencias = [
             display: flex; align-items: center; gap: 6px;
         }
         .inv-label i { color: #3498DB; font-size: 13px; }
-        .inv-label .req { color: #E74C3C; margin-left: 2px; }
+        .inv-label .req { color: var(--color-danger); margin-left: 2px; }
         .inv-input, .inv-select, .inv-textarea {
             width: 100%; padding: 11px 14px;
             border: 2px solid var(--inv-input-border, #D6EAF8);
@@ -172,20 +182,22 @@ $urgencias = [
             font-size: 13px; font-weight: 600; user-select: none;
         }
         .urg-pill input[type="radio"] { display: none; }
-        .urg-pill.urg-1 { background: rgba(39,174,96,.1); color: #27AE60; border-color: rgba(39,174,96,.3); }
-        .urg-pill.urg-2 { background: rgba(243,156,18,.1); color: #E67E22; border-color: rgba(243,156,18,.3); }
-        .urg-pill.urg-3 { background: rgba(230,126,34,.1); color: #D35400; border-color: rgba(230,126,34,.3); }
-        .urg-pill.urg-4 { background: rgba(231,76,60,.1);  color: #E74C3C; border-color: rgba(231,76,60,.3); }
-        .urg-pill.selected.urg-1 { background: #27AE60; color: #fff; border-color: #27AE60; box-shadow: 0 4px 12px rgba(39,174,96,.3); }
-        .urg-pill.selected.urg-2 { background: #E67E22; color: #fff; border-color: #E67E22; box-shadow: 0 4px 12px rgba(230,126,34,.3); }
-        .urg-pill.selected.urg-3 { background: #D35400; color: #fff; border-color: #D35400; box-shadow: 0 4px 12px rgba(211,84,0,.3); }
-        .urg-pill.selected.urg-4 { background: #E74C3C; color: #fff; border-color: #E74C3C; box-shadow: 0 4px 12px rgba(231,76,60,.3); }
+        .urg-pill.urg-1 { background: rgba(39,174,96,.1); color: var(--color-success); border-color: rgba(39,174,96,.3); }
+        .urg-pill.urg-2 { background: rgba(243,156,18,.1); color: var(--urg-2-text); border-color: rgba(243,156,18,.3); }
+        .urg-pill.urg-3 { background: rgba(230,126,34,.1); color: var(--urg-3-text); border-color: rgba(230,126,34,.3); }
+        .urg-pill.urg-4 { background: rgba(231,76,60,.1);  color: var(--color-danger); border-color: rgba(231,76,60,.3); }
+        /* Píldora seleccionada: el fondo lleva texto blanco, así que usa
+           versiones más oscuras del color de urgencia (contraste AA). */
+        .urg-pill.selected.urg-1 { background: #1E8449; color: #fff; border-color: #1E8449; box-shadow: 0 4px 12px rgba(39,174,96,.3); }
+        .urg-pill.selected.urg-2 { background: #B9600E; color: #fff; border-color: #B9600E; box-shadow: 0 4px 12px rgba(230,126,34,.3); }
+        .urg-pill.selected.urg-3 { background: #AB4500; color: #fff; border-color: #AB4500; box-shadow: 0 4px 12px rgba(211,84,0,.3); }
+        .urg-pill.selected.urg-4 { background: #C0392B; color: #fff; border-color: #C0392B; box-shadow: 0 4px 12px rgba(231,76,60,.3); }
 
         /* ── Evidencia tabs ── */
         .ev-tabs { display:flex; gap:6px; margin-bottom:16px; }
         .ev-tab { display:inline-flex; align-items:center; gap:7px; padding:8px 18px; border:1.5px solid var(--inv-input-border); border-radius:8px; background:var(--inv-input-bg); color:var(--inv-text-muted); font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit; }
         .ev-tab:hover { background:var(--inv-card-bg); color:var(--inv-text); }
-        .ev-tab-active { background:#3498DB; color:#fff; border-color:#3498DB; }
+        .ev-tab-active { background:#1F77B0; color:#fff; border-color:#1F77B0; }
         .ev-tab-badge { background:rgba(255,255,255,.25); color:#fff; border-radius:10px; font-size:11px; padding:1px 6px; font-weight:700; }
         .ev-tab-badge-rec { background:#E74C3C; }
 
@@ -541,7 +553,7 @@ $urgencias = [
                             <small>MP4 / WebM · máx 50 MB</small>
                         </div>
                         <div class="ev-source-card ev-source-cam" onclick="abrirCamaraVideoInv()">
-                            <i class="fas fa-circle-dot" style="color:#E74C3C;"></i>
+                            <i class="fas fa-circle-dot" style="color: var(--color-danger);"></i>
                             <strong>Grabar video</strong>
                             <small>Cámara · máx 20 segundos</small>
                         </div>
@@ -596,7 +608,7 @@ $urgencias = [
                         <i class="fas fa-rotate"></i>
                     </button>
                     <button type="button" class="cam-btn-capture" id="btn-rec-start-inv" onclick="iniciarGrabacionInv()">
-                        <i class="fas fa-circle-dot" style="color:#E74C3C;"></i> Iniciar grabación
+                        <i class="fas fa-circle-dot" style="color: var(--color-danger);"></i> Iniciar grabación
                     </button>
                     <button type="button" class="cam-btn-stop" id="btn-rec-stop-inv" onclick="detenerGrabacionInv()" style="display:none;">
                         <i class="fas fa-square"></i> Detener

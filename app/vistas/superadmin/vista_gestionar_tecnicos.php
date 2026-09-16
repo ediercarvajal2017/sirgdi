@@ -114,7 +114,7 @@
                                 No hay instituciones educativas activas en el sistema.
                             </p>
                         <?php else: ?>
-                            <p class="sin-vinculos" style="color:#27AE60;">
+                            <p class="sin-vinculos" style="color: var(--color-success);">
                                 <i class="fas fa-check-circle"></i>
                                 Vinculado a todas las instituciones disponibles.
                             </p>
@@ -147,8 +147,8 @@
     align-items: center;
     gap: 16px;
     padding: 18px 22px;
-    background: linear-gradient(135deg, #F8FBFC 0%, #EBF5FB 100%);
-    border-bottom: 1px solid #E2E8F0;
+    background: var(--color-bg-subtle);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .tecnico-avatar {
@@ -272,7 +272,7 @@
     border: none;
     border-radius: 6px;
     background: rgba(231,76,60,.1);
-    color: #E74C3C;
+    color: var(--color-danger);
     cursor: pointer;
     display: flex;
     align-items: center;

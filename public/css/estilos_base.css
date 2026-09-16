@@ -1,81 +1,238 @@
 /* Base Styles for SIRGDI - Professional Theme */
 
-/* ===== Tema claro/oscuro (SIRGDI) =====
-   Oscuro es el tema por defecto (ver public/js/tema.js). Todo color de UI debe
-   usar estas variables en vez de valores fijos, para que el cambio de tema
-   se propague automáticamente. */
+/* ===== SISTEMA DE TEMAS SIRGDI =====================================
+   Fuente única de verdad para el color de toda la aplicación.
+
+   Regla: ningún componente debe escribir un color fijo. Todo color debe
+   salir de estas variables para que el cambio de tema se propague solo.
+
+   Tema por defecto: oscuro, salvo que el sistema operativo del usuario
+   pida modo claro o que el usuario elija otro (ver public/js/tema.js).
+   =================================================================== */
+
+/* ---------- TEMA CLARO ---------- */
 :root {
-    --color-primary: #3498DB;
-    --color-primary-dark: #2980B9;
-    --color-secondary: #808B96;
-    --color-text: #2C3E50;
-    --color-text-muted: #7F8C8D;
-    --color-text-inverse: #FFFFFF;
-    --color-border: #BDC3C7;
-    --color-border-subtle: #E2E8F0;
-    --color-bg: #ECF0F1;
-    --color-bg-elevated: #FFFFFF;
-    --color-bg-subtle: #F8FBFC;
-    --color-bg-hover: #EDF4FB;
-    --color-success: #27AE60;
-    --color-danger: #E74C3C;
-    --color-warning: #F39C12;
+    /* Texto */
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-muted: #6B7280;
+    --text-inverse: #FFFFFF;
+    --text-on-accent: #FFFFFF;
 
-    --color-success-bg: #D5F4E6;
-    --color-success-text: #0B5345;
-    --color-danger-bg: #FADBD8;
-    --color-danger-text: #78281F;
-    --color-warning-bg: #FEF5E7;
-    --color-warning-text: #7D6608;
-    --color-info-bg: #D6EAF8;
-    --color-info-text: #1A5276;
+    /* Superficies */
+    --bg-base: #EEF2F5;
+    --bg-elevated: #FFFFFF;
+    --bg-subtle: #F6F8FA;
+    --bg-hover: #E8F1FA;
+    --bg-navbar: #FFFFFF;
+    --bg-sidebar: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --bg-overlay: rgba(17, 24, 39, .55);
 
-    --shadow-color: 0, 0, 0;
+    /* Bordes */
+    --border-color: #CBD5E1;
+    --border-subtle: #E2E8F0;
+    --border-strong: #94A3B8;
+
+    /* Formularios */
+    --input-bg: #F6F8FA;
+    --input-bg-focus: #FFFFFF;
+    --input-border: #CBD5E1;
+    --input-border-focus: #3498DB;
+    --input-text: #111827;
+    --input-placeholder: #9CA3AF;
+
+    /* Marca / acentos */
+    --accent: #2E86C1;
+    --accent-strong: #216694;
+    --accent-soft: rgba(52, 152, 219, .12);
+
+    /* Enlaces */
+    --link: #1F6FA8;
+    --link-hover: #154B72;
+
+    /* Botones sólidos: fondo y texto siempre emparejados */
+    --btn-primary-bg: #2E86C1;
+    --btn-primary-bg-hover: #216694;
+    --btn-primary-text: #FFFFFF;
+    --btn-neutral-bg: #F6F8FA;
+    --btn-neutral-bg-hover: #E8EDF2;
+    --btn-neutral-text: #111827;
+    --btn-neutral-border: #CBD5E1;
+    --btn-danger-bg: #C0392B;
+    --btn-danger-bg-hover: #96281B;
+    --btn-danger-text: #FFFFFF;
+    --btn-success-bg: #1E8449;
+    --btn-success-bg-hover: #166236;
+    --btn-success-text: #FFFFFF;
+
+    /* Estados */
+    --success: #1E8449;
+    --danger: #C0392B;
+    --warning: #B9770E;
+    --info: #1F6FA8;
+
+    /* Alertas (fondo + texto emparejados) */
+    --success-bg: #D5F4E6;
+    --success-text: #0B5345;
+    --danger-bg: #FADBD8;
+    --danger-text: #78281F;
+    --warning-bg: #FEF5E7;
+    --warning-text: #7D6608;
+    --info-bg: #D6EAF8;
+    --info-text: #1A5276;
+
+    --shadow-color: 15, 23, 42;
+    --shadow-fuerza: .10;
 }
 
+/* ---------- TEMA OSCURO ---------- */
 :root[data-theme="dark"] {
-    --color-primary: #4DA3E0;
-    --color-primary-dark: #3498DB;
-    --color-secondary: #8A97A3;
-    --color-text: #E8EDF2;
-    --color-text-muted: #9AA7B2;
-    --color-text-inverse: #14181C;
-    --color-border: #3A4552;
-    --color-border-subtle: #2A323B;
-    --color-bg: #14181C;
-    --color-bg-elevated: #1E242B;
-    --color-bg-subtle: #262D35;
-    --color-bg-hover: #2A3B4D;
-    --color-success: #2ECC71;
-    --color-danger: #FF6B5E;
-    --color-warning: #F5B041;
+    /* Texto */
+    --text-primary: #F9FAFB;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA8B4;
+    --text-inverse: #0F1419;
+    --text-on-accent: #FFFFFF;
 
-    --color-success-bg: #16352A;
-    --color-success-text: #6FE3A6;
-    --color-danger-bg: #3B2020;
-    --color-danger-text: #FF9B90;
-    --color-warning-bg: #3A2E12;
-    --color-warning-text: #F5C575;
-    --color-info-bg: #1B2E3E;
-    --color-info-text: #7EC4F0;
+    /* Superficies — grises azulados, nunca negro puro */
+    --bg-base: #0F1419;
+    --bg-elevated: #1A212B;
+    --bg-subtle: #232C38;
+    --bg-hover: #2C3846;
+    --bg-navbar: #161D26;
+    --bg-sidebar: #161D26;
+    --bg-card: #1A212B;
+    --bg-overlay: rgba(3, 7, 12, .70);
+
+    /* Bordes */
+    --border-color: #3A4757;
+    --border-subtle: #27313D;
+    --border-strong: #55647A;
+
+    /* Formularios */
+    --input-bg: #232C38;
+    --input-bg-focus: #2A3543;
+    --input-border: #3A4757;
+    --input-border-focus: #4DA3E0;
+    --input-text: #F9FAFB;
+    --input-placeholder: #8593A3;
+
+    /* Marca / acentos */
+    --accent: #4DA3E0;
+    --accent-strong: #7CBFEC;
+    --accent-soft: rgba(77, 163, 224, .16);
+
+    /* Enlaces */
+    --link: #6FB8EA;
+    --link-hover: #9BD0F5;
+
+    /* Botones sólidos: se mantiene el tono saturado con texto blanco,
+       que conserva contraste AA sobre fondo oscuro y respeta la marca. */
+    --btn-primary-bg: #2E86C1;
+    --btn-primary-bg-hover: #3D9AD8;
+    --btn-primary-text: #FFFFFF;
+    --btn-neutral-bg: #232C38;
+    --btn-neutral-bg-hover: #2C3846;
+    --btn-neutral-text: #F9FAFB;
+    --btn-neutral-border: #3A4757;
+    --btn-danger-bg: #C0392B;
+    --btn-danger-bg-hover: #D94F41;
+    --btn-danger-text: #FFFFFF;
+    --btn-success-bg: #1E8449;
+    --btn-success-bg-hover: #27A05B;
+    --btn-success-text: #FFFFFF;
+
+    /* Estados */
+    --success: #2ECC71;
+    --danger: #FF6B5E;
+    --warning: #F5B041;
+    --info: #6FB8EA;
+
+    /* Alertas (fondo + texto emparejados) */
+    --success-bg: #16352A;
+    --success-text: #7FE8B2;
+    --danger-bg: #3B2020;
+    --danger-text: #FFA79D;
+    --warning-bg: #3A2E12;
+    --warning-text: #F7CE85;
+    --info-bg: #1B2E3E;
+    --info-text: #8FCDF4;
 
     --shadow-color: 0, 0, 0;
+    --shadow-fuerza: .45;
 }
 
-/* Alias retrocompatibles: otras hojas de estilo del proyecto usaban estos
-   nombres con sus propios :root duplicados (ya removidos). */
+/* ---------- PUENTE DE COMPATIBILIDAD ----------
+   El resto del proyecto (vistas y hojas de estilo) ya usa los nombres
+   --color-* y los alias heredados. Se mapean aquí sobre los tokens de
+   arriba: así existe un solo lugar donde cambiar un color, sin tener que
+   reescribir cada componente. */
 :root {
-    --primary: var(--color-primary);
-    --primary-blue: var(--color-primary);
-    --dark-blue: var(--color-primary-dark);
-    --secondary: var(--color-secondary);
-    --dark: var(--color-text);
-    --dark-text: var(--color-text);
-    --gray-text: var(--color-text-muted);
-    --light: var(--color-bg);
-    --light-bg: var(--color-bg);
-    --light-blue: var(--color-info-bg);
-    --border: var(--color-border);
+    --color-primary: var(--accent);
+    --color-primary-dark: var(--accent-strong);
+    --color-secondary: var(--text-muted);
+    --color-text: var(--text-primary);
+    --color-text-muted: var(--text-secondary);
+    --color-text-inverse: var(--text-inverse);
+    --color-border: var(--border-color);
+    --color-border-subtle: var(--border-subtle);
+    --color-bg: var(--bg-base);
+    --color-bg-elevated: var(--bg-elevated);
+    --color-bg-subtle: var(--bg-subtle);
+    --color-bg-hover: var(--bg-hover);
+    --color-success: var(--success);
+    --color-danger: var(--danger);
+    --color-warning: var(--warning);
+
+    --color-success-bg: var(--success-bg);
+    --color-success-text: var(--success-text);
+    --color-danger-bg: var(--danger-bg);
+    --color-danger-text: var(--danger-text);
+    --color-warning-bg: var(--warning-bg);
+    --color-warning-text: var(--warning-text);
+    --color-info-bg: var(--info-bg);
+    --color-info-text: var(--info-text);
+
+    /* Alias heredados de hojas de estilo antiguas */
+    --primary: var(--accent);
+    --primary-blue: var(--accent);
+    --dark-blue: var(--accent-strong);
+    --secondary: var(--text-muted);
+    --dark: var(--text-primary);
+    --dark-text: var(--text-primary);
+    --gray-text: var(--text-secondary);
+    --light: var(--bg-base);
+    --light-bg: var(--bg-base);
+    --light-gray: var(--bg-subtle);
+    --light-blue: var(--info-bg);
+    --border: var(--border-color);
+}
+
+/* ---------- TRANSICIÓN AL CAMBIAR DE TEMA ----------
+   La clase la pone y la quita tema.js solo durante el cambio. Así el
+   degradado de color ocurre al pulsar el selector, pero no penaliza la
+   carga inicial ni interfiere con hovers y animaciones propias. */
+html.tema-transicion,
+html.tema-transicion *,
+html.tema-transicion *::before,
+html.tema-transicion *::after {
+    transition: background-color .30s ease,
+                background-image .30s ease,
+                border-color .30s ease,
+                color .30s ease,
+                fill .30s ease,
+                box-shadow .30s ease !important;
+    transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.tema-transicion,
+    html.tema-transicion *,
+    html.tema-transicion *::before,
+    html.tema-transicion *::after {
+        transition: none !important;
+    }
 }
 
 * {
@@ -87,29 +244,87 @@
 html {
     font-size: 16px;
     scroll-behavior: smooth;
+    /* Hace que los controles nativos del navegador (scrollbars, select,
+       date pickers, autocompletar) se dibujen acordes al tema. Sin esto
+       aparecen paneles blancos dentro de la interfaz oscura. */
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
-    color: var(--color-text);
-    background-color: var(--color-bg);
+    color: var(--text-primary);
+    background-color: var(--bg-base);
+}
+
+/* ---------- BLINDAJE DE LEGIBILIDAD ----------
+   Red de seguridad para que ningún texto quede invisible aunque un
+   componente antiguo no declare color propio. */
+
+/* Los títulos y el texto corriente heredan siempre el color del tema */
+h1, h2, h3, h4, h5, h6,
+p, li, dt, dd, label, span, td, th, caption, legend, blockquote {
+    color: inherit;
+}
+
+/* Los campos de formulario no heredan color por defecto: hay que fijarlo */
+input, select, textarea, button {
+    font-family: inherit;
+    color: var(--input-text);
+}
+
+::placeholder {
+    color: var(--input-placeholder);
+    opacity: 1;
+}
+
+/* Chrome pinta el autocompletado con fondo blanco y texto negro, lo que
+   rompe el modo oscuro. Se neutraliza con una sombra interna del color
+   de la superficie del tema. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    -webkit-text-fill-color: var(--input-text);
+    -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+    box-shadow: 0 0 0 1000px var(--input-bg) inset;
+    caret-color: var(--input-text);
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Las opciones de un <select> se dibujan fuera del documento: sin esto
+   quedan blancas sobre blanco en varios navegadores. */
+option {
+    background-color: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--text-primary);
 }
 
 a {
-    color: var(--color-primary);
+    color: var(--link);
     text-decoration: none;
 }
 
 a:hover {
+    color: var(--link-hover);
     text-decoration: underline;
 }
 
 /* Header */
 .header {
-    background-color: var(--color-bg-elevated);
-    border-bottom: 2px solid var(--color-primary);
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+    background-color: var(--bg-navbar);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--accent);
+    box-shadow: 0 2px 8px rgba(var(--shadow-color), var(--shadow-fuerza));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -184,12 +399,12 @@ a:hover {
 
 /* Cards & Containers */
 .card {
-    background: var(--color-bg-elevated);
-    color: var(--color-text);
+    background: var(--bg-card);
+    color: var(--text-primary);
     border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(var(--shadow-color), var(--shadow-fuerza));
     padding: 20px;
-    border-left: 4px solid var(--color-primary);
+    border-left: 4px solid var(--accent);
 }
 
 .container {
@@ -212,25 +427,26 @@ a:hover {
 .form-group label {
     font-weight: 600;
     margin-bottom: 8px;
-    color: var(--color-text);
+    color: var(--text-primary);
     font-size: 14px;
 }
 
 .form-control {
     padding: 12px;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--input-border);
     border-radius: 4px;
     font-size: 16px;
     font-family: inherit;
-    background-color: var(--color-bg-subtle);
-    color: var(--color-text);
+    background-color: var(--input-bg);
+    color: var(--input-text);
     transition: all 0.3s;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+    background-color: var(--input-bg-focus);
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 textarea.form-control {
@@ -239,7 +455,7 @@ textarea.form-control {
 }
 
 .form-group small {
-    color: var(--color-secondary);
+    color: var(--text-secondary);
     font-size: 12px;
     margin-top: 4px;
 }
@@ -262,41 +478,42 @@ textarea.form-control {
 }
 
 .btn-primary {
-    background-color: var(--color-primary);
-    color: white;
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
 }
 
 .btn-primary:hover {
-    background-color: #2980B9;
+    background-color: var(--btn-primary-bg-hover);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
 }
 
 .btn-secondary {
-    background-color: var(--color-secondary);
-    color: white;
+    background-color: var(--btn-neutral-bg);
+    color: var(--btn-neutral-text);
+    border: 1px solid var(--btn-neutral-border);
 }
 
 .btn-secondary:hover {
-    background-color: #6C757D;
+    background-color: var(--btn-neutral-bg-hover);
 }
 
 .btn-danger {
-    background-color: var(--color-danger);
-    color: white;
+    background-color: var(--btn-danger-bg);
+    color: var(--btn-danger-text);
 }
 
 .btn-danger:hover {
-    background-color: #C0392B;
+    background-color: var(--btn-danger-bg-hover);
 }
 
 .btn-success {
-    background-color: var(--color-success);
-    color: white;
+    background-color: var(--btn-success-bg);
+    color: var(--btn-success-text);
 }
 
 .btn-success:hover {
-    background-color: #229954;
+    background-color: var(--btn-success-bg-hover);
 }
 
 .btn-small {

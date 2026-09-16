@@ -105,7 +105,7 @@ $ahora = date('Y-m-d\TH:i');
 .form-group{display:flex;flex-direction:column;margin-bottom:20px;}
 .form-group label{font-weight:600;margin-bottom:10px;color:var(--dark-text);font-size:14px;display:flex;align-items:center;gap:8px;}
 .form-group label i{color:var(--primary-blue);font-size:14px;}
-.form-group .required{color:#E74C3C;font-weight:700;}
+.form-group .required{color: var(--color-danger);font-weight:700;}
 .hint{margin-top:6px;font-size:12px;color:var(--gray-text);}
 .input-modern{padding:12px 15px;border:2px solid var(--primary-blue);background:var(--light-bg);border-radius:8px;font-family:inherit;font-size:14px;transition:all .3s;box-sizing:border-box;width:100%;resize:vertical;}
 .input-modern:focus{outline:none;border-color:var(--dark-blue);background:var(--color-bg-elevated);box-shadow:0 0 0 4px rgba(52,152,219,.1);}

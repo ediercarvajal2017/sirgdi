@@ -391,16 +391,16 @@
     .badge-estado-1 { background: rgba(52, 152, 219, 0.15); color: var(--primary-blue); }
     .badge-estado-2 { background: rgba(230, 126, 34, 0.15); color: #E67E22; }
     .badge-estado-3 { background: rgba(155, 89, 182, 0.15); color: #9B59B6; }
-    .badge-estado-4 { background: rgba(46, 204, 113, 0.15); color: #27AE60; }
+    .badge-estado-4 { background: rgba(46, 204, 113, 0.15); color: var(--color-success); }
     .badge-estado-5 { background: rgba(243, 156, 18, 0.15); color: #F39C12; }
-    .badge-estado-6 { background: rgba(39, 174, 96, 0.15); color: #27AE60; }
-    .badge-estado-7 { background: rgba(231, 76, 60, 0.15); color: #E74C3C; }
+    .badge-estado-6 { background: rgba(39, 174, 96, 0.15); color: var(--color-success); }
+    .badge-estado-7 { background: rgba(231, 76, 60, 0.15); color: var(--color-danger); }
     .badge-estado-8 { background: rgba(128, 139, 150, 0.15); color: var(--gray-text); }
 
-    .badge-urgency-1 { background: rgba(46, 204, 113, 0.15); color: #27AE60; }
+    .badge-urgency-1 { background: rgba(46, 204, 113, 0.15); color: var(--color-success); }
     .badge-urgency-2 { background: rgba(230, 126, 34, 0.15); color: #E67E22; }
     .badge-urgency-3 { background: rgba(243, 156, 18, 0.15); color: #F39C12; }
-    .badge-urgency-4 { background: rgba(231, 76, 60, 0.15); color: #E74C3C; }
+    .badge-urgency-4 { background: rgba(231, 76, 60, 0.15); color: var(--color-danger); }
 
     /* Paginación */
     .pagination {

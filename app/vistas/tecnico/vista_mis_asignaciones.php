@@ -112,23 +112,23 @@ $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_to
 .tec-actions{display:flex;gap:8px;min-width:200px;justify-content:flex-end;flex-wrap:wrap;}
 .badge-urgencia{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
 .badge-urgencia i{font-size:10px;}
-.urg-1{background:rgba(39,174,96,.15);color:#27AE60;}
+.urg-1{background:rgba(39,174,96,.15);color: var(--color-success);}
 .urg-2{background:rgba(243,156,18,.15);color:#F39C12;}
 .urg-3{background:rgba(230,126,34,.18);color:#E67E22;}
-.urg-4{background:rgba(231,76,60,.15);color:#E74C3C;}
+.urg-4{background:rgba(231,76,60,.15);color: var(--color-danger);}
 .badge-estado{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;}
 .est-1{background:rgba(127,140,141,.15);color:var(--color-text);}
 .est-2{background:rgba(52,152,219,.15);color:#3498DB;}
 .est-3{background:rgba(41,128,185,.15);color:#2980B9;}
-.est-4{background:rgba(39,174,96,.15);color:#27AE60;}
+.est-4{background:rgba(39,174,96,.15);color: var(--color-success);}
 .est-5{background:rgba(155,89,182,.15);color:#8E44AD;}
 .est-6{background:rgba(230,126,34,.15);color:#E67E22;}
 .est-7{background:rgba(127,140,141,.18);color:var(--color-text);}
-.est-8{background:rgba(231,76,60,.15);color:#E74C3C;}
+.est-8{background:rgba(231,76,60,.15);color: var(--color-danger);}
 .btn-accion{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:all .3s;text-transform:uppercase;letter-spacing:.3px;}
 .btn-atender{background:rgba(52,152,219,.12);color:var(--primary-blue);}
 .btn-atender:hover{background:var(--primary-blue);color:#fff;transform:translateY(-2px);}
-.btn-solucionar{background:rgba(39,174,96,.12);color:#27AE60;}
+.btn-solucionar{background:rgba(39,174,96,.12);color: var(--color-success);}
 .btn-solucionar:hover{background:#27AE60;color:#fff;transform:translateY(-2px);}
 .empty-state{text-align:center;padding:60px 40px;background:var(--color-bg-elevated);border-radius:12px;color:var(--gray-text);box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .empty-state i{font-size:48px;margin-bottom:16px;opacity:.5;display:block;}

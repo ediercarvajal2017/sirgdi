@@ -138,7 +138,7 @@
     }
 
     .required {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-weight: bold;
     }
 

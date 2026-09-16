@@ -222,7 +222,7 @@ $faltantes = $completitud['faltantes'] ?? [];
     border-top:4px solid var(--color-border);
     display:flex; flex-direction:column; gap:14px;
 }
-.etapa-ok { border-top-color:#27AE60; }
+.etapa-ok { border-top-color: var(--color-success); }
 
 .etapa-head { display:flex; align-items:center; justify-content:space-between; }
 .etapa-titulo {
@@ -231,7 +231,7 @@ $faltantes = $completitud['faltantes'] ?? [];
 }
 .etapa-titulo i { color: var(--etapa-color, var(--primary-blue)); }
 .etapa-count { font-size:11px; font-weight:600; padding:4px 10px; border-radius:12px; }
-.badge-ok   { background:rgba(39,174,96,.15);    color:#27AE60; }
+.badge-ok   { background:rgba(39,174,96,.15);    color: var(--color-success); }
 .badge-pend { background:rgba(189,195,199,.3);   color:var(--color-text); }
 
 /* ── Lista fotos subidas ── */

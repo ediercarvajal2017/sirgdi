@@ -213,7 +213,7 @@
     }
 
     .forgot-password {
-        color: var(--color-primary);
+        color: var(--link);
         text-decoration: none;
         font-weight: 600;
         font-size: 14px;
@@ -222,7 +222,7 @@
 
     .forgot-password:hover {
         text-decoration: underline;
-        color: var(--color-primary-dark);
+        color: var(--link-hover);
     }
 
     .form-actions {

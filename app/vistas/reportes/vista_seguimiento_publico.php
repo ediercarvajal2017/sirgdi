@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title>Seguimiento de Reporte — SIRGDI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -15,24 +15,30 @@
             --teal:        #1ABC9C;
             --teal-dark:   #16A085;
             --indigo:      #3F51B5;
-            --text:        #2C3E50;
-            --text-light:  #7F8C8D;
-            --bg:          #F0F4F8;
+            --text:        #111827;
+            --text-light:  #4B5563;
+            --bg:          #EEF2F5;
             --white:       #ffffff;
             --border:      #E2E8F0;
             --shadow:      0 4px 24px rgba(26,82,118,.10);
             --radius:      14px;
+            /* Esta vista es autónoma (no carga estilos_base.css), así que
+               declara aquí los colores de estado que usa. */
+            --color-danger: #C0392B;
+            --color-success: #1E8449;
         }
 
         /* Tema oscuro (por defecto — ver public/js/tema.js). Solo se oscurecen las
            superficies principales (fondo, tarjetas, texto, bordes); las insignias de
            estado/urgencia conservan su color pastel de acento en ambos temas. */
         :root[data-theme="dark"] {
-            --text:        #E8EDF2;
-            --text-light:  #9AA7B2;
-            --bg:          #14181C;
-            --white:       #1E242B;
-            --border:      #333C46;
+            --text:        #F9FAFB;
+            --text-light:  #D1D5DB;
+            --bg:          #0F1419;
+            --white:       #1A212B;
+            --border:      #27313D;
+            --color-danger: #FF6B5E;
+            --color-success: #2ECC71;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -276,7 +282,7 @@
 
         .step.done  .step-circle { background: var(--teal);       border-color: var(--teal);       color: #fff; }
         .step.active .step-circle { background: var(--blue);      border-color: var(--blue);       color: #fff; box-shadow: 0 0 0 5px rgba(52,152,219,.2); }
-        .step.skipped .step-circle { background: #FDEDEC;         border-color: #E74C3C;           color: #E74C3C; }
+        .step.skipped .step-circle { background: #FDEDEC;         border-color: var(--color-danger);           color: var(--color-danger); }
 
         .step-label {
             font-size: 10px;
@@ -289,7 +295,7 @@
 
         .step.done   .step-label  { color: var(--teal-dark); }
         .step.active .step-label  { color: var(--blue-dark); font-weight: 700; }
-        .step.skipped .step-label { color: #E74C3C; }
+        .step.skipped .step-label { color: var(--color-danger); }
 
         /* ── INFO GRID ── */
         .info-grid {

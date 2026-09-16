@@ -138,9 +138,9 @@ $urgencias = [1 => 'No Urgente', 2 => 'Moderado', 3 => 'Importante', 4 => 'Urgen
     /* Tabla */
     .tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:hidden; margin-bottom:24px; }
     .tabla-reportes { width:100%; border-collapse:collapse; }
-    .tabla-reportes thead th { background:#F4F9FD; color:#2C3E50; font-size:12px; text-transform:uppercase; letter-spacing:.4px; text-align:left; padding:14px 16px; border-bottom:2px solid #E8EDEF; white-space:nowrap; }
+    .tabla-reportes thead th { background:var(--color-bg-subtle); color:var(--color-text); font-size:12px; text-transform:uppercase; letter-spacing:.4px; text-align:left; padding:14px 16px; border-bottom:2px solid var(--color-border-subtle); white-space:nowrap; }
     .tabla-reportes th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }
-    .tabla-reportes th.th-sort:hover { background:#D6EAF8; }
+    .tabla-reportes th.th-sort:hover { background:var(--color-bg-hover); }
     .tabla-reportes th.th-sort i { margin-left:5px; font-size:11px; color:var(--primary-blue); opacity:.7; }
     .tabla-reportes th.th-center, .tabla-reportes td.td-center { text-align:center; }
     .tabla-reportes tbody td { padding:13px 16px; border-bottom:1px solid var(--color-border-subtle); font-size:13.5px; color:var(--color-text); }
@@ -152,15 +152,15 @@ $urgencias = [1 => 'No Urgente', 2 => 'Moderado', 3 => 'Importante', 4 => 'Urgen
     .badge-estado-1 { background: rgba(52,152,219,.15); color:#3498DB; }
     .badge-estado-2 { background: rgba(230,126,34,.15); color:#E67E22; }
     .badge-estado-3 { background: rgba(155,89,182,.15); color:#9B59B6; }
-    .badge-estado-4 { background: rgba(46,204,113,.15); color:#27AE60; }
+    .badge-estado-4 { background: rgba(46,204,113,.15); color: var(--color-success); }
     .badge-estado-5 { background: rgba(243,156,18,.15); color:#F39C12; }
-    .badge-estado-6 { background: rgba(39,174,96,.15); color:#27AE60; }
-    .badge-estado-7 { background: rgba(231,76,60,.15); color:#E74C3C; }
+    .badge-estado-6 { background: rgba(39,174,96,.15); color: var(--color-success); }
+    .badge-estado-7 { background: rgba(231,76,60,.15); color: var(--color-danger); }
     .badge-estado-8 { background: rgba(128,139,150,.15); color:var(--gray-text); }
-    .badge-urgency-1 { background: rgba(46,204,113,.15); color:#27AE60; }
+    .badge-urgency-1 { background: rgba(46,204,113,.15); color: var(--color-success); }
     .badge-urgency-2 { background: rgba(230,126,34,.15); color:#E67E22; }
     .badge-urgency-3 { background: rgba(243,156,18,.15); color:#F39C12; }
-    .badge-urgency-4 { background: rgba(231,76,60,.15); color:#E74C3C; }
+    .badge-urgency-4 { background: rgba(231,76,60,.15); color: var(--color-danger); }
 
     .btn-action-compact { width:36px; height:36px; padding:0; border:none; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; font-size:14px; transition:all .3s; text-decoration:none; }
     .btn-view { color:var(--primary-blue); background:rgba(52,152,219,.1); }
@@ -169,7 +169,7 @@ $urgencias = [1 => 'No Urgente', 2 => 'Moderado', 3 => 'Importante', 4 => 'Urgen
     .td-acciones .btn-action-compact, .td-acciones form { display:inline-flex; margin:0 2px; vertical-align:middle; }
     .btn-edit { color:#E67E22; background:rgba(230,126,34,.12); }
     .btn-edit:hover { background:#E67E22; color:#fff; transform:scale(1.08); }
-    .btn-delete { color:#E74C3C; background:#FDEDEC; border:none; cursor:pointer; }
+    .btn-delete { color: var(--color-danger); background:#FDEDEC; border:none; cursor:pointer; }
     .btn-delete:hover { background:#E74C3C; color:#fff; transform:scale(1.08); }
     .lock-hint { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; color:var(--color-border); }
 

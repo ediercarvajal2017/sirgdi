@@ -111,7 +111,7 @@ function copiarCredAdmin() {
         --dark-text: var(--color-text);
         --light-bg: var(--color-bg-subtle);
         --success-color: var(--color-success);
-        --danger-color: #E74C3C;
+        --danger-color: var(--color-danger);
     }
 
     .superadmin-container {

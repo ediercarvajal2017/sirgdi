@@ -37,8 +37,8 @@
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    background: #F4F9FD;
-    border: 1px solid #D6E9F8;
+    background: var(--color-info-bg);
+    border: 1px solid var(--color-border-subtle);
     border-left: 4px solid #3498DB;
     border-radius: 8px;
     padding: 20px 24px;
@@ -53,7 +53,7 @@
 
 .admin-hint p {
     margin: 0;
-    color: #2C3E50;
+    color: var(--color-info-text);
     font-size: 15px;
     line-height: 1.6;
 }

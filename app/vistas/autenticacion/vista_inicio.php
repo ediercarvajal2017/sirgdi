@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+    <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo config('app.app_name'); ?> - Sistema de Reportes de Daños</title>
     <link rel="icon" type="image/png" sizes="32x32" href="<?php echo config('app.url_base'); ?>/img/favicon.png">
     <link rel="apple-touch-icon" href="<?php echo config('app.url_base'); ?>/img/apple-touch-icon.png">
@@ -18,8 +18,13 @@
             --teal-dark:   #0E6655;
             --indigo:      #3F51B5;
             --indigo-dark: #1A237E;
-            --text:        #2C3E50;
-            --text-light:  #7F8C8D;
+            --text:        #111827;
+            --text-light:  #4B5563;
+            /* Tonos sólidos: versiones de la paleta de marca con contraste
+               suficiente para llevar texto blanco encima (WCAG AA). */
+            --teal-solid:  #0E8066;
+            --blue-solid:  #1F77B0;
+            --label-accent:#1A5276;
             --bg-light:    #F4F9FD;
             --white:       #ffffff;
             --surface-2:   #EBF5FB;
@@ -32,8 +37,11 @@
            usan un degradé azul-marino fijo y siguen igual en ambos temas; aquí solo
            se oscurecen las secciones claras (features, steps, roles, tarjetas). */
         :root[data-theme="dark"] {
-            --text:        #E8EDF2;
-            --text-light:  #9AA7B2;
+            --text:        #F9FAFB;
+            --text-light:  #D1D5DB;
+            --teal-solid:  #0E8066;
+            --blue-solid:  #1F77B0;
+            --label-accent:#8FCDF4;
             --bg-light:    #161C23;
             --white:       #1E242B;
             --surface-2:   #171E27;
@@ -102,7 +110,7 @@
 
         .nav-brand-sub {
             font-size: 11px;
-            color: rgba(255,255,255,.55);
+            color: rgba(255,255,255,.85);
             letter-spacing: 0.3px;
         }
 
@@ -125,7 +133,7 @@
         .nav-link:hover { background: rgba(255,255,255,.1); color: #fff; }
 
         .nav-btn {
-            background: var(--blue);
+            background: var(--blue-solid);
             color: #fff !important;
             font-weight: 700;
             padding: 8px 20px;
@@ -244,7 +252,7 @@
         }
 
         .btn-primary {
-            background: var(--teal);
+            background: var(--teal-solid);
             color: #fff;
             box-shadow: 0 8px 24px rgba(26,188,156,.4);
         }
@@ -383,7 +391,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            color: var(--blue);
+            color: var(--label-accent);
             background: rgba(52,152,219,.1);
             padding: 5px 14px;
             border-radius: 20px;
@@ -710,7 +718,7 @@
         .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
         .btn-cta-primary {
-            background: var(--teal);
+            background: var(--teal-solid);
             color: #fff;
             box-shadow: 0 8px 24px rgba(26,188,156,.4);
         }

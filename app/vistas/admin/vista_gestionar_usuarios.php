@@ -266,13 +266,13 @@
 .tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:auto; max-height:72vh; }
 .tabla-usuarios { width:100%; border-collapse:collapse; font-size:13px; }
 .tabla-usuarios thead th {
-    position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#EBF5FB,#D6EAF8);
+    position:sticky; top:0; z-index:2; background:var(--color-bg-subtle);
     color:var(--dark-text); text-align:left; padding:13px 14px; font-size:12px; text-transform:uppercase;
     letter-spacing:.4px; border-bottom:2px solid var(--primary-blue); white-space:nowrap;
 }
 .tabla-usuarios th.th-center { text-align:center; }
 .tabla-usuarios th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }
-.tabla-usuarios th.th-sort:hover { background:#D6EAF8; }
+.tabla-usuarios th.th-sort:hover { background:var(--color-bg-hover); }
 .tabla-usuarios th.th-sort i { margin-left:5px; font-size:11px; color:var(--primary-blue); opacity:.7; }
 .tabla-usuarios tbody td { padding:12px 14px; border-bottom:1px solid var(--color-border-subtle); color:var(--dark-text); vertical-align:middle; }
 .tabla-usuarios tbody tr:hover { background:var(--light-bg); }
@@ -419,12 +419,12 @@
 
 .badge-active {
     background: rgba(39, 174, 96, 0.15);
-    color: #27AE60;
+    color: var(--color-success);
 }
 
 .badge-inactive {
     background: rgba(231, 76, 60, 0.15);
-    color: #E74C3C;
+    color: var(--color-danger);
 }
 
 .badge-rol {
@@ -487,7 +487,7 @@
 }
 
 .btn-action-compact.btn-delete {
-    color: #E74C3C;
+    color: var(--color-danger);
     background: rgba(231, 76, 60, 0.1);
 }
 
@@ -547,7 +547,7 @@
 }
 
 .form-group .required {
-    color: #E74C3C;
+    color: var(--color-danger);
     font-weight: 700;
 }
 
@@ -571,7 +571,7 @@
 
 /* Estado de error en un campo */
 .input-modern.input-error {
-    border-color: #E74C3C !important;
+    border-color: var(--color-danger) !important;
     background: rgba(231, 76, 60, 0.05);
     box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.12);
     animation: shakeError 0.4s;

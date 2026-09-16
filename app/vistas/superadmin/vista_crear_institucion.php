@@ -188,7 +188,7 @@
     }
 
     .form-group .required {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-weight: 700;
     }
 
@@ -216,7 +216,7 @@
     }
 
     .input-modern.input-error {
-        border-color: #E74C3C !important;
+        border-color: var(--color-danger) !important;
         background: rgba(231, 76, 60, 0.05);
         box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.12);
         animation: shakeError 0.4s;

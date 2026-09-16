@@ -167,7 +167,7 @@
     }
 
     .form-group .required {
-        color: #E74C3C;
+        color: var(--color-danger);
         font-weight: 700;
     }
 
