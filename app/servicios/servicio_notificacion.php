@@ -27,26 +27,76 @@ class ServicioNotificacion {
         $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector']);
     }
 
-    /** RF-12: Técnico asignado — avisa al técnico */
+    /**
+     * RF-12: Técnico asignado.
+     * Avisa al técnico (con todo lo que necesita para actuar) y al reportante
+     * (para que sepa que su ticket ya está en manos de alguien).
+     */
     public function notificar_asignacion_tecnico($id_reporte, $id_institucion, $id_tecnico, $numero_ticket) {
         $tecnico = $this->obtener_usuario($id_tecnico);
         if (!$tecnico) return;
 
-        $asunto = "Se le asignó el reporte #{$numero_ticket}";
-        $cuerpo = $this->plantilla('Reporte Asignado', [
-            'Ticket'   => $numero_ticket,
-            'Técnico'  => htmlspecialchars($tecnico['nombre_completo'] ?? ''),
-        ], 'Se le ha asignado un nuevo reporte para su atención técnica.');
+        $reporte = $this->obtener_reporte_detallado($id_reporte, $id_institucion);
+        if (!$reporte) return;
+
+        $url_base       = config('app.url_base');
+        $nombre_tecnico = htmlspecialchars($tecnico['nombre_completo'] ?? 'Técnico');
+        $ubicacion      = trim(($reporte['sede'] ?? '') . (empty($reporte['referencia_ubicacion_libre']) ? '' : ' — ' . $reporte['referencia_ubicacion_libre']));
+        $clasificacion  = trim(($reporte['categoria'] ?? '') . (empty($reporte['subcategoria']) ? '' : ' / ' . $reporte['subcategoria']));
+
+        // ── 1. Al técnico: qué hay que atender, dónde y con qué prioridad ──
+        $link_tecnico = $url_base . '/?controlador=tecnico&accion=mis_asignaciones';
+        $asunto_tecnico = "Nuevo ticket asignado #{$numero_ticket} — " . ($reporte['urgencia'] ?? '');
+        $cuerpo_tecnico = $this->plantilla('Tiene un ticket pendiente por atender', [
+            'Ticket'         => $numero_ticket,
+            'Urgencia'       => htmlspecialchars($reporte['urgencia'] ?? ''),
+            'Clasificación'  => htmlspecialchars($clasificacion),
+            'Ubicación'      => htmlspecialchars($ubicacion),
+            'Descripción'    => nl2br(htmlspecialchars($reporte['descripcion_problema'] ?? '')),
+            'Reportado por'  => htmlspecialchars($reporte['nombre_reportante'] ?? ''),
+            'Registrado el'  => $this->fecha_legible($reporte['fecha_hora_registro'] ?? null),
+        ], 'Se le ha asignado el siguiente reporte. Ingrese a la plataforma para registrar su intervención y las evidencias.'
+           . $this->boton_enlace($link_tecnico, 'Ver mis asignaciones'));
 
         $this->enviar_email(
             $tecnico['correo_electronico'],
             $tecnico['nombre_completo'] ?? 'Técnico',
-            $asunto,
-            $cuerpo,
+            $asunto_tecnico,
+            $cuerpo_tecnico,
             $id_institucion,
             $id_reporte,
-            'reporte_asignado'
+            'reporte_asignado',
+            true,
+            $id_tecnico
         );
+
+        // ── 2. Al reportante: su ticket avanzó y quién lo atenderá ──
+        if (!empty($reporte['correo_reportante'])) {
+            $link_seguimiento = $url_base . '/?controlador=reportes&accion=seguimiento&token='
+                              . urlencode($reporte['token_seguimiento_publico'] ?? '');
+            $asunto_reportante = "Su reporte #{$numero_ticket} ya tiene técnico asignado";
+            $cuerpo_reportante = $this->plantilla('Su reporte está en proceso', [
+                'Ticket'            => $numero_ticket,
+                'Estado actual'     => htmlspecialchars($reporte['estado'] ?? 'En proceso'),
+                'Técnico asignado'  => $nombre_tecnico,
+                'Clasificación'     => htmlspecialchars($clasificacion),
+                'Ubicación'         => htmlspecialchars($ubicacion),
+            ], 'Le informamos que su reporte ha sido revisado y asignado a un técnico, quien se encargará de atenderlo. '
+               . 'Puede consultar el avance en cualquier momento desde el siguiente enlace:'
+               . $this->boton_enlace($link_seguimiento, 'Seguir mi reporte'));
+
+            $this->enviar_email(
+                $reporte['correo_reportante'],
+                $reporte['nombre_reportante'] ?? 'Reportante',
+                $asunto_reportante,
+                $cuerpo_reportante,
+                $id_institucion,
+                $id_reporte,
+                'reporte_asignado_reportante',
+                true,
+                !empty($reporte['id_reportante']) ? (int)$reporte['id_reportante'] : null
+            );
+        }
     }
 
     /** RF-21: Reporte marcado como solucionado — avisa al Gestor */
@@ -191,16 +241,59 @@ class ServicioNotificacion {
                 $u['nombre_completo'] ?? '',
                 $asunto, $cuerpo,
                 $id_institucion, $id_reporte,
-                'notificacion_rol'
+                'notificacion_rol',
+                true,
+                (int)$u['id_usuario']
             );
         }
     }
 
-    /** Envía el email por SMTP y registra en la tabla notificacion */
-    private function enviar_email($destino, $nombre_dest, $asunto, $cuerpo_html, $id_institucion, $id_reporte, $tipo_evento, $registrar_bd = true) {
+    /** Reporte con los nombres de sede, categoría, subcategoría, urgencia y estado ya resueltos */
+    private function obtener_reporte_detallado($id_reporte, $id_institucion) {
+        $sql = 'SELECT r.*,
+                       s.nombre  AS sede,
+                       c.nombre  AS categoria,
+                       sc.nombre AS subcategoria,
+                       u.nombre  AS urgencia,
+                       e.nombre  AS estado
+                FROM reporte r
+                LEFT JOIN sede         s  ON s.id_sede = r.id_sede
+                LEFT JOIN categoria    c  ON c.id_categoria = r.id_categoria
+                LEFT JOIN subcategoria sc ON sc.id_subcategoria = r.id_subcategoria
+                LEFT JOIN urgencia     u  ON u.id_urgencia = r.id_urgencia_calculada
+                LEFT JOIN estado       e  ON e.id_estado = r.id_estado
+                WHERE r.id_reporte = :r AND r.id_institucion = :i';
+        return $this->bd->obtener_uno($sql, [':r' => $id_reporte, ':i' => $id_institucion]);
+    }
+
+    /** Botón de acción para el cuerpo del correo (estilos inline: los clientes de correo no cargan CSS externo) */
+    private function boton_enlace($url, $texto) {
+        return '<p style="text-align:center;margin:22px 0 6px;">'
+             . '<a href="' . htmlspecialchars($url) . '" '
+             . 'style="background:#1F77B0;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">'
+             . htmlspecialchars($texto) . '</a></p>';
+    }
+
+    private function fecha_legible($fecha) {
+        if (empty($fecha)) return '';
+        $ts = strtotime($fecha);
+        return $ts ? date('d/m/Y \a \l\a\s H:i', $ts) : htmlspecialchars($fecha);
+    }
+
+    /**
+     * Envía el email por SMTP y lo registra en la tabla notificacion.
+     * $id_usuario_dest es el usuario al que pertenece la notificación in-app;
+     * si el destinatario no tiene cuenta (invitado) se pasa null y solo se envía el correo.
+     */
+    private function enviar_email($destino, $nombre_dest, $asunto, $cuerpo_html, $id_institucion, $id_reporte, $tipo_evento, $registrar_bd = true, $id_usuario_dest = null) {
+        if (empty($destino) || !filter_var($destino, FILTER_VALIDATE_EMAIL)) {
+            $this->log("Destino inválido u omitido para [{$asunto}]");
+            return false;
+        }
+
         // Registrar en BD antes de intentar enviar (salvo que el llamador pida lo contrario)
-        $id_notif = $registrar_bd
-            ? $this->registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento)
+        $id_notif = ($registrar_bd && $id_usuario_dest)
+            ? $this->registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento, $id_usuario_dest)
             : null;
 
         // Si no hay SMTP configurado, solo loggear
@@ -248,9 +341,12 @@ class ServicioNotificacion {
         }
     }
 
-    /** Registra la notificación en la tabla para el historial in-app */
-    private function registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento) {
-        $id_usuario_dest = $_SESSION['id_usuario'] ?? null;
+    /**
+     * Registra la notificación en la tabla para el historial in-app del destinatario.
+     * Antes se registraba a nombre del usuario con sesión (quien dispara el envío), de
+     * modo que el técnico nunca veía la suya y el gestor acumulaba las de todos.
+     */
+    private function registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento, $id_usuario_dest) {
         if (!$id_usuario_dest) return null;
 
         try {
