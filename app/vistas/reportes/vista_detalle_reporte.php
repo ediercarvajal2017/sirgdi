@@ -87,6 +87,21 @@ $base = config('app.url_base');
                 </fieldset>
             <?php endif; ?>
 
+            <?php if (!empty($avances)): ?>
+                <!-- Sección: Notas de avance del técnico -->
+                <fieldset class="det-section">
+                    <legend><i class="fas fa-comment-dots"></i> Avances del técnico</legend>
+                    <div class="informe-grid">
+                        <?php foreach ($avances as $a): ?>
+                            <div class="informe-item">
+                                <span class="info-label"><?php echo date('d/m/Y H:i', strtotime($a['fecha_creacion'])); ?> &middot; <?php echo htmlspecialchars($a['autor']); ?></span>
+                                <p><?php echo htmlspecialchars($a['texto']); ?></p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </fieldset>
+            <?php endif; ?>
+
             <?php
                 // Separar evidencias del reportante (etapa 4) de las del técnico (1,2,3)
                 $inst = $reporte['id_institucion'];

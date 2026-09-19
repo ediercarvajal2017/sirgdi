@@ -26,6 +26,31 @@ class ModeloReporte {
     }
 
     /**
+     * Reporte con los nombres de sede, categoría, subcategoría, urgencia y estado
+     * ya resueltos (para pantallas que deben mostrarlo sin más consultas).
+     */
+    public function obtener_detallado($id_reporte, $id_institucion) {
+        $sql = 'SELECT r.*,
+                       s.nombre  AS sede_nombre,
+                       c.nombre  AS categoria_nombre,
+                       sc.nombre AS subcategoria_nombre,
+                       u.nombre  AS urgencia_nombre,
+                       e.nombre  AS estado_nombre
+                FROM reporte r
+                LEFT JOIN sede         s  ON s.id_sede = r.id_sede
+                LEFT JOIN categoria    c  ON c.id_categoria = r.id_categoria
+                LEFT JOIN subcategoria sc ON sc.id_subcategoria = r.id_subcategoria
+                LEFT JOIN urgencia     u  ON u.id_urgencia = r.id_urgencia_calculada
+                LEFT JOIN estado       e  ON e.id_estado = r.id_estado
+                WHERE r.id_reporte = :id_reporte AND r.id_institucion = :id_institucion';
+
+        return $this->bd->obtener_uno($sql, [
+            ':id_reporte' => $id_reporte,
+            ':id_institucion' => $id_institucion,
+        ]);
+    }
+
+    /**
      * Eliminar un reporte y todos sus registros relacionados (transacción).
      * Preserva la base de conocimiento (plantilla_solucion) poniendo su origen en NULL.
      * Devuelve las rutas de archivos de evidencia para que el llamador las borre del disco.

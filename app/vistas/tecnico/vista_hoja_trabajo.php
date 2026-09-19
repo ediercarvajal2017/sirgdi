@@ -1,6 +1,11 @@
 <?php
+/* Hoja de trabajo del técnico: una sola pantalla por ticket que se completa de
+ * forma progresiva. Variables: $reporte, $detalle, $intervension, $evidencias,
+ * $completitud, $avances, $informe_faltante, $ya_solucionado, $csrf_token */
 $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_token() : '');
 $id_interv = $intervension['id_informe'];
+$id_rep = (int)$reporte['id_reporte'];
+$base = config('app.url_base');
 
 // Agrupar evidencias por etapa
 $por_etapa = ['antes' => [], 'durante' => [], 'despues' => []];
@@ -17,24 +22,90 @@ $etapas_def = [
 ];
 $completa  = $completitud['completa']  ?? false;
 $faltantes = $completitud['faltantes'] ?? [];
+$informe_ok = empty($informe_faltante);
+$bloqueada = !empty($ya_solucionado);
+$puede_cerrar = $completa && $informe_ok && !$bloqueada;
+
+// Materiales guardados como JSON → una línea por material para el textarea
+$materiales_txt = '';
+if (!empty($intervension['materiales_utilizados_json'])) {
+    $m = json_decode($intervension['materiales_utilizados_json'], true);
+    if (is_array($m)) $materiales_txt = implode("\n", array_map(fn($x) => $x['nombre'] ?? '', $m));
+}
+
+// Pasos del flujo con su estado calculado
+$pasos = [
+    ['Iniciar',   true],
+    ['Antes',     count($por_etapa['antes']) > 0],
+    ['Durante',   count($por_etapa['durante']) > 0],
+    ['Después',   count($por_etapa['despues']) > 0],
+    ['Informe',   $informe_ok],
+    ['Solución',  $bloqueada],
+];
+$hechos = count(array_filter($pasos, fn($p) => $p[1]));
+$ubicacion = trim(($detalle['sede_nombre'] ?? '') . (empty($detalle['referencia_ubicacion_libre']) ? '' : ' — ' . $detalle['referencia_ubicacion_libre']));
+$clasificacion = trim(($detalle['categoria_nombre'] ?? '') . (empty($detalle['subcategoria_nombre']) ? '' : ' / ' . $detalle['subcategoria_nombre']));
 ?>
 <div class="container ev-container">
 
     <!-- Banner -->
     <div class="page-banner">
-        <div class="page-banner__icon"><i class="fas fa-camera"></i></div>
+        <div class="page-banner__icon"><i class="fas fa-clipboard-check"></i></div>
         <div class="page-banner__text">
-            <h2>Cargar Evidencias</h2>
-            <p>Reporte <strong><?php echo htmlspecialchars($reporte['numero_ticket']); ?></strong>
-               &mdash; mínimo 1 foto por etapa (RN-03).</p>
+            <h2>Hoja de trabajo &mdash; <?php echo htmlspecialchars($reporte['numero_ticket']); ?></h2>
+            <p>Avanza a tu ritmo: cada foto, nota o cambio del informe se guarda por separado.
+               Iniciada el <?php echo date('d/m/Y H:i', strtotime($intervension['fecha_hora_inicio'])); ?>.</p>
         </div>
     </div>
 
-    <!-- Completitud -->
+    <?php if (!empty($_GET['error'])): ?>
+        <div class="completitud-card comp-error">
+            <i class="fas fa-circle-exclamation"></i>
+            <div><?php echo htmlspecialchars($_GET['error']); ?></div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Progreso por pasos -->
+    <div class="pasos-card">
+        <div class="pasos-head">
+            <strong>Progreso</strong>
+            <span><?php echo $hechos; ?> de <?php echo count($pasos); ?> pasos</span>
+        </div>
+        <ol class="pasos">
+            <?php foreach ($pasos as $i => [$nombre, $ok]): ?>
+            <li class="<?php echo $ok ? 'paso-ok' : ''; ?>">
+                <span class="paso-num"><?php echo $ok ? '<i class="fas fa-check"></i>' : ($i + 1); ?></span>
+                <span class="paso-nombre"><?php echo $nombre; ?></span>
+            </li>
+            <?php endforeach; ?>
+        </ol>
+    </div>
+
+    <!-- Qué hay que atender -->
+    <details class="resumen-card" open>
+        <summary><i class="fas fa-circle-info"></i> Qué hay que atender</summary>
+        <div class="resumen-grid">
+            <div><span class="resumen-k">Urgencia</span><span class="resumen-v urg"><?php echo htmlspecialchars($detalle['urgencia_nombre'] ?? ''); ?></span></div>
+            <div><span class="resumen-k">Clasificación</span><span class="resumen-v"><?php echo htmlspecialchars($clasificacion); ?></span></div>
+            <div><span class="resumen-k">Ubicación</span><span class="resumen-v"><?php echo htmlspecialchars($ubicacion); ?></span></div>
+            <div><span class="resumen-k">Reportado por</span><span class="resumen-v"><?php echo htmlspecialchars($detalle['nombre_reportante'] ?? ''); ?></span></div>
+            <div class="resumen-full"><span class="resumen-k">Descripción</span><span class="resumen-v"><?php echo nl2br(htmlspecialchars($detalle['descripcion_problema'] ?? '')); ?></span></div>
+        </div>
+    </details>
+
+    <?php if ($bloqueada): ?>
+        <div class="completitud-card comp-ok">
+            <i class="fas fa-circle-check"></i>
+            <div><strong>Trabajo entregado.</strong> El reporte está en manos del gestor para su validación. La hoja queda en solo lectura.</div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Evidencias -->
+    <h3 class="seccion-titulo"><i class="fas fa-camera"></i> Evidencia fotográfica <small>mínimo 1 foto por etapa</small></h3>
     <div class="completitud-card <?php echo $completa ? 'comp-ok' : 'comp-pend'; ?>">
         <?php if ($completa): ?>
             <i class="fas fa-circle-check"></i>
-            <div><strong>Evidencia completa.</strong> Ya puedes marcar el reporte como solucionado.</div>
+            <div><strong>Evidencia completa.</strong></div>
         <?php else: ?>
             <i class="fas fa-triangle-exclamation"></i>
             <div><strong>Evidencia incompleta.</strong> Faltan fotos de: <?php echo htmlspecialchars(implode(', ', array_map('ucfirst', $faltantes))); ?></div>
@@ -79,7 +150,8 @@ $faltantes = $completitud['faltantes'] ?? [];
             </div>
             <?php endif; ?>
 
-            <!-- Formulario de carga -->
+            <!-- Formulario de carga (no disponible una vez entregado el trabajo) -->
+            <?php if (!$bloqueada): ?>
             <form method="POST"
                   enctype="multipart/form-data"
                   action="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=cargar_evidencia"
@@ -140,28 +212,114 @@ $faltantes = $completitud['faltantes'] ?? [];
                     <i class="fas fa-upload"></i> Subir foto
                 </button>
             </form>
+            <?php endif; ?>
         </div>
         <?php endforeach; ?>
     </div>
 
+    <!-- Notas de avance -->
+    <h3 class="seccion-titulo"><i class="fas fa-comment-dots"></i> Notas de avance <small>el reportante las ve en su enlace de seguimiento</small></h3>
+    <div class="panel-card">
+        <?php if (!$bloqueada): ?>
+        <form method="POST" action="<?php echo $base; ?>/?controlador=tecnico&accion=agregar_avance" class="form-avance">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf); ?>">
+            <input type="hidden" name="id_reporte" value="<?php echo $id_rep; ?>">
+            <input type="text" name="texto" class="input-foto" maxlength="500" required minlength="5"
+                   placeholder="Ej: Llegué al sitio, falta material, regreso mañana…">
+            <button type="submit" class="btn-subir" style="width:auto;padding:10px 18px;">
+                <i class="fas fa-plus"></i> Agregar nota
+            </button>
+        </form>
+        <?php endif; ?>
+
+        <?php if (empty($avances)): ?>
+            <p class="vacio">Aún no hay notas. Úsalas para dejar constancia de cada visita o novedad.</p>
+        <?php else: ?>
+            <ul class="avances">
+                <?php foreach ($avances as $a): ?>
+                <li>
+                    <span class="avance-fecha"><i class="far fa-clock"></i> <?php echo date('d/m/Y H:i', strtotime($a['fecha_creacion'])); ?></span>
+                    <span class="avance-texto"><?php echo htmlspecialchars($a['texto']); ?></span>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+
+    <!-- Informe técnico -->
+    <h3 class="seccion-titulo"><i class="fas fa-file-lines"></i> Informe técnico <small>puedes guardarlo a medias y completarlo después</small></h3>
+    <div class="completitud-card <?php echo $informe_ok ? 'comp-ok' : 'comp-pend'; ?>">
+        <?php if ($informe_ok): ?>
+            <i class="fas fa-circle-check"></i>
+            <div><strong>Informe completo.</strong></div>
+        <?php else: ?>
+            <i class="fas fa-triangle-exclamation"></i>
+            <div><strong>Informe incompleto.</strong> Falta: <?php echo htmlspecialchars(implode('; ', $informe_faltante)); ?>.</div>
+        <?php endif; ?>
+    </div>
+    <form method="POST" action="<?php echo $base; ?>/?controlador=tecnico&accion=guardar_informe" class="panel-card form-informe">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf); ?>">
+        <input type="hidden" name="id_reporte" value="<?php echo $id_rep; ?>">
+        <?php $ro = $bloqueada ? 'readonly disabled' : ''; ?>
+
+        <div class="form-group">
+            <label for="descripcion_actividades">Actividades realizadas <span class="req">*</span></label>
+            <textarea id="descripcion_actividades" name="descripcion_actividades" rows="4" class="input-foto" <?php echo $ro; ?>
+                      placeholder="Qué se revisó y qué se hizo, paso a paso."><?php echo htmlspecialchars($intervension['descripcion_actividades'] ?? ''); ?></textarea>
+            <small>Mínimo <?php echo ModeloIntervension::MIN_DESCRIPCION; ?> caracteres.</small>
+        </div>
+        <div class="form-group">
+            <label for="causa_raiz">Causa raíz</label>
+            <textarea id="causa_raiz" name="causa_raiz" rows="2" class="input-foto" <?php echo $ro; ?>
+                      placeholder="Por qué ocurrió el daño."><?php echo htmlspecialchars($intervension['causa_raiz'] ?? ''); ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="solucion_implementada">Solución implementada <span class="req">*</span></label>
+            <textarea id="solucion_implementada" name="solucion_implementada" rows="3" class="input-foto" <?php echo $ro; ?>
+                      placeholder="Cómo quedó resuelto."><?php echo htmlspecialchars($intervension['solucion_implementada'] ?? ''); ?></textarea>
+            <small>Mínimo <?php echo ModeloIntervension::MIN_SOLUCION; ?> caracteres.</small>
+        </div>
+        <div class="form-row-2">
+            <div class="form-group">
+                <label for="materiales">Materiales utilizados</label>
+                <textarea id="materiales" name="materiales" rows="3" class="input-foto" <?php echo $ro; ?>
+                          placeholder="Uno por línea."><?php echo htmlspecialchars($materiales_txt); ?></textarea>
+            </div>
+            <div class="form-group">
+                <label for="costo_estimado">Costo estimado</label>
+                <input type="number" id="costo_estimado" name="costo_estimado" min="0" step="0.01" class="input-foto" <?php echo $ro; ?>
+                       value="<?php echo htmlspecialchars($intervension['costo_estimado'] ?? ''); ?>" placeholder="0.00">
+            </div>
+        </div>
+        <?php if (!$bloqueada): ?>
+        <button type="submit" class="btn-subir" style="width:auto;padding:12px 24px;align-self:flex-start;">
+            <i class="fas fa-floppy-disk"></i> Guardar avance del informe
+        </button>
+        <?php endif; ?>
+    </form>
+
     <!-- Acciones finales -->
     <div class="acciones-finales">
-        <a href="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=mis_asignaciones"
+        <a href="<?php echo $base; ?>/?controlador=tecnico&accion=mis_asignaciones"
            class="btn-modern-secondary" style="text-decoration:none;">
             <i class="fas fa-arrow-left"></i> Volver a Mis Asignaciones
         </a>
-        <form method="POST"
-              action="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=marcar_solucionado"
-              style="flex:1;">
+        <?php if (!$bloqueada): ?>
+        <form method="POST" action="<?php echo $base; ?>/?controlador=tecnico&accion=marcar_solucionado" style="flex:1;">
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf); ?>">
-            <input type="hidden" name="id_reporte"  value="<?php echo $reporte['id_reporte']; ?>">
-            <button type="submit" class="btn-modern"
-                    <?php echo $completa ? '' : 'disabled'; ?>
-                    onclick="return confirm('¿Marcar el reporte como solucionado?');">
+            <input type="hidden" name="id_reporte" value="<?php echo $id_rep; ?>">
+            <button type="submit" class="btn-modern" <?php echo $puede_cerrar ? '' : 'disabled'; ?>
+                    title="<?php echo $puede_cerrar ? 'Entregar el trabajo para validación' : 'Completa las fotos de las 3 etapas y el informe para habilitar este botón'; ?>"
+                    onclick="return confirm('¿Entregar el trabajo como solucionado? El gestor lo validará y se avisará al reportante.');">
                 <i class="fas fa-check-double"></i> Marcar como Solucionado
             </button>
         </form>
+        <?php endif; ?>
     </div>
+    <?php if (!$bloqueada && !$puede_cerrar): ?>
+        <p class="ayuda-cierre"><i class="fas fa-circle-info"></i> Para marcar como solucionado necesitas
+            <?php $req = []; if (!$completa) $req[] = 'fotos de las 3 etapas'; if (!$informe_ok) $req[] = 'el informe completo'; echo implode(' y ', $req); ?>.</p>
+    <?php endif; ?>
 </div>
 
 <!-- ── MODAL CÁMARA ── (compartido para las 3 etapas) -->
@@ -191,7 +349,14 @@ $faltantes = $completitud['faltantes'] ?? [];
     </div>
 </div>
 
-<?php $toast_exito_msg = 'Foto cargada correctamente.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
+<?php
+$toast_exito_msg = [
+    'foto'    => 'Foto cargada correctamente.',
+    'informe' => 'Avance del informe guardado.',
+    'avance'  => 'Nota de avance registrada.',
+][$_GET['exito'] ?? ''] ?? 'Cambios guardados.';
+require APP_PATH . '/vistas/comunes/toast_helper.php';
+?>
 
 <style>
 :root {
@@ -209,6 +374,76 @@ $faltantes = $completitud['faltantes'] ?? [];
 .completitud-card i { font-size:24px; }
 .comp-ok   { background:var(--color-success-bg); color:var(--color-success-text); border-left:4px solid var(--color-success); }
 .comp-pend { background:var(--color-warning-bg); color:var(--color-warning-text); border-left:4px solid var(--color-warning); }
+.comp-error { background:var(--color-danger-bg); color:var(--color-danger-text); border-left:4px solid var(--color-danger); }
+
+/* ── Hoja de trabajo: progreso, resumen, paneles ── */
+.seccion-titulo {
+    display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+    margin:34px 0 14px; font-size:17px; font-weight:700; color:var(--dark-text);
+}
+.seccion-titulo i { color:var(--primary-blue); }
+.seccion-titulo small { font-size:12px; font-weight:500; color:var(--gray-text); }
+
+.pasos-card {
+    background:var(--color-bg-elevated); border-radius:12px; padding:18px 22px; margin-bottom:20px;
+    box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+.pasos-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:14px; color:var(--dark-text); }
+.pasos-head span { color:var(--gray-text); font-size:13px; }
+.pasos { list-style:none; margin:0; padding:0; display:flex; gap:6px; }
+.pasos li { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; position:relative; }
+.pasos li:not(:last-child)::after {
+    content:''; position:absolute; top:16px; left:calc(50% + 18px); right:calc(-50% + 18px);
+    height:2px; background:var(--color-border);
+}
+.pasos li.paso-ok:not(:last-child)::after { background:var(--color-success); }
+.paso-num {
+    width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; background:var(--color-bg-subtle); color:var(--gray-text);
+    border:2px solid var(--color-border); z-index:1;
+}
+.paso-ok .paso-num { background:var(--color-success); color:#fff; border-color:var(--color-success); }
+.paso-nombre { font-size:11px; font-weight:600; color:var(--gray-text); text-transform:uppercase; letter-spacing:.3px; }
+.paso-ok .paso-nombre { color:var(--dark-text); }
+
+.resumen-card {
+    background:var(--color-bg-elevated); border-radius:12px; margin-bottom:20px;
+    box-shadow:0 2px 12px rgba(0,0,0,.08); border-left:4px solid var(--primary-blue);
+}
+.resumen-card summary { cursor:pointer; padding:14px 20px; font-weight:700; font-size:14px; color:var(--dark-text); list-style:none; display:flex; align-items:center; gap:8px; }
+.resumen-card summary::-webkit-details-marker { display:none; }
+.resumen-card summary i { color:var(--primary-blue); }
+.resumen-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px 24px; padding:4px 20px 18px; }
+.resumen-grid > div { display:flex; flex-direction:column; gap:3px; }
+.resumen-full { grid-column:1 / -1; }
+.resumen-k { font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--gray-text); font-weight:600; }
+.resumen-v { font-size:14px; color:var(--dark-text); line-height:1.5; }
+.resumen-v.urg { font-weight:700; color:var(--color-warning-text); }
+
+.panel-card {
+    background:var(--color-bg-elevated); border-radius:12px; padding:20px 22px; margin-bottom:20px;
+    box-shadow:0 2px 12px rgba(0,0,0,.08); display:flex; flex-direction:column; gap:14px;
+}
+.form-avance { display:flex; gap:10px; align-items:stretch; }
+.form-avance .input-foto { flex:1; }
+.avances { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.avances li {
+    display:flex; flex-direction:column; gap:3px; padding:10px 14px; border-radius:8px;
+    background:var(--color-bg-subtle); border-left:3px solid var(--primary-blue);
+}
+.avance-fecha { font-size:11px; color:var(--gray-text); }
+.avance-texto { font-size:14px; color:var(--dark-text); }
+.vacio { margin:0; font-size:13px; color:var(--gray-text); }
+
+.form-informe .form-group { display:flex; flex-direction:column; gap:6px; }
+.form-informe label { font-size:13px; font-weight:600; color:var(--dark-text); }
+.form-informe small { font-size:11px; color:var(--gray-text); }
+.form-informe textarea.input-foto { resize:vertical; line-height:1.5; }
+.form-informe .input-foto:disabled { opacity:.75; cursor:not-allowed; }
+.form-row-2 { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+.req { color:var(--color-danger); }
+.ayuda-cierre { margin:10px 0 0; font-size:13px; color:var(--gray-text); display:flex; align-items:center; gap:8px; }
+.ayuda-cierre i { color:var(--primary-blue); }
 
 /* ── Grid 3 etapas ── */
 .etapas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:25px; }
@@ -408,6 +643,11 @@ $faltantes = $completitud['faltantes'] ?? [];
 @media(max-width:768px) {
     .etapas-grid { grid-template-columns:1fr; }
     .acciones-finales { flex-direction:column; }
+    .resumen-grid, .form-row-2 { grid-template-columns:1fr; }
+    .form-avance { flex-direction:column; }
+    .pasos { flex-wrap:wrap; row-gap:14px; }
+    .pasos li { flex:0 0 33%; }
+    .pasos li::after { display:none; }
 }
 </style>
 

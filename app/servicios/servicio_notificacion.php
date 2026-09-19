@@ -99,14 +99,44 @@ class ServicioNotificacion {
         }
     }
 
-    /** RF-21: Reporte marcado como solucionado — avisa al Gestor */
+    /**
+     * RF-21: Reporte marcado como solucionado.
+     * Avisa al gestor (debe validar) y al reportante (hito de avance de su ticket).
+     */
     public function notificar_reporte_solucionado($id_reporte, $id_institucion, $numero_ticket) {
+        $reporte = $this->obtener_reporte_detallado($id_reporte, $id_institucion);
+
         $asunto = "Reporte #{$numero_ticket} listo para validación";
         $cuerpo = $this->plantilla('Reporte Solucionado', [
             'Ticket' => $numero_ticket,
+            'Clasificación' => htmlspecialchars(trim(($reporte['categoria'] ?? '') . (empty($reporte['subcategoria']) ? '' : ' / ' . $reporte['subcategoria']))),
+            'Ubicación' => htmlspecialchars(trim(($reporte['sede'] ?? '') . (empty($reporte['referencia_ubicacion_libre']) ? '' : ' — ' . $reporte['referencia_ubicacion_libre']))),
         ], 'El técnico ha marcado el reporte como solucionado. Por favor valide y cierre formalmente.');
 
         $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor']);
+
+        if ($reporte && !empty($reporte['correo_reportante'])) {
+            $link = config('app.url_base') . '/?controlador=reportes&accion=seguimiento&token='
+                  . urlencode($reporte['token_seguimiento_publico'] ?? '');
+            $cuerpo_rep = $this->plantilla('Su reporte fue solucionado', [
+                'Ticket' => $numero_ticket,
+                'Estado actual' => 'Solucionado, pendiente de validación',
+            ], 'El técnico terminó la reparación de su reporte. Un gestor de la institución la revisará '
+               . 'y confirmará el cierre. Puede ver el detalle, las fotos y los avances desde el siguiente enlace:'
+               . $this->boton_enlace($link, 'Ver mi reporte'));
+
+            $this->enviar_email(
+                $reporte['correo_reportante'],
+                $reporte['nombre_reportante'] ?? 'Reportante',
+                "Su reporte #{$numero_ticket} fue solucionado",
+                $cuerpo_rep,
+                $id_institucion,
+                $id_reporte,
+                'reporte_solucionado_reportante',
+                true,
+                !empty($reporte['id_reportante']) ? (int)$reporte['id_reportante'] : null
+            );
+        }
     }
 
     /** RF-24: Reporte cerrado — avisa a Reportante y Rector */

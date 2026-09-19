@@ -726,6 +726,24 @@ $es_devuelto = ($id_estado_actual === 6);
 
     </div>
 
+    <!-- ── Avances del técnico (bitácora visible al reportante) ── -->
+    <?php if (!empty($avances)): ?>
+    <div class="timeline-card">
+        <div class="timeline-title">
+            <i class="fas fa-comment-dots"></i> Avances del técnico
+        </div>
+        <ul class="tl-list">
+            <?php foreach ($avances as $i => $a): ?>
+            <li class="tl-item">
+                <div class="tl-dot <?php echo $i === 0 ? 'tl-dot-active' : 'tl-dot-done'; ?>"></div>
+                <div class="tl-meta"><?php echo date('d/m/Y · H:i', strtotime($a['fecha_creacion'])); ?> hrs · <?php echo htmlspecialchars($a['autor']); ?></div>
+                <div class="tl-text"><?php echo htmlspecialchars($a['texto']); ?></div>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+    <?php endif; ?>
+
     <!-- ── Timeline de historial ── -->
     <div class="timeline-card">
         <div class="timeline-title">

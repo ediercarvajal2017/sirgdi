@@ -404,11 +404,16 @@ class ControladorReportes {
         $sede = $this->modelo_sede->obtener_por_id($reporte['id_sede'], $reporte['id_institucion']);
         $categoria = $this->modelo_categoria->obtener_por_id($reporte['id_categoria'], $reporte['id_institucion']);
 
+        // Notas de avance que el técnico deja durante el trabajo
+        require_once APP_PATH . '/modelos/modelo_avance.php';
+        $avances = (new ModeloAvance())->listar_publicos($reporte['id_reporte']);
+
         $datos = [
             'titulo' => 'Seguimiento de Reporte - ' . config('app.app_name'),
             'reporte' => $reporte,
             'sede' => $sede,
             'categoria' => $categoria,
+            'avances' => $avances,
         ];
 
         $this->renderizar_vista_publica('reportes/vista_seguimiento_publico', $datos);
@@ -495,6 +500,9 @@ class ControladorReportes {
         $evidencias = $modelo_evidencia->listar_por_reporte($id_reporte, $id_institucion);
         $intervencion = $modelo_intervension->obtener_por_reporte($id_reporte, $id_institucion);
 
+        require_once APP_PATH . '/modelos/modelo_avance.php';
+        $avances = (new ModeloAvance())->listar_por_reporte($id_reporte, $id_institucion);
+
         // Nombres legibles de ubicación y clasificación (en vez de IDs)
         $sede = $reporte['id_sede'] ? $this->modelo_sede->obtener_por_id($reporte['id_sede'], $id_institucion) : null;
         $categoria = $reporte['id_categoria'] ? $this->modelo_categoria->obtener_por_id($reporte['id_categoria'], $id_institucion) : null;
@@ -507,6 +515,7 @@ class ControladorReportes {
             'reporte' => $reporte,
             'evidencias' => $evidencias,
             'intervencion' => $intervencion,
+            'avances' => $avances,
             'sede' => $sede,
             'categoria' => $categoria,
             'subcategoria' => $subcategoria,

@@ -14,6 +14,25 @@ class ModeloIntervension {
         $this->bd = BaseDatos::obtener();
     }
 
+    const MIN_DESCRIPCION = 20;
+    const MIN_SOLUCION    = 10;
+
+    /**
+     * El informe se rellena de forma progresiva; esta es la regla única de cuándo
+     * se considera completo (la usan la hoja de trabajo y "marcar solucionado").
+     * Devuelve la lista de campos que faltan (vacía = completo).
+     */
+    public static function campos_faltantes(array $intervension) {
+        $faltan = [];
+        if (mb_strlen(trim($intervension['descripcion_actividades'] ?? '')) < self::MIN_DESCRIPCION) {
+            $faltan[] = 'descripción de actividades (mín. ' . self::MIN_DESCRIPCION . ' caracteres)';
+        }
+        if (mb_strlen(trim($intervension['solucion_implementada'] ?? '')) < self::MIN_SOLUCION) {
+            $faltan[] = 'solución implementada (mín. ' . self::MIN_SOLUCION . ' caracteres)';
+        }
+        return $faltan;
+    }
+
     /**
      * Obtener intervención por ID
      */
@@ -63,14 +82,11 @@ class ModeloIntervension {
             throw new Exception('id_reporte, id_institucion e id_usuario_tecnico son requeridos.');
         }
 
-        if (empty($datos['descripcion_actividades'])) {
-            throw new Exception('La descripción de actividades es requerida.');
-        }
-
-        // Campos NOT NULL de la tabla
-        if (empty($datos['solucion_implementada'])) {
-            $datos['solucion_implementada'] = $datos['descripcion_actividades'];
-        }
+        // El informe se rellena de forma progresiva desde la hoja de trabajo: al
+        // iniciar puede ir vacío. La completitud se exige al marcar solucionado
+        // (ver campos_faltantes). Las columnas son NOT NULL, así que se guarda ''.
+        $datos['descripcion_actividades'] = $datos['descripcion_actividades'] ?? '';
+        $datos['solucion_implementada']   = $datos['solucion_implementada'] ?? '';
         if (empty($datos['fecha_hora_inicio'])) {
             $datos['fecha_hora_inicio'] = date('Y-m-d H:i:s');
         }

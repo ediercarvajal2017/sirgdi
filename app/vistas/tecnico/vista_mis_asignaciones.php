@@ -65,18 +65,13 @@ $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_to
                         </div>
 
                         <div class="tec-actions">
-                            <a href="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=crear_intervension&id=<?php echo $r['id_reporte']; ?>" class="btn-accion btn-atender" title="Registrar / continuar intervención">
-                                <i class="fas fa-screwdriver-wrench"></i> Atender
+                            <?php // La hoja de trabajo concentra evidencias, notas, informe y cierre; se abre con un clic. ?>
+                            <a href="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=hoja_trabajo&id=<?php echo $r['id_reporte']; ?>"
+                               class="btn-accion <?php echo $puede_solucionar ? 'btn-atender' : 'btn-solucionar'; ?>"
+                               title="<?php echo $puede_solucionar ? 'Atender o continuar el trabajo' : 'Ver la hoja de trabajo'; ?>">
+                                <i class="fas <?php echo $puede_solucionar ? 'fa-screwdriver-wrench' : 'fa-clipboard-check'; ?>"></i>
+                                <?php echo $puede_solucionar ? 'Atender' : 'Ver hoja'; ?>
                             </a>
-                            <?php if ($puede_solucionar): ?>
-                                <form method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=tecnico&accion=marcar_solucionado" style="display:inline;">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf); ?>">
-                                    <input type="hidden" name="id_reporte" value="<?php echo $r['id_reporte']; ?>">
-                                    <button type="submit" class="btn-accion btn-solucionar" onclick="return confirm('¿Marcar como solucionado? Requiere evidencia de las 3 etapas.')" title="Marcar como solucionado">
-                                        <i class="fas fa-check-double"></i> Solucionado
-                                    </button>
-                                </form>
-                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
