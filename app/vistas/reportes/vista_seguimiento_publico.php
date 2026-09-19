@@ -465,7 +465,7 @@
             border: 1.5px solid var(--blue);
         }
 
-        .btn-outline:hover { background: #EBF5FB; }
+        .btn-outline:hover { background: var(--border); }
 
         .btn-copy {
             background: var(--white);

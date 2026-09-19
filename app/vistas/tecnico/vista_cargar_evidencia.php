@@ -207,8 +207,8 @@ $faltantes = $completitud['faltantes'] ?? [];
 
 .completitud-card { display:flex; align-items:center; gap:14px; padding:16px 20px; border-radius:12px; margin-bottom:25px; font-size:14px; }
 .completitud-card i { font-size:24px; }
-.comp-ok   { background:rgba(39,174,96,.12);  color:#1E8449; border-left:4px solid #27AE60; }
-.comp-pend { background:rgba(230,126,34,.12); color:#B9770E; border-left:4px solid #E67E22; }
+.comp-ok   { background:var(--color-success-bg); color:var(--color-success-text); border-left:4px solid var(--color-success); }
+.comp-pend { background:var(--color-warning-bg); color:var(--color-warning-text); border-left:4px solid var(--color-warning); }
 
 /* ── Grid 3 etapas ── */
 .etapas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:25px; }
@@ -284,12 +284,12 @@ $faltantes = $completitud['faltantes'] ?? [];
 .ev-source-card i      { font-size:22px; color:var(--primary-blue); transition:transform .2s; }
 .ev-source-card strong { font-size:12px; font-weight:700; color:var(--dark-text); }
 .ev-source-card small  { font-size:10px; color:var(--gray-text); }
-.ev-source-card:hover  { border-color:var(--primary-blue); background:#EBF5FB; }
+.ev-source-card:hover  { border-color:var(--primary-blue); background:var(--color-bg-hover); }
 .ev-source-card:hover i { transform:scale(1.1); }
 
-.ev-source-cam            { border-color:#C5EAE0; background:#F0FAF7; }
-.ev-source-cam i          { color:#16A085; }
-.ev-source-cam:hover      { border-color:#1ABC9C; background:#E8F8F5; }
+.ev-source-cam            { border-color:var(--teal-accent); }
+.ev-source-cam i          { color:var(--teal-accent); }
+.ev-source-cam:hover      { border-color:var(--teal-accent); background:var(--color-bg-hover); }
 
 .input-foto {
     padding:10px 12px;
@@ -312,7 +312,12 @@ $faltantes = $completitud['faltantes'] ?? [];
     font-family:inherit;
 }
 .btn-subir:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 4px 14px rgba(52,152,219,.35); }
-.btn-subir:disabled { background:#BDC3C7; cursor:not-allowed; }
+/* Deshabilitado: se ve inactivo pero legible en ambos temas (antes era gris
+   claro con texto blanco, ilegible). */
+.btn-subir:disabled {
+    background:var(--color-bg-subtle); color:var(--color-text-muted);
+    border:1px solid var(--color-border); cursor:not-allowed; box-shadow:none;
+}
 
 /* ── Acciones finales ── */
 .acciones-finales { display:flex; gap:15px; align-items:stretch; flex-wrap:wrap; }
@@ -326,7 +331,10 @@ $faltantes = $completitud['faltantes'] ?? [];
     font-family:inherit;
 }
 .btn-modern:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 20px rgba(39,174,96,.4); }
-.btn-modern:disabled { background:#BDC3C7; cursor:not-allowed; }
+.btn-modern:disabled {
+    background:var(--color-bg-subtle); color:var(--color-text-muted);
+    border:1px solid var(--color-border); cursor:not-allowed; box-shadow:none;
+}
 .btn-modern-secondary {
     padding:14px 24px;
     background:var(--color-bg-subtle); color:var(--dark-text);
