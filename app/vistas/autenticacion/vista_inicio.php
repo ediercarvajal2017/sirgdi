@@ -1142,9 +1142,6 @@
                 <a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=login" class="btn btn-cta-primary">
                     <i class="fas fa-sign-in-alt"></i> Ingresar Ahora
                 </a>
-                <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=seguimiento_publico" class="btn btn-cta-outline">
-                    <i class="fas fa-search"></i> Consultar Ticket
-                </a>
             </div>
         </div>
     </section>
