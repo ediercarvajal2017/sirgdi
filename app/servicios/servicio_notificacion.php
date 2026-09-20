@@ -100,6 +100,40 @@ class ServicioNotificacion {
     }
 
     /**
+     * Solución rechazada por el gestor: avisa al técnico con el motivo y un enlace
+     * directo a la hoja de trabajo. Antes el ticket simplemente reaparecía en su lista
+     * sin ninguna explicación de qué corregir.
+     */
+    public function notificar_reporte_devuelto($id_reporte, $id_institucion, $numero_ticket, $motivo) {
+        $reporte = $this->obtener_reporte_detallado($id_reporte, $id_institucion);
+        if (!$reporte || empty($reporte['id_tecnico_asignado'])) return;
+
+        $tecnico = $this->obtener_usuario($reporte['id_tecnico_asignado']);
+        if (!$tecnico) return;
+
+        $link = config('app.url_base') . '/?controlador=tecnico&accion=hoja_trabajo&id=' . $id_reporte;
+        $asunto = "Su solución del ticket #{$numero_ticket} fue devuelta";
+        $cuerpo = $this->plantilla('Ticket devuelto para corrección', [
+            'Ticket' => $numero_ticket,
+            'Motivo del rechazo' => nl2br(htmlspecialchars($motivo)),
+        ], 'El gestor revisó la solución reportada y la devolvió para que se corrija o se amplíe '
+           . 'la evidencia. Ingrese a la hoja de trabajo para continuar:'
+           . $this->boton_enlace($link, 'Continuar con este ticket'));
+
+        $this->enviar_email(
+            $tecnico['correo_electronico'],
+            $tecnico['nombre_completo'] ?? 'Técnico',
+            $asunto,
+            $cuerpo,
+            $id_institucion,
+            $id_reporte,
+            'reporte_devuelto',
+            true,
+            (int)$reporte['id_tecnico_asignado']
+        );
+    }
+
+    /**
      * RF-21: Reporte marcado como solucionado.
      * Avisa al gestor (debe validar) y al reportante (hito de avance de su ticket).
      */

@@ -86,6 +86,10 @@
     --warning-text: #7D6608;
     --info-bg: #D6EAF8;
     --info-text: #1A5276;
+    /* Naranja de "Devuelto" (kanban y listados de reportes). El mismo valor que en
+       oscuro (#E67E22) da 2.46:1 sobre el pastel claro, por debajo del mínimo 4.5:1;
+       se oscurece solo aquí en vez de tocar el naranja usado como acento en botones. */
+    --estado-devuelto-texto: #8F4A0B;
 
     --shadow-color: 15, 23, 42;
     --shadow-fuerza: .10;
@@ -168,6 +172,7 @@
     --warning-text: #F7CE85;
     --info-bg: #1B2E3E;
     --info-text: #8FCDF4;
+    --estado-devuelto-texto: #E67E22;
 
     --shadow-color: 0, 0, 0;
     --shadow-fuerza: .45;

@@ -206,7 +206,7 @@
     .badge-estado { display:inline-block; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; white-space:nowrap; }
     .est-reg{background:rgba(127,140,141,.15);color:var(--color-text);} .est-asig{background:rgba(52,152,219,.15);color:#3498DB;}
     .est-proc{background:rgba(41,128,185,.15);color:#2980B9;} .est-sol{background:rgba(39,174,96,.15);color: var(--color-success);}
-    .est-val{background:rgba(155,89,182,.15);color:#8E44AD;} .est-dev{background:rgba(230,126,34,.15);color:#E67E22;}
+    .est-val{background:rgba(155,89,182,.15);color:#8E44AD;} .est-dev{background:rgba(230,126,34,.15);color:var(--estado-devuelto-texto);}
     .est-cer{background:rgba(127,140,141,.18);color:var(--color-text);} .est-anu{background:rgba(231,76,60,.15);color: var(--color-danger);}
 
     .badge-urg { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; white-space:nowrap; }

@@ -45,7 +45,12 @@ class ModeloAvance {
             'id_institucion'   => $datos['id_institucion'],
             'id_informe'       => $datos['id_informe'] ?? null,
             'id_usuario_autor' => $datos['id_usuario_autor'],
-            'texto'            => $datos['texto'],
+            // Todo texto se guarda plano: las vistas que lo muestran ya aplican
+            // htmlspecialchars() al leerlo. Los llamadores (agregar_avance del técnico,
+            // rechazo del gestor) pasan el texto por Validacion::sanitizar_texto(), que
+            // también escapa HTML; sin revertirlo aquí, comillas y "&" quedaban escapados
+            // dos veces y se veían literales (p. ej. "&quot;") en pantalla.
+            'texto'            => htmlspecialchars_decode($datos['texto'], ENT_QUOTES),
         ]);
     }
 

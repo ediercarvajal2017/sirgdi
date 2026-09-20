@@ -1,6 +1,9 @@
 <!-- Detalle de Reporte -->
 <?php
-$estados = [1 => 'Registrado', 2 => 'En Proceso', 3 => 'Devuelto', 4 => 'Solucionado', 5 => 'En Validación', 6 => 'Cerrado', 7 => 'Cancelado', 8 => 'Anulado'];
+// El orden y los nombres deben coincidir con las constantes ESTADO_* de lib/constantes.php.
+// Antes faltaba "Asignado" y todo se corría una posición: un reporte Devuelto se mostraba
+// aquí como "Cerrado", y uno Cerrado como "Cancelado" (que ni siquiera es un estado real).
+$estados = [1 => 'Registrado', 2 => 'Asignado', 3 => 'En Proceso', 4 => 'Solucionado', 5 => 'En Validación', 6 => 'Devuelto', 7 => 'Cerrado', 8 => 'Anulado'];
 $urgencias = [1 => 'No Urgente', 2 => 'Moderado', 3 => 'Importante', 4 => 'Urgente'];
 $estado_id = (int)($reporte['id_estado'] ?? 1);
 $urg_id = (int)($reporte['id_urgencia_calculada'] ?? 1);
@@ -88,9 +91,9 @@ $base = config('app.url_base');
             <?php endif; ?>
 
             <?php if (!empty($avances)): ?>
-                <!-- Sección: Notas de avance del técnico -->
+                <!-- Sección: Notas y avances (técnico y gestor) -->
                 <fieldset class="det-section">
-                    <legend><i class="fas fa-comment-dots"></i> Avances del técnico</legend>
+                    <legend><i class="fas fa-comment-dots"></i> Notas y avances</legend>
                     <div class="informe-grid">
                         <?php foreach ($avances as $a): ?>
                             <div class="informe-item">
@@ -208,10 +211,16 @@ $base = config('app.url_base');
     .estado-item { display:flex; flex-direction:column; gap:7px; }
     .estado-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--color-text-muted); font-weight:700; }
     .badge { display:inline-flex; align-items:center; padding:7px 16px; border-radius:20px; font-weight:700; font-size:13px; }
-    .badge-estado-1 { background:#E3F2FD; color:#1976D2; } .badge-estado-2 { background:#FFF3E0; color:#F57C00; }
-    .badge-estado-3 { background:#F3E5F5; color:#8E24AA; } .badge-estado-4 { background:#E8F5E9; color:#2E7D32; }
-    .badge-estado-5 { background:#FFF8E1; color:#F39C12; } .badge-estado-6 { background:#E0F2F1; color:#00695C; }
-    .badge-estado-7 { background:#FDECEA; color:#C62828; } .badge-estado-8 { background:#ECEFF1; color:#607D8B; }
+    <?php /* Misma paleta que el kanban (vista_kanban_gestion.php), para que un mismo
+             estado se vea con el mismo color en cualquier pantalla. */ ?>
+    .badge-estado-1 { background:rgba(127,140,141,.15); color:var(--color-text); }
+    .badge-estado-2 { background:rgba(52,152,219,.15); color:#3498DB; }
+    .badge-estado-3 { background:rgba(41,128,185,.15); color:#2980B9; }
+    .badge-estado-4 { background:rgba(39,174,96,.15); color:var(--color-success); }
+    .badge-estado-5 { background:rgba(155,89,182,.15); color:#8E44AD; }
+    .badge-estado-6 { background:rgba(230,126,34,.15); color:var(--estado-devuelto-texto); }
+    .badge-estado-7 { background:rgba(127,140,141,.18); color:var(--color-text); }
+    .badge-estado-8 { background:rgba(231,76,60,.15); color:var(--color-danger); }
     .badge-urg-1 { background:#E8F5E9; color:#388E3C; } .badge-urg-2 { background:#FFF3E0; color:#F57C00; }
     .badge-urg-3 { background:#FFE0B2; color:#E65100; } .badge-urg-4 { background:#FFEBEE; color:#C62828; }
 

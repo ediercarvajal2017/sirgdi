@@ -7,18 +7,21 @@ class ControladorCierre {
     private $autorizacion;
     private $modelo_reporte;
     private $modelo_evidencia;
+    private $modelo_avance;
 
     public function __construct() {
         require_once APP_PATH . '/servicios/servicio_autenticacion.php';
         require_once APP_PATH . '/servicios/servicio_autorizacion.php';
         require_once APP_PATH . '/modelos/modelo_reporte.php';
         require_once APP_PATH . '/modelos/modelo_evidencia.php';
+        require_once APP_PATH . '/modelos/modelo_avance.php';
         require_once LIB_PATH . '/validacion.php';
 
         $this->auth = new ServicioAutenticacion();
         $this->autorizacion = new ServicioAutorizacion();
         $this->modelo_reporte = new ModeloReporte();
         $this->modelo_evidencia = new ModeloEvidencia();
+        $this->modelo_avance = new ModeloAvance();
     }
 
     /**
@@ -94,6 +97,13 @@ class ControladorCierre {
                 throw new Exception('Reporte inválido o no en estado Solucionado.');
             }
 
+            // El formulario ya lo exige por JS; se repite en el servidor porque el motivo
+            // ahora se envía al técnico y queda visible para el reportante, así que no
+            // puede quedar vacío aunque alguien salte el formulario.
+            if ($validacion === 'rechazada' && mb_strlen($comentario) < 5) {
+                throw new Exception('Debes indicar el motivo del rechazo (mínimo 5 caracteres).');
+            }
+
             if ($validacion === 'aprobada') {
                 // RF-22: Solicitar encuesta (próximo paso)
                 $this->modelo_reporte->cambiar_estado(
@@ -119,6 +129,25 @@ class ControladorCierre {
 
                 // Reanudar SLA
                 $this->modelo_reporte->reanudar_sla($id_reporte, $id_institucion);
+
+                // El motivo del rechazo se guardaba solo en el historial interno de
+                // transiciones, que ninguna pantalla muestra: quedaba invisible tanto
+                // para el técnico como para el reportante. Se registra también como
+                // avance (mismo hilo que ya se ve en la hoja de trabajo, el detalle del
+                // gestor y el seguimiento público) para que quede a la vista de todos.
+                $this->modelo_avance->crear([
+                    'id_reporte' => $id_reporte,
+                    'id_institucion' => $id_institucion,
+                    'id_usuario_autor' => $id_usuario,
+                    'texto' => mb_substr('Solución rechazada: ' . $comentario, 0, 500),
+                ]);
+
+                // Aviso al técnico: antes no se le notificaba de ninguna forma y el
+                // ticket simplemente reaparecía en su lista sin explicación.
+                require_once APP_PATH . '/servicios/servicio_notificacion.php';
+                (new ServicioNotificacion())->notificar_reporte_devuelto(
+                    $id_reporte, $id_institucion, $reporte['numero_ticket'], $comentario
+                );
 
                 $mensaje = 'Solución rechazada. Devuelto a técnico.';
                 $siguiente = '/?controlador=gestion&accion=kanban';

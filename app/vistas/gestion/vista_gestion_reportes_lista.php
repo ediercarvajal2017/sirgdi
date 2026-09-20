@@ -46,7 +46,10 @@
             <?php foreach ($reportes as $reporte): ?>
                 <?php
                 $estado_id = isset($reporte['id_estado']) && $reporte['id_estado'] !== null ? intval($reporte['id_estado']) : 1;
-                $estados = [1 => 'Registrado', 2 => 'En Proceso', 3 => 'Devuelto', 4 => 'Solucionado', 5 => 'En Validación', 6 => 'Cerrado', 7 => 'Cancelado', 8 => 'Anulado'];
+                // El orden y los nombres deben coincidir con las constantes ESTADO_* de
+                // lib/constantes.php. Antes faltaba "Asignado" y todo se corría una
+                // posición: un reporte Devuelto se mostraba aquí como "Cerrado".
+                $estados = [1 => 'Registrado', 2 => 'Asignado', 3 => 'En Proceso', 4 => 'Solucionado', 5 => 'En Validación', 6 => 'Devuelto', 7 => 'Cerrado', 8 => 'Anulado'];
                 $estado_texto = $estados[$estado_id] ?? 'Desconocido';
                 $urgencia_id = isset($reporte['id_urgencia_calculada']) ? $reporte['id_urgencia_calculada'] : 1;
                 $urgencias = [1 => 'No Urgente', 2 => 'Moderado', 3 => 'Importante', 4 => 'Urgente'];
@@ -388,14 +391,16 @@
         letter-spacing: 0.3px;
     }
 
-    .badge-estado-1 { background: rgba(52, 152, 219, 0.15); color: var(--primary-blue); }
-    .badge-estado-2 { background: rgba(230, 126, 34, 0.15); color: #E67E22; }
-    .badge-estado-3 { background: rgba(155, 89, 182, 0.15); color: #9B59B6; }
-    .badge-estado-4 { background: rgba(46, 204, 113, 0.15); color: var(--color-success); }
-    .badge-estado-5 { background: rgba(243, 156, 18, 0.15); color: #F39C12; }
-    .badge-estado-6 { background: rgba(39, 174, 96, 0.15); color: var(--color-success); }
-    .badge-estado-7 { background: rgba(231, 76, 60, 0.15); color: var(--color-danger); }
-    .badge-estado-8 { background: rgba(128, 139, 150, 0.15); color: var(--gray-text); }
+    <?php /* Misma paleta que el kanban (vista_kanban_gestion.php), para que un mismo
+             estado se vea con el mismo color en cualquier pantalla. */ ?>
+    .badge-estado-1 { background: rgba(127,140,141,.15); color: var(--gray-text); }
+    .badge-estado-2 { background: rgba(52, 152, 219, 0.15); color: var(--primary-blue); }
+    .badge-estado-3 { background: rgba(41, 128, 185, 0.15); color: #2980B9; }
+    .badge-estado-4 { background: rgba(39, 174, 96, 0.15); color: var(--color-success); }
+    .badge-estado-5 { background: rgba(155, 89, 182, 0.15); color: #8E44AD; }
+    .badge-estado-6 { background: rgba(230, 126, 34, 0.15); color: var(--estado-devuelto-texto); }
+    .badge-estado-7 { background: rgba(127,140,141,.18); color: var(--gray-text); }
+    .badge-estado-8 { background: rgba(231, 76, 60, 0.15); color: var(--color-danger); }
 
     .badge-urgency-1 { background: rgba(46, 204, 113, 0.15); color: var(--color-success); }
     .badge-urgency-2 { background: rgba(230, 126, 34, 0.15); color: #E67E22; }

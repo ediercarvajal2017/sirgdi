@@ -726,11 +726,11 @@ $es_devuelto = ($id_estado_actual === 6);
 
     </div>
 
-    <!-- ── Avances del técnico (bitácora visible al reportante) ── -->
+    <!-- ── Notas y avances (bitácora visible al reportante) ── -->
     <?php if (!empty($avances)): ?>
     <div class="timeline-card">
         <div class="timeline-title">
-            <i class="fas fa-comment-dots"></i> Avances del técnico
+            <i class="fas fa-comment-dots"></i> Notas y avances
         </div>
         <ul class="tl-list">
             <?php foreach ($avances as $i => $a): ?>
