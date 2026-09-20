@@ -41,6 +41,13 @@ class ServicioAutorizacion {
             return $this->permisos_cache[$cache_key];
         }
 
+        // El superadmin tiene acceso a todo (igual que en obtener_permisos): así no
+        // queda bloqueado aunque un permiso nuevo aún no exista en la tabla.
+        if ($this->es_superadmin()) {
+            $this->permisos_cache[$cache_key] = true;
+            return true;
+        }
+
         // Query: verificar si usuario tiene permiso a través de sus roles
         $sql = 'SELECT 1 FROM rol_permiso rp
                 INNER JOIN usuario_rol ur ON rp.id_rol = ur.id_rol
@@ -56,7 +63,9 @@ class ServicioAutorizacion {
             ':nombre_permiso' => $nombre_permiso,
         ]);
 
-        $tiene_permiso = $resultado !== null;
+        // fetch() devuelve false (no null) cuando no hay fila. Comparar con !== null
+        // hacía que todo usuario autenticado pasara cualquier comprobación de permiso.
+        $tiene_permiso = !empty($resultado);
 
         // Cachear resultado
         $this->permisos_cache[$cache_key] = $tiene_permiso;

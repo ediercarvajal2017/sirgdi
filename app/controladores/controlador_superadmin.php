@@ -907,6 +907,67 @@ class ControladorSuperadmin {
         exit;
     }
 
+    /**
+     * Sincroniza la matriz base de permisos (configuracion/permisos_base.php):
+     * crea los permisos que falten en la tabla y concede a cada rol los que le
+     * corresponden por defecto. Solo añade; nunca retira permisos concedidos.
+     */
+    public function sincronizar_permisos() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_INSTITUCIONES);
+
+        try {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token CSRF inválido.');
+            }
+
+            $base = require CONFIG_PATH . '/permisos_base.php';
+            $bd = BaseDatos::obtener();
+
+            $ids = [];
+            foreach ($bd->obtener_todos('SELECT id_permiso, codigo FROM permiso') as $p) {
+                $ids[$p['codigo']] = (int)$p['id_permiso'];
+            }
+
+            $permisos_nuevos = 0;
+            foreach ($base['permisos'] as $codigo => [$descripcion, $modulo]) {
+                if (isset($ids[$codigo])) continue;
+                $ids[$codigo] = (int)$bd->insertar('permiso', [
+                    'codigo' => $codigo, 'descripcion' => $descripcion, 'modulo' => $modulo,
+                ]);
+                $permisos_nuevos++;
+            }
+
+            $asignaciones_nuevas = 0;
+            foreach ($base['roles'] as $id_rol => $codigos) {
+                $actuales = array_column(
+                    $bd->obtener_todos('SELECT id_permiso FROM rol_permiso WHERE id_rol = :r', [':r' => $id_rol]),
+                    'id_permiso'
+                );
+                $actuales = array_map('intval', $actuales);
+                foreach ($codigos as $codigo) {
+                    if (!isset($ids[$codigo]) || in_array($ids[$codigo], $actuales, true)) continue;
+                    $bd->insertar('rol_permiso', ['id_rol' => $id_rol, 'id_permiso' => $ids[$codigo]]);
+                    $asignaciones_nuevas++;
+                }
+            }
+
+            $_SESSION['exito'] = ($permisos_nuevos === 0 && $asignaciones_nuevas === 0)
+                ? 'La matriz de permisos ya estaba al día. No hubo cambios.'
+                : sprintf('Permisos sincronizados: %d permiso(s) nuevo(s) y %d asignación(es) a roles.', $permisos_nuevos, $asignaciones_nuevas);
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
+        exit;
+    }
+
     private function renderizar_vista($vista, $datos = []) {
         extract($datos);
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';

@@ -347,13 +347,13 @@ class ControladorGestion {
 
         $id_institucion = $this->auth->obtener_id_institucion();
 
-        // Obtener usuarios con rol de Técnico (vía usuario_rol)
+        // Técnicos de la institución. Se filtra por id de rol y no por su nombre:
+        // el nombre lleva tilde y una diferencia de codificación dejaba la lista vacía.
         $sql = 'SELECT DISTINCT u.id_usuario, u.nombre_completo AS nombre, u.correo_electronico AS email
                 FROM usuario u
                 JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario AND ur.id_institucion = u.id_institucion
-                JOIN rol r ON ur.id_rol = r.id_rol
                 WHERE u.id_institucion = :id_institucion
-                AND r.nombre_rol = :rol_tecnico
+                AND ur.id_rol = :rol_tecnico
                 AND u.activo = 1
                 ORDER BY nombre ASC';
 
@@ -361,7 +361,7 @@ class ControladorGestion {
         $bd = BaseDatos::obtener();
         $tecnicos = $bd->obtener_todos($sql, [
             ':id_institucion' => $id_institucion,
-            ':rol_tecnico' => 'Técnico',
+            ':rol_tecnico' => ROL_TECNICO,
         ]);
 
         header('Content-Type: application/json');

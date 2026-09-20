@@ -68,6 +68,7 @@ INSERT INTO permiso (codigo, descripcion, modulo) VALUES
 ('exportar_informes',       'Exportar reportes e informes en formato PDF y Excel.',             'analitica'),
 -- Módulo Administración
 ('gestionar_usuarios',      'Crear, editar y desactivar usuarios de la institución.',           'admin'),
+('gestionar_roles',         'Consultar y ajustar la matriz de roles y permisos.',                'admin'),
 ('gestionar_categorias',    'Configurar categorías y subcategorías de daños.',                  'admin'),
 ('gestionar_areas',         'Configurar sedes, áreas y sub-áreas.',                            'admin'),
 ('gestionar_sla',           'Configurar acuerdos de nivel de servicio (SLA).',                 'admin'),
@@ -111,14 +112,16 @@ WHERE
         'comentar_interno',
         'ver_dashboard', 'exportar_informes',
         'gestionar_categorias', 'gestionar_areas', 'gestionar_sla',
-        'gestionar_plantillas', 'ver_auditoria', 'configurar_institucion'
+        'gestionar_plantillas', 'gestionar_roles', 'ver_auditoria', 'configurar_institucion'
     ))
     -- ADMIN DE INSTITUCIÓN
     OR (r.nombre_rol = 'Admin de Institución' AND p.codigo IN (
         'crear_reporte', 'ver_propio_reporte', 'ver_todos_reportes',
+        'clasificar_reporte', 'asignar_tecnico', 'fusionar_reportes',
+        'validar_cerrar', 'devolver_reporte', 'anular_reporte',
         'comentar_interno',
         'ver_dashboard', 'exportar_informes',
-        'gestionar_usuarios', 'gestionar_categorias', 'gestionar_areas',
+        'gestionar_usuarios', 'gestionar_roles', 'gestionar_categorias', 'gestionar_areas',
         'gestionar_sla', 'gestionar_plantillas', 'ver_auditoria', 'configurar_institucion'
     ))
     -- SUPERADMINISTRADOR (todos los permisos)

@@ -475,32 +475,117 @@ class ControladorAdministrador {
     /**
      * Gestionar roles y permisos
      */
+    /**
+     * Matriz de roles × permisos.
+     * La tabla rol_permiso es global (afecta a todas las instituciones), así que
+     * solo el Superadministrador puede guardar cambios; Admin y Rector la consultan.
+     */
     public function gestionar_roles() {
         $this->auth->requerir_autenticacion();
         $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_ROLES);
 
-        $id_institucion = $this->auth->obtener_id_institucion();
-
-        // Obtener matriz de permisos (desde DB)
-        $sql = 'SELECT DISTINCT r.id_rol, r.nombre_rol
-                FROM rol r
-                ORDER BY r.id_rol';
-
         require_once LIB_PATH . '/basedatos.php';
         $bd = BaseDatos::obtener();
-        $roles = $bd->obtener_todos($sql, []);
 
-        // Obtener permisos
-        $sql_permisos = 'SELECT * FROM permiso ORDER BY codigo';
-        $permisos = $bd->obtener_todos($sql_permisos, []);
+        $roles = $bd->obtener_todos('SELECT id_rol, nombre_rol, descripcion FROM rol ORDER BY id_rol');
+        $permisos = $bd->obtener_todos('SELECT id_permiso, codigo, descripcion, modulo FROM permiso ORDER BY modulo, codigo');
+
+        // [id_rol][id_permiso] => true
+        $matriz = [];
+        foreach ($bd->obtener_todos('SELECT id_rol, id_permiso FROM rol_permiso') as $rp) {
+            $matriz[(int)$rp['id_rol']][(int)$rp['id_permiso']] = true;
+        }
 
         $datos = [
             'titulo' => 'Gestionar Roles y Permisos - ' . config('app.app_name'),
             'roles' => $roles,
             'permisos' => $permisos,
+            'matriz' => $matriz,
+            'puede_editar' => $this->autorizacion->es_superadmin(),
+            'csrf_token' => Validacion::generar_csrf_token(),
         ];
 
         $this->renderizar_vista('admin/vista_gestionar_roles', $datos);
+    }
+
+    /**
+     * Guarda la matriz completa de permisos de los roles institucionales.
+     * El rol Superadministrador no se toca: tiene acceso a todo por código.
+     */
+    public function guardar_permisos() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . config('app.url_base') . '/?controlador=administrador&accion=gestionar_roles');
+            exit;
+        }
+
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_ROLES);
+        $volver = config('app.url_base') . '/?controlador=administrador&accion=gestionar_roles';
+
+        try {
+            if (!hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '')) {
+                throw new Exception('Token CSRF inválido.');
+            }
+            if (!$this->autorizacion->es_superadmin()) {
+                throw new Exception('La matriz de permisos es global para todas las instituciones; solo el Superadministrador puede modificarla.');
+            }
+
+            require_once LIB_PATH . '/basedatos.php';
+            $bd = BaseDatos::obtener();
+
+            $ids_permiso_validos = array_map('intval', array_column($bd->obtener_todos('SELECT id_permiso FROM permiso'), 'id_permiso'));
+            $roles_editables = array_map('intval', array_column(
+                $bd->obtener_todos('SELECT id_rol FROM rol WHERE id_rol <> :sa', [':sa' => ROL_SUPERADMIN]), 'id_rol'
+            ));
+
+            $enviado = $_POST['permisos'] ?? [];
+            $antes = []; $despues = [];
+            $altas = 0; $bajas = 0;
+
+            foreach ($roles_editables as $id_rol) {
+                $actuales = array_map('intval', array_column(
+                    $bd->obtener_todos('SELECT id_permiso FROM rol_permiso WHERE id_rol = :r', [':r' => $id_rol]), 'id_permiso'
+                ));
+                $deseados = array_values(array_intersect(
+                    array_map('intval', (array)($enviado[$id_rol] ?? [])),
+                    $ids_permiso_validos
+                ));
+                sort($actuales); sort($deseados);
+                $antes[$id_rol] = $actuales;
+                $despues[$id_rol] = $deseados;
+
+                foreach (array_diff($deseados, $actuales) as $id_permiso) {
+                    $bd->insertar('rol_permiso', ['id_rol' => $id_rol, 'id_permiso' => $id_permiso]);
+                    $altas++;
+                }
+                foreach (array_diff($actuales, $deseados) as $id_permiso) {
+                    $bd->eliminar('rol_permiso', 'id_rol = :r AND id_permiso = :p', [':r' => $id_rol, ':p' => $id_permiso]);
+                    $bajas++;
+                }
+            }
+
+            if ($altas || $bajas) {
+                $bd->insertar('registro_auditoria', [
+                    'id_institucion' => null,
+                    'id_usuario' => $this->auth->obtener_id_usuario(),
+                    'accion' => 'modificar_matriz_permisos',
+                    'entidad' => 'rol_permiso',
+                    'id_entidad' => null,
+                    'datos_anteriores_json' => json_encode($antes),
+                    'datos_nuevos_json' => json_encode($despues),
+                    'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? null,
+                    'user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),
+                ]);
+                $_SESSION['exito'] = sprintf('Matriz guardada: %d permiso(s) concedido(s) y %d retirado(s).', $altas, $bajas);
+            } else {
+                $_SESSION['exito'] = 'No había cambios que guardar.';
+            }
+        } catch (Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        header('Location: ' . $volver);
+        exit;
     }
 
     /**

@@ -21,6 +21,13 @@
                 <i class="fas fa-tags"></i> Cargar Catálogo de Categorías
             </button>
         </form>
+        <form method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=sincronizar_permisos" style="display:inline;"
+              onsubmit="return confirm('Se crearán los permisos que falten y se concederán a cada rol los que le corresponden por defecto.\n\nNo se retira ningún permiso ya concedido. ¿Continuar?');">
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Validacion::generar_csrf_token()); ?>">
+            <button type="submit" class="btn-modern btn-permisos-modern" title="Completa la matriz de roles y permisos con los valores base">
+                <i class="fas fa-user-shield"></i> Sincronizar Permisos
+            </button>
+        </form>
     </div>
 
     <?php if (!empty($cred_admin)): ?>
@@ -195,6 +202,17 @@ function copiarCredAdmin() {
     .btn-catalogo-modern:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(30, 132, 73, 0.3);
+    }
+
+    .btn-permisos-modern {
+        background: linear-gradient(135deg, #B9600E 0%, #8F4A0B 100%);
+        color: white;
+        font-family: inherit;
+    }
+
+    .btn-permisos-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(185, 96, 14, 0.3);
     }
 
     .btn-tecnicos-modern {
