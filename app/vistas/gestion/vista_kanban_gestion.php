@@ -112,6 +112,11 @@
                                 <?php endif; ?>
                             </td>
                             <td class="td-center td-acciones">
+                                <?php if ($r['id_estado'] === ESTADO_SOLUCIONADO && in_array('validar_cerrar', $_SESSION['permisos'] ?? [])): ?>
+                                    <a href="<?php echo config('app.url_base'); ?>/?controlador=cierre&accion=validar_solucion&id=<?php echo $r['id_reporte']; ?>" class="btn-tabla btn-validar" title="Revisar y validar la solución">
+                                        <i class="fas fa-clipboard-check"></i> Validar
+                                    </a>
+                                <?php endif; ?>
                                 <a href="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=detalle&id=<?php echo $r['id_reporte']; ?>&from=gestion" class="btn-icono" target="_blank" title="Ver detalle">
                                     <i class="fas fa-eye"></i>
                                 </a>
@@ -216,6 +221,8 @@
     .btn-tabla { border:none; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all .2s; white-space:nowrap; }
     .btn-asignar { background:rgba(52,152,219,.12); color:#3498DB; }
     .btn-asignar:hover { background:#3498DB; color:#fff; }
+    .btn-validar { background:rgba(142,68,173,.12); color:#8E44AD; text-decoration:none; margin-right:4px; }
+    .btn-validar:hover { background:#8E44AD; color:#fff; }
     .btn-reasignar { background:rgba(230,126,34,.12); color:#E67E22; padding:4px 8px; }
     .btn-reasignar:hover { background:#E67E22; color:#fff; }
 

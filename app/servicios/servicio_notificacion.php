@@ -106,14 +106,24 @@ class ServicioNotificacion {
     public function notificar_reporte_solucionado($id_reporte, $id_institucion, $numero_ticket) {
         $reporte = $this->obtener_reporte_detallado($id_reporte, $id_institucion);
 
+        // Enlace directo a la pantalla de validación: antes el correo solo decía "valide y
+        // cierre formalmente" sin ningún enlace, y no existía ningún botón en la interfaz
+        // que llevara ahí (ver kanban), así que quien debía validar no tenía cómo hacerlo.
+        $link_validar = config('app.url_base') . '/?controlador=cierre&accion=validar_solucion&id=' . $id_reporte;
+
         $asunto = "Reporte #{$numero_ticket} listo para validación";
         $cuerpo = $this->plantilla('Reporte Solucionado', [
             'Ticket' => $numero_ticket,
             'Clasificación' => htmlspecialchars(trim(($reporte['categoria'] ?? '') . (empty($reporte['subcategoria']) ? '' : ' / ' . $reporte['subcategoria']))),
             'Ubicación' => htmlspecialchars(trim(($reporte['sede'] ?? '') . (empty($reporte['referencia_ubicacion_libre']) ? '' : ' — ' . $reporte['referencia_ubicacion_libre']))),
-        ], 'El técnico ha marcado el reporte como solucionado. Por favor valide y cierre formalmente.');
+        ], 'El técnico ha marcado el reporte como solucionado. Revise la evidencia y confirme si la solución es correcta:'
+           . $this->boton_enlace($link_validar, 'Revisar y validar'));
 
-        $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor']);
+        // Antes solo llegaba a Gestor. Rector y Admin de Institución ya tienen el permiso
+        // de validar (validar_cerrar) pero nunca eran notificados de que había algo pendiente.
+        // 'Admin de Institución' va literal: enviar_a_roles compara contra rol.nombre_rol
+        // completo, no por prefijo, así que 'admin' no bastaría para encontrarlo.
+        $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector', 'Admin de Institución']);
 
         if ($reporte && !empty($reporte['correo_reportante'])) {
             $link = config('app.url_base') . '/?controlador=reportes&accion=seguimiento&token='
