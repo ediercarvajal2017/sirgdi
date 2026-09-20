@@ -418,15 +418,94 @@ class ControladorReportes {
         require_once APP_PATH . '/modelos/modelo_avance.php';
         $avances = (new ModeloAvance())->listar_publicos($reporte['id_reporte']);
 
+        // RF-22: encuesta de satisfacción pendiente o ya respondida para este reporte
+        require_once APP_PATH . '/modelos/modelo_encuesta.php';
+        $encuesta = (new ModeloEncuesta())->obtener_por_reporte($reporte['id_reporte'], $reporte['id_institucion']);
+
         $datos = [
             'titulo' => 'Seguimiento de Reporte - ' . config('app.app_name'),
             'reporte' => $reporte,
             'sede' => $sede,
             'categoria' => $categoria,
             'avances' => $avances,
+            'encuesta' => $encuesta,
+            'csrf_token' => Validacion::generar_csrf_token(),
         ];
 
         $this->renderizar_vista_publica('reportes/vista_seguimiento_publico', $datos);
+    }
+
+    /**
+     * RF-22: Registrar la respuesta del reportante a la encuesta de satisfacción.
+     * Público (token-based), sin autenticación — se accede desde el enlace del
+     * correo o desde el propio formulario de la página de seguimiento.
+     */
+    public function responder_encuesta() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('Método no permitido.');
+        }
+
+        $token = $_POST['token'] ?? '';
+        if (!$token || !Validacion::validar_uuid($token)) {
+            http_response_code(HTTP_BAD_REQUEST);
+            die('Token inválido.');
+        }
+
+        $destino = config('app.url_base') . '/?controlador=reportes&accion=seguimiento&token=' . urlencode($token) . '#encuesta';
+
+        // Anti-spam: máximo 10 intentos cada 10 minutos por IP
+        require_once LIB_PATH . '/limitador_tasa.php';
+        $clave_rate_limit = 'responder_encuesta:' . ($_SERVER['REMOTE_ADDR'] ?? 'desconocida');
+        if (LimitadorTasa::excede_limite($clave_rate_limit, 10, 600)) {
+            header('Location: ' . $destino . '&error=' . urlencode('Demasiados intentos. Espera unos minutos e intenta de nuevo.'));
+            exit;
+        }
+        LimitadorTasa::registrar($clave_rate_limit, 600);
+
+        $reporte = $this->modelo_reporte->obtener_por_token_seguimiento($token);
+        if (!$reporte) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Reporte no encontrado.');
+        }
+
+        require_once APP_PATH . '/modelos/modelo_encuesta.php';
+        $modelo_encuesta = new ModeloEncuesta();
+        $encuesta = $modelo_encuesta->obtener_por_reporte($reporte['id_reporte'], $reporte['id_institucion']);
+
+        if (!$encuesta) {
+            header('Location: ' . $destino . '&error=' . urlencode('No hay una encuesta pendiente para este reporte.'));
+            exit;
+        }
+        if (!empty($encuesta['fue_respondida'])) {
+            header('Location: ' . $destino);
+            exit;
+        }
+
+        $puntuacion = intval($_POST['puntuacion'] ?? 0);
+        if ($puntuacion < 1 || $puntuacion > 5) {
+            header('Location: ' . $destino . '&error=' . urlencode('Selecciona una calificación de 1 a 5 estrellas.'));
+            exit;
+        }
+
+        $comentario = Validacion::sanitizar_texto($_POST['comentario'] ?? '');
+        if ($comentario !== '' && !Validacion::validar_maximo($comentario, 500)) {
+            header('Location: ' . $destino . '&error=' . urlencode('El comentario no puede superar 500 caracteres.'));
+            exit;
+        }
+        // sanitizar_texto ya aplica htmlspecialchars; las vistas también escapan al
+        // mostrarlo, así que se revierte aquí para no guardar entidades duplicadas.
+        $comentario_bd = $comentario !== '' ? htmlspecialchars_decode($comentario, ENT_QUOTES) : null;
+
+        $modelo_encuesta->registrar_respuesta($encuesta['id_encuesta'], $puntuacion, $comentario_bd);
+
+        ServicioAuditoria::registrar('responder_encuesta', 'reporte', $reporte['id_reporte'], null, [
+            'ticket' => $reporte['numero_ticket'] ?? null,
+            'puntuacion' => $puntuacion,
+        ]);
+
+        header('Location: ' . $destino . '&gracias=1');
+        exit;
     }
 
     /**

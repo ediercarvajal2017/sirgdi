@@ -218,7 +218,6 @@ class ControladorCierre {
 
         $id_reporte = intval($_POST['id_reporte'] ?? 0);
         $id_institucion = $this->auth->obtener_id_institucion();
-        $id_usuario = $this->auth->obtener_id_usuario();
 
         try {
             $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
@@ -226,20 +225,38 @@ class ControladorCierre {
                 throw new Exception('Reporte no encontrado.');
             }
 
-            // Enviar encuesta al reportante (v2.0: email con link + token)
-            // Por ahora: log
-            $log_msg = sprintf(
-                "[%s] Encuesta enviada - Reporte: %s, Reportante: %d\n",
-                date('Y-m-d H:i:s'),
-                $reporte['numero_ticket'],
-                $reporte['id_reportante']
-            );
-            @file_put_contents(LOG_DIR . '/encuestas.log', $log_msg, FILE_APPEND);
+            $encuesta_enviada = false;
 
-            // Cambiar a estado EN_VALIDACION (esperando respuesta de encuesta)
-            // Después de N días sin respuesta, cerrar automáticamente
+            // RF-22: la encuesta solo aplica a reportantes con cuenta registrada —
+            // encuesta_satisfaccion exige id_usuario_reportante (FK NOT NULL). Los
+            // reportes de invitado se omiten sin bloquear el flujo de cierre.
+            if (!empty($reporte['id_reportante']) && !empty($reporte['correo_reportante']) && !empty($reporte['token_seguimiento_publico'])) {
+                require_once APP_PATH . '/modelos/modelo_encuesta.php';
+                $modelo_encuesta = new ModeloEncuesta();
 
-            ServicioAuditoria::registrar('solicitar_encuesta', 'reporte', $id_reporte, null, ['ticket' => $reporte['numero_ticket'] ?? null]);
+                if (!$modelo_encuesta->obtener_por_reporte($id_reporte, $id_institucion)) {
+                    $modelo_encuesta->crear($id_reporte, $id_institucion, $reporte['id_reportante']);
+                }
+
+                $link_encuesta = config('app.url_base')
+                    . '/?controlador=reportes&accion=seguimiento&token=' . urlencode($reporte['token_seguimiento_publico'])
+                    . '#encuesta';
+
+                require_once APP_PATH . '/servicios/servicio_notificacion.php';
+                (new ServicioNotificacion())->notificar_encuesta(
+                    $id_reporte,
+                    $id_institucion,
+                    $reporte['numero_ticket'],
+                    $reporte['correo_reportante'],
+                    $link_encuesta
+                );
+                $encuesta_enviada = true;
+            }
+
+            ServicioAuditoria::registrar('solicitar_encuesta', 'reporte', $id_reporte, null, [
+                'ticket' => $reporte['numero_ticket'] ?? null,
+                'encuesta_enviada' => $encuesta_enviada,
+            ]);
             header('Location: ' . config('app.url_base') . '/?controlador=cierre&accion=cerrar_reporte&id=' . $id_reporte);
             exit;
 

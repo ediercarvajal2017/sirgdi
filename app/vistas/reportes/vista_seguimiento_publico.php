@@ -430,6 +430,71 @@
             color: var(--text);
         }
 
+        /* ── ENCUESTA DE SATISFACCIÓN (RF-22) ── */
+        .encuesta-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .encuesta-card .timeline-title { justify-content: center; margin-bottom: 6px; }
+        .encuesta-card p.encuesta-sub { font-size: 13px; color: var(--text-light); margin-bottom: 18px; }
+
+        .estrellas-input {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            font-size: 32px;
+            margin-bottom: 18px;
+            direction: rtl;
+        }
+
+        .estrellas-input input { position: absolute; opacity: 0; pointer-events: none; }
+
+        .estrellas-input label {
+            cursor: pointer;
+            color: var(--border);
+            transition: color .15s;
+        }
+
+        .estrellas-input label:hover,
+        .estrellas-input label:hover ~ label,
+        .estrellas-input input:checked ~ label {
+            color: #F1C40F;
+        }
+
+        .encuesta-card textarea {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto 18px;
+            display: block;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--bg);
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .encuesta-card .encuesta-error {
+            background: #FDEDEC;
+            color: #C0392B;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .encuesta-gracias { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .encuesta-gracias i { font-size: 30px; color: #F1C40F; margin-bottom: 4px; }
+        .encuesta-estrellas-fijas { font-size: 20px; color: #F1C40F; letter-spacing: 4px; }
+
         /* ── ACTIONS ── */
         .actions-row {
             display: flex;
@@ -791,6 +856,52 @@ $es_devuelto = ($id_estado_actual === 6);
             <?php endif; ?>
         </ul>
     </div>
+
+    <!-- ── Encuesta de satisfacción (RF-22) ── -->
+    <?php if (!empty($encuesta)): ?>
+    <div class="encuesta-card" id="encuesta">
+        <?php if (!empty($encuesta['fue_respondida'])): ?>
+            <div class="encuesta-gracias">
+                <i class="fas fa-star"></i>
+                <div class="timeline-title" style="justify-content:center;">
+                    <?php echo !empty($_GET['gracias']) ? '¡Gracias por tu calificación!' : 'Ya calificaste este reporte'; ?>
+                </div>
+                <div class="encuesta-estrellas-fijas">
+                    <?php for ($i = 1; $i <= 5; $i++): ?><i class="fa-solid fa-star" style="<?php echo $i <= (int)$encuesta['puntuacion'] ? '' : 'color:var(--border);'; ?>"></i><?php endfor; ?>
+                </div>
+                <?php if (!empty($encuesta['comentario'])): ?>
+                    <p class="encuesta-sub" style="max-width:480px;">&ldquo;<?php echo nl2br(htmlspecialchars($encuesta['comentario'])); ?>&rdquo;</p>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <div class="timeline-title"><i class="fas fa-star"></i> Califica la atención recibida</div>
+            <p class="encuesta-sub">Tu opinión sobre el reporte <?php echo htmlspecialchars($reporte['numero_ticket']); ?> es opcional y ayuda a mejorar el servicio.</p>
+
+            <?php if (!empty($_GET['error'])): ?>
+                <div class="encuesta-error"><?php echo htmlspecialchars($_GET['error']); ?></div>
+            <?php endif; ?>
+
+            <form method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=reportes&accion=responder_encuesta#encuesta">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token ?? ''); ?>">
+                <input type="hidden" name="token" value="<?php echo htmlspecialchars($reporte['token_seguimiento_publico']); ?>">
+
+                <div class="estrellas-input">
+                    <input type="radio" name="puntuacion" id="p5" value="5" required><label for="p5" title="5 estrellas"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" name="puntuacion" id="p4" value="4"><label for="p4" title="4 estrellas"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" name="puntuacion" id="p3" value="3"><label for="p3" title="3 estrellas"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" name="puntuacion" id="p2" value="2"><label for="p2" title="2 estrellas"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" name="puntuacion" id="p1" value="1"><label for="p1" title="1 estrella"><i class="fa-solid fa-star"></i></label>
+                </div>
+
+                <textarea name="comentario" maxlength="500" placeholder="Comentario opcional…"></textarea>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Enviar calificación
+                </button>
+            </form>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- ── Acciones ── -->
     <div class="actions-row">

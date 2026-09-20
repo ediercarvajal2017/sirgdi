@@ -58,6 +58,11 @@ class ControladorTecnico {
             die('No eres el técnico asignado a este reporte.');
         }
 
+        // Se captura antes de mutar el estado: la vista lo usa para seguir avisando
+        // "el gestor devolvió este reporte" aunque, abajo, ya se haya reabierto a
+        // En Proceso para permitir que el técnico vuelva a marcarlo como solucionado.
+        $estaba_devuelto = ((int)$reporte['id_estado'] === ESTADO_DEVUELTO);
+
         $intervension = $this->modelo_intervension->obtener_por_reporte($id_reporte, $id_institucion);
         if (!$intervension) {
             $id_informe = $this->modelo_intervension->crear([
@@ -68,14 +73,21 @@ class ControladorTecnico {
                 'solucion_implementada' => '',
                 'fecha_hora_inicio' => date('Y-m-d H:i:s'),
             ]);
-            if (in_array($reporte['id_estado'], [ESTADO_ASIGNADO, ESTADO_REGISTRADO, ESTADO_DEVUELTO])) {
-                $this->modelo_reporte->cambiar_estado($id_reporte, $id_institucion, ESTADO_EN_PROCESO,
-                    'Intervención iniciada por técnico', $id_usuario);
-                $reporte['id_estado'] = ESTADO_EN_PROCESO;
-            }
             $intervension = $this->modelo_intervension->obtener_por_id($id_informe, $id_institucion);
             ServicioAuditoria::registrar('iniciar_intervencion', 'reporte', $id_reporte, null,
                 ['ticket' => $reporte['numero_ticket'], 'id_informe' => (int)$id_informe]);
+        }
+
+        // Reabrir el trabajo: si llega Asignado/Registrado (primera vez) o Devuelto
+        // (el gestor pidió corregir), pasa a En Proceso. Antes esto vivía dentro del
+        // "if (!$intervension)" de arriba, así que un ticket Devuelto —que ya tiene
+        // intervención creada desde el intento anterior— nunca se reabría y el
+        // técnico quedaba sin forma de volver a marcarlo como solucionado.
+        if (in_array($reporte['id_estado'], [ESTADO_ASIGNADO, ESTADO_REGISTRADO, ESTADO_DEVUELTO])) {
+            $this->modelo_reporte->cambiar_estado($id_reporte, $id_institucion, ESTADO_EN_PROCESO,
+                $estaba_devuelto ? 'Técnico retoma el reporte devuelto' : 'Intervención iniciada por técnico',
+                $id_usuario);
+            $reporte['id_estado'] = ESTADO_EN_PROCESO;
         }
 
         $reporte_detalle = $this->modelo_reporte->obtener_detallado($id_reporte, $id_institucion);
@@ -94,6 +106,7 @@ class ControladorTecnico {
             'avances' => $avances,
             'informe_faltante' => $informe_faltante,
             'ya_solucionado' => in_array($reporte['id_estado'], [ESTADO_SOLUCIONADO, ESTADO_EN_VALIDACION, ESTADO_CERRADO]),
+            'estaba_devuelto' => $estaba_devuelto,
             'csrf_token' => Validacion::generar_csrf_token(),
         ]);
     }

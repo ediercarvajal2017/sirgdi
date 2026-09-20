@@ -45,6 +45,13 @@ $pasos = [
 $hechos = count(array_filter($pasos, fn($p) => $p[1]));
 $ubicacion = trim(($detalle['sede_nombre'] ?? '') . (empty($detalle['referencia_ubicacion_libre']) ? '' : ' — ' . $detalle['referencia_ubicacion_libre']));
 $clasificacion = trim(($detalle['categoria_nombre'] ?? '') . (empty($detalle['subcategoria_nombre']) ? '' : ' / ' . $detalle['subcategoria_nombre']));
+
+// El gestor devolvió el ticket: la nota más reciente (avances viene ordenado DESC)
+// trae el motivo, guardado por ControladorCierre::procesar_validar_solucion().
+// $estaba_devuelto lo calcula el controlador ANTES de reabrir a En Proceso —
+// $reporte['id_estado'] aquí ya es En Proceso, así que no serviría para esto.
+$es_devuelto = !empty($estaba_devuelto);
+$motivo_rechazo = $es_devuelto ? ($avances[0]['texto'] ?? '') : '';
 ?>
 <div class="container ev-container">
 
@@ -57,6 +64,16 @@ $clasificacion = trim(($detalle['categoria_nombre'] ?? '') . (empty($detalle['su
                Iniciada el <?php echo date('d/m/Y H:i', strtotime($intervension['fecha_hora_inicio'])); ?>.</p>
         </div>
     </div>
+
+    <?php if ($es_devuelto && $motivo_rechazo !== ''): ?>
+        <div class="completitud-card comp-pend">
+            <i class="fas fa-rotate-left"></i>
+            <div>
+                <strong>El gestor devolvió este reporte.</strong>
+                <?php echo nl2br(htmlspecialchars(preg_replace('/^Solución rechazada:\s*/u', '', $motivo_rechazo))); ?>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <?php if (!empty($_GET['error'])): ?>
         <div class="completitud-card comp-error">
