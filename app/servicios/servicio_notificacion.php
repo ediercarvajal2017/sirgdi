@@ -421,7 +421,7 @@ class ServicioNotificacion {
         <!-- Cabecera -->
         <tr>
           <td style="background:#0b1929;padding:24px 32px;text-align:center;">
-            <img src="{$url_base}/img/logo_sirgdi.png" alt="{$app_nombre}" style="height:50px;border-radius:8px;">
+            <img src="{$url_base}/img/logo_ana.png" alt="{$app_nombre}" style="height:64px;border-radius:10px;background:#ffffff;">
             <p style="margin:8px 0 0;color:rgba(255,255,255,.65);font-size:12px;letter-spacing:1px;text-transform:uppercase;">
               {$app_nombre_completo}
             </p>

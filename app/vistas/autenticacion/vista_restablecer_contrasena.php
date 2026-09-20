@@ -2,7 +2,7 @@
 <div class="form-modern-wrapper">
     <div class="form-modern-card">
         <div class="login-logo">
-            <img src="<?php echo config('app.url_base'); ?>/img/logo_sirgdi.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
+            <img src="<?php echo asset_url('img/logo_ana.png'); ?>" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
         </div>
 
         <h2><i class="fas fa-key"></i> Nueva Contraseña</h2>

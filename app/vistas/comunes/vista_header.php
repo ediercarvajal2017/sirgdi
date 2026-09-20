@@ -3,7 +3,7 @@
     <div class="header-bar">
         <div class="header-brand-section">
             <div class="header-logo">
-                <img src="<?php echo config('app.url_base'); ?>/img/logo_icono.png" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
+                <img src="<?php echo asset_url('img/logo_ana_icono.png'); ?>" alt="<?php echo htmlspecialchars(config('app.app_name')); ?>">
             </div>
             <div class="header-title">
                 <h1><?php echo htmlspecialchars(config('app.app_name_version')); ?></h1>
