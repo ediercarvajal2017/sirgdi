@@ -146,6 +146,9 @@ class ControladorAdministrador {
                 throw new Exception('Acción no válida.');
             }
 
+            ServicioAuditoria::registrar('sla_' . $accion, 'sla', intval($_POST['id_sla'] ?? 0) ?: null, null,
+                $accion === 'eliminar' ? null : ['id_categoria' => $_POST['id_categoria'] ?? null, 'id_urgencia' => $_POST['id_urgencia'] ?? null,
+                    'respuesta_h' => $_POST['tiempo_respuesta_horas'] ?? null, 'resolucion_h' => $_POST['tiempo_resolucion_horas'] ?? null]);
             header('Location: ' . config('app.url_base') . '/?controlador=administrador&accion=gestionar_sla&exito=1');
             exit;
 
@@ -433,6 +436,9 @@ class ControladorAdministrador {
                 $mensaje = 'Usuario eliminado correctamente.';
             }
 
+            ServicioAuditoria::registrar('usuario_' . $accion, 'usuario', $id_usuario ?? null,
+                ($accion === 'eliminar' && !empty($usuario)) ? ['nombre' => $usuario['nombre_completo'], 'email' => $usuario['correo_electronico']] : null,
+                $accion === 'eliminar' ? null : ['nombre' => $_POST['nombre'] ?? null, 'email' => $_POST['correo_electronico'] ?? null, 'id_rol' => $_POST['id_rol'] ?? null]);
             header('Location: ' . config('app.url_base') . '/?controlador=administrador&accion=gestionar_usuarios&exito=1');
             exit;
 
@@ -565,17 +571,7 @@ class ControladorAdministrador {
             }
 
             if ($altas || $bajas) {
-                $bd->insertar('registro_auditoria', [
-                    'id_institucion' => null,
-                    'id_usuario' => $this->auth->obtener_id_usuario(),
-                    'accion' => 'modificar_matriz_permisos',
-                    'entidad' => 'rol_permiso',
-                    'id_entidad' => null,
-                    'datos_anteriores_json' => json_encode($antes),
-                    'datos_nuevos_json' => json_encode($despues),
-                    'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? null,
-                    'user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 500),
-                ]);
+                ServicioAuditoria::registrar('modificar_matriz_permisos', 'rol_permiso', null, $antes, $despues, ['id_institucion' => null]);
                 $_SESSION['exito'] = sprintf('Matriz guardada: %d permiso(s) concedido(s) y %d retirado(s).', $altas, $bajas);
             } else {
                 $_SESSION['exito'] = 'No había cambios que guardar.';

@@ -74,6 +74,8 @@ class ControladorTecnico {
                 $reporte['id_estado'] = ESTADO_EN_PROCESO;
             }
             $intervension = $this->modelo_intervension->obtener_por_id($id_informe, $id_institucion);
+            ServicioAuditoria::registrar('iniciar_intervencion', 'reporte', $id_reporte, null,
+                ['ticket' => $reporte['numero_ticket'], 'id_informe' => (int)$id_informe]);
         }
 
         $reporte_detalle = $this->modelo_reporte->obtener_detallado($id_reporte, $id_institucion);
@@ -129,6 +131,9 @@ class ControladorTecnico {
                 'costo_estimado' => $costo,
             ]);
 
+            ServicioAuditoria::registrar('guardar_informe', 'informe_intervencion', $intervension['id_informe'],
+                ['descripcion' => mb_substr($intervension['descripcion_actividades'] ?? '', 0, 200), 'solucion' => mb_substr($intervension['solucion_implementada'] ?? '', 0, 200)],
+                ['descripcion' => mb_substr($_POST['descripcion_actividades'] ?? '', 0, 200), 'solucion' => mb_substr($_POST['solucion_implementada'] ?? '', 0, 200), 'id_reporte' => $id_reporte]);
             header('Location: ' . $volver . '&exito=informe');
         } catch (Exception $e) {
             header('Location: ' . $volver . '&error=' . urlencode($e->getMessage()));
@@ -163,6 +168,7 @@ class ControladorTecnico {
                 'id_usuario_autor' => $id_usuario,
                 'texto' => mb_substr($texto, 0, 500),
             ]);
+            ServicioAuditoria::registrar('agregar_avance', 'reporte', $id_reporte, null, ['nota' => mb_substr($texto, 0, 200)]);
             header('Location: ' . $volver . '&exito=avance');
         } catch (Exception $e) {
             header('Location: ' . $volver . '&error=' . urlencode($e->getMessage()));
@@ -291,6 +297,8 @@ class ControladorTecnico {
                 'cargada_por' => $id_usuario,
             ]);
 
+            ServicioAuditoria::registrar('cargar_evidencia', 'reporte', $intervension['id_reporte'], null,
+                ['etapa' => $etapa, 'archivo' => $resultado_archivo['nombre_original']]);
             header('Location: ' . config('app.url_base') . '/?controlador=tecnico&accion=hoja_trabajo&id=' . $intervension['id_reporte'] . '&exito=foto');
             exit;
 
@@ -362,6 +370,8 @@ class ControladorTecnico {
                 $reporte['numero_ticket']
             );
 
+            ServicioAuditoria::registrar('marcar_solucionado', 'reporte', $id_reporte,
+                ['id_estado' => $reporte['id_estado']], ['id_estado' => ESTADO_SOLUCIONADO, 'ticket' => $reporte['numero_ticket']]);
             header('Location: ' . config('app.url_base') . '/?controlador=tecnico&accion=mis_asignaciones&exito=1');
             exit;
 

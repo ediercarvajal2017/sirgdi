@@ -260,6 +260,11 @@ class ServicioAutorizacion {
         }
 
         @file_put_contents(AUDIT_LOG, $log_msg, FILE_APPEND);
+
+        if (class_exists('ServicioAuditoria')) {
+            ServicioAuditoria::registrar('acceso_denegado', 'seguridad', null, null, ['recurso' => $recurso],
+                ['id_usuario' => $this->id_usuario, 'id_institucion' => $this->id_institucion]);
+        }
     }
 
     /**

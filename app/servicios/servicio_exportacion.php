@@ -111,7 +111,7 @@ class ServicioExportacion {
     /**
      * Exportar auditoria (misma data que la vista de Auditoría: registro_auditoria)
      */
-    public function exportar_auditoria_csv($fecha_desde = null, $fecha_hasta = null) {
+    public function exportar_auditoria_csv($fecha_desde = null, $fecha_hasta = null, $incluir_globales = false) {
         $sql = 'SELECT
                     DATE_FORMAT(a.fecha_hora_accion, "%Y-%m-%d %H:%i:%s") AS fecha,
                     CASE WHEN a.id_usuario IS NULL THEN "Sistema"
@@ -119,10 +119,12 @@ class ServicioExportacion {
                     a.accion,
                     a.entidad,
                     COALESCE(a.id_entidad, "") AS id_entidad,
-                    COALESCE(a.ip_origen, "") AS ip
+                    COALESCE(a.ip_origen, "") AS ip,
+                    COALESCE(a.datos_anteriores_json, "") AS antes,
+                    COALESCE(a.datos_nuevos_json, "") AS despues
                 FROM registro_auditoria a
                 LEFT JOIN usuario u ON a.id_usuario = u.id_usuario
-                WHERE a.id_institucion = :id_institucion';
+                WHERE ' . ($incluir_globales ? '(a.id_institucion = :id_institucion OR a.id_institucion IS NULL)' : 'a.id_institucion = :id_institucion');
 
         $parametros = [':id_institucion' => $this->id_institucion];
 
@@ -136,11 +138,11 @@ class ServicioExportacion {
             $parametros[':fecha_hasta'] = $fecha_hasta;
         }
 
-        $sql .= ' ORDER BY a.fecha_hora_accion DESC';
+        $sql .= ' ORDER BY a.fecha_hora_accion DESC, a.id_auditoria DESC';
 
         $auditoria = $this->bd->obtener_todos($sql, $parametros);
 
-        return $this->generar_csv($auditoria, ['fecha', 'usuario', 'accion', 'entidad', 'id_entidad', 'ip']);
+        return $this->generar_csv($auditoria, ['fecha', 'usuario', 'accion', 'entidad', 'id_entidad', 'ip', 'antes', 'despues']);
     }
 
     /**

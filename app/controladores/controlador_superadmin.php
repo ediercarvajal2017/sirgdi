@@ -207,6 +207,7 @@ class ControladorSuperadmin {
                 'password' => $admin_pass_final,
             ];
 
+            ServicioAuditoria::registrar('crear_institucion', 'institucion', $id_institucion, null, ['nombre' => $nombre, 'codigo_dane' => $codigo_dane, 'admin_email' => $admin_email], ['id_institucion' => null]);
             header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio&exito=1');
             exit;
 
@@ -315,6 +316,7 @@ class ControladorSuperadmin {
                 // Actualizar institución
                 $modelo->actualizar($id_institucion, $datos_actualizar);
 
+                ServicioAuditoria::registrar('editar_institucion', 'institucion', $id_institucion, null, $datos_actualizar, ['id_institucion' => null]);
                 $_SESSION['exito'] = 'Institución actualizada exitosamente';
                 header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
                 exit;
@@ -483,6 +485,7 @@ class ControladorSuperadmin {
                 $mensaje = 'Sede creada correctamente.';
             }
 
+            ServicioAuditoria::registrar('sede_' . $accion, 'sede', $id_sede ?: null, null, ['nombre' => $nombre, 'id_institucion' => $id_institucion], ['id_institucion' => null]);
             $_SESSION['exito'] = $mensaje;
             header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=gestionar_sedes&id=' . $id_institucion);
             exit;
@@ -537,6 +540,7 @@ class ControladorSuperadmin {
 
             // Sin reportes: eliminar la sede y sus áreas/subáreas en cascada
             $modelo_sede->eliminar($id_sede);
+            ServicioAuditoria::registrar('sede_eliminar', 'sede', $id_sede, null, null, ['id_institucion' => null]);
             $_SESSION['exito'] = 'Sede eliminada correctamente.';
 
         } catch (Exception $e) {
@@ -603,6 +607,7 @@ class ControladorSuperadmin {
                 }
             }
 
+            ServicioAuditoria::registrar('eliminar_institucion', 'institucion', $id_institucion, ['nombre' => $institucion['nombre'] ?? null], null, ['id_institucion' => null]);
             $_SESSION['exito'] = 'Institución eliminada correctamente.';
             header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio&exito=1');
             exit;
@@ -712,6 +717,7 @@ class ControladorSuperadmin {
             $modelo = new ModeloUsuario();
             $modelo->vincular_tecnico_institucion($id_usuario, $id_institucion, $_SESSION['id_usuario']);
 
+            ServicioAuditoria::registrar('vincular_tecnico', 'usuario', $id_usuario, null, ['id_institucion_vinculada' => $id_institucion], ['id_institucion' => null]);
             $_SESSION['exito'] = 'Técnico vinculado correctamente a la institución.';
         } catch (Exception $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -748,6 +754,7 @@ class ControladorSuperadmin {
             $modelo = new ModeloUsuario();
             $modelo->desvincular_tecnico_institucion($id_usuario, $id_institucion);
 
+            ServicioAuditoria::registrar('desvincular_tecnico', 'usuario', $id_usuario, ['id_institucion_vinculada' => $id_institucion], null, ['id_institucion' => null]);
             $_SESSION['exito'] = 'Técnico desvinculado correctamente.';
         } catch (Exception $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -891,6 +898,7 @@ class ControladorSuperadmin {
                 $total['subcategorias'] += $r['subcategorias'];
             }
 
+            ServicioAuditoria::registrar('cargar_catalogo', 'categoria', null, null, ['instituciones' => count($instituciones), 'categorias_nuevas' => $total['categorias'], 'subcategorias_nuevas' => $total['subcategorias']], ['id_institucion' => null]);
             if ($total['categorias'] === 0 && $total['subcategorias'] === 0) {
                 $_SESSION['exito'] = 'El catálogo ya estaba completo en las ' . count($instituciones) . ' instituciones activas. No hubo cambios.';
             } else {
@@ -957,6 +965,7 @@ class ControladorSuperadmin {
                 }
             }
 
+            ServicioAuditoria::registrar('sincronizar_permisos', 'rol_permiso', null, null, ['permisos_nuevos' => $permisos_nuevos, 'asignaciones_nuevas' => $asignaciones_nuevas], ['id_institucion' => null]);
             $_SESSION['exito'] = ($permisos_nuevos === 0 && $asignaciones_nuevas === 0)
                 ? 'La matriz de permisos ya estaba al día. No hubo cambios.'
                 : sprintf('Permisos sincronizados: %d permiso(s) nuevo(s) y %d asignación(es) a roles.', $permisos_nuevos, $asignaciones_nuevas);

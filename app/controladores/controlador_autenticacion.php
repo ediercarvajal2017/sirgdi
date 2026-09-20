@@ -216,6 +216,7 @@ class ControladorAutenticacion {
                 $contrasena_nueva
             );
 
+            ServicioAuditoria::registrar('cambiar_contrasena', 'usuario', $this->auth->obtener_id_usuario());
             $this->redirigir_cambiar_contrasena('Contraseña cambiada exitosamente.', 'exito');
         } catch (Exception $e) {
             $this->redirigir_cambiar_contrasena($e->getMessage(), 'error');
@@ -377,6 +378,7 @@ class ControladorAutenticacion {
             require_once APP_PATH . '/modelos/modelo_usuario.php';
             $modelo_usuario = new ModeloUsuario();
             $modelo_usuario->usar_token_reset($token, $nueva_contrasena);
+            ServicioAuditoria::registrar('restablecer_contrasena', 'usuario', null, null, ['via' => 'enlace de recuperación'], ['id_usuario' => null, 'id_institucion' => null]);
 
             header('Location: ' . config('app.url_base')
                 . '/?controlador=autenticacion&accion=login&exito='

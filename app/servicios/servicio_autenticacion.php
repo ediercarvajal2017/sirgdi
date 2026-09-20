@@ -513,6 +513,11 @@ class ServicioAutenticacion {
         }
 
         @file_put_contents(AUDIT_LOG, $log_msg, FILE_APPEND);
+
+        if (class_exists('ServicioAuditoria')) {
+            ServicioAuditoria::registrar('login_fallido', 'sesion', null, null,
+                ['email' => $email, 'razon' => $razon], ['id_usuario' => null, 'id_institucion' => null]);
+        }
     }
 
     /**
@@ -533,6 +538,12 @@ class ServicioAutenticacion {
         }
 
         @file_put_contents(AUDIT_LOG, $log_msg, FILE_APPEND);
+
+        if (class_exists('ServicioAuditoria')) {
+            ServicioAuditoria::registrar('login', 'sesion', (int)$usuario['id_usuario'], null,
+                ['email' => $usuario['correo_electronico']],
+                ['id_usuario' => (int)$usuario['id_usuario'], 'id_institucion' => (int)$usuario['id_institucion']]);
+        }
     }
 
     /**
@@ -553,6 +564,11 @@ class ServicioAutenticacion {
         }
 
         @file_put_contents(AUDIT_LOG, $log_msg, FILE_APPEND);
+
+        if (class_exists('ServicioAuditoria')) {
+            ServicioAuditoria::registrar('logout', 'sesion', (int)$id_usuario, null, ['razon' => $razon],
+                ['id_usuario' => (int)$id_usuario, 'id_institucion' => (int)$id_institucion]);
+        }
     }
 
     /**

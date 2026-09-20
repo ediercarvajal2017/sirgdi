@@ -19,6 +19,7 @@ require_once $root . '/configuracion/config.php';
 // Cargar librerías base
 require_once LIB_PATH . '/encriptacion.php';
 require_once LIB_PATH . '/basedatos.php';
+require_once APP_PATH . '/servicios/servicio_auditoria.php';
 
 // Iniciar sesión segura (RN-01, RNF-05)
 if (session_status() === PHP_SESSION_NONE) {

@@ -124,6 +124,9 @@ class ControladorCierre {
                 $siguiente = '/?controlador=gestion&accion=kanban';
             }
 
+            ServicioAuditoria::registrar($validacion === 'aprobada' ? 'validar_solucion' : 'devolver_reporte', 'reporte', $id_reporte,
+                ['id_estado' => ESTADO_SOLUCIONADO],
+                ['id_estado' => $validacion === 'aprobada' ? ESTADO_EN_VALIDACION : ESTADO_DEVUELTO, 'ticket' => $reporte['numero_ticket'], 'validacion' => $validacion]);
             header('Location: ' . config('app.url_base') . $siguiente . '&exito=1');
             exit;
 
@@ -207,6 +210,7 @@ class ControladorCierre {
             // Cambiar a estado EN_VALIDACION (esperando respuesta de encuesta)
             // Después de N días sin respuesta, cerrar automáticamente
 
+            ServicioAuditoria::registrar('solicitar_encuesta', 'reporte', $id_reporte, null, ['ticket' => $reporte['numero_ticket'] ?? null]);
             header('Location: ' . config('app.url_base') . '/?controlador=cierre&accion=cerrar_reporte&id=' . $id_reporte);
             exit;
 
@@ -310,6 +314,8 @@ class ControladorCierre {
                 $reportante['correo_electronico'] ?? null
             );
 
+            ServicioAuditoria::registrar('cerrar_reporte', 'reporte', $id_reporte,
+                ['id_estado' => $reporte['id_estado']], ['id_estado' => ESTADO_CERRADO, 'ticket' => $reporte['numero_ticket']]);
             header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&exito=Reporte cerrado correctamente');
             exit;
 

@@ -12,6 +12,36 @@ $iconos_accion = [
     'eliminar' => 'fa-trash', 'asignar' => 'fa-user-plus',
     'cerrar' => 'fa-lock', 'cambiar_estado' => 'fa-exchange-alt',
 ];
+$iconos_accion += [
+    'login_fallido' => 'fa-user-lock', 'acceso_denegado' => 'fa-ban', 'contrasena' => 'fa-key',
+    'solucionado' => 'fa-check-double', 'validar' => 'fa-clipboard-check', 'devolver' => 'fa-rotate-left',
+    'evidencia' => 'fa-camera', 'informe' => 'fa-file-lines', 'avance' => 'fa-comment-dots',
+    'intervencion' => 'fa-screwdriver-wrench', 'permisos' => 'fa-user-shield', 'catalogo' => 'fa-tags',
+    'usuario' => 'fa-user', 'institucion' => 'fa-building', 'sede' => 'fa-map-marker-alt', 'sla' => 'fa-hourglass-half',
+    'encuesta' => 'fa-star', 'tecnico' => 'fa-hard-hat',
+];
+
+/* Antes/después como lista legible: clave: valor anterior → valor nuevo */
+function detalle_aud($antes_json, $despues_json) {
+    $antes = $antes_json ? json_decode($antes_json, true) : null;
+    $despues = $despues_json ? json_decode($despues_json, true) : null;
+    if (!is_array($antes) && !is_array($despues)) return '';
+    $claves = array_unique(array_merge(array_keys((array)$antes), array_keys((array)$despues)));
+    $html = '<dl class="aud-detalle">';
+    foreach ($claves as $k) {
+        $a = $antes[$k] ?? null; $d = $despues[$k] ?? null;
+        $fmt = fn($x) => $x === null ? '<em>—</em>' : htmlspecialchars(is_scalar($x) ? (string)$x : json_encode($x, JSON_UNESCAPED_UNICODE));
+        $html .= '<dt>' . htmlspecialchars(str_replace('_', ' ', $k)) . '</dt><dd>';
+        if (is_array($antes) && is_array($despues) && $a !== $d) {
+            $html .= '<span class="aud-antes">' . $fmt($a) . '</span> <i class="fas fa-arrow-right"></i> <span class="aud-despues">' . $fmt($d) . '</span>';
+        } else {
+            $html .= $fmt($d ?? $a);
+        }
+        $html .= '</dd>';
+    }
+    return $html . '</dl>';
+}
+
 function icono_aud($accion, $mapa) {
     $a = strtolower($accion);
     foreach ($mapa as $clave => $ic) {
@@ -71,11 +101,12 @@ function icono_aud($accion, $mapa) {
                     <th class="th-sort" onclick="ordenarAuditoria(this,3,'text')">Entidad <i class="fas fa-sort"></i></th>
                     <th class="th-sort th-center" onclick="ordenarAuditoria(this,4,'num')">ID <i class="fas fa-sort"></i></th>
                     <th class="th-sort" onclick="ordenarAuditoria(this,5,'text')">IP <i class="fas fa-sort"></i></th>
+                    <th class="th-center">Detalle</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($registros)): ?>
-                    <tr><td colspan="6" class="aud-vacia"><i class="fas fa-inbox"></i> No hay registros de auditoría para los filtros seleccionados.</td></tr>
+                    <tr><td colspan="7" class="aud-vacia"><i class="fas fa-inbox"></i> No hay registros de auditoría para los filtros seleccionados.</td></tr>
                 <?php else: ?>
                     <?php foreach ($registros as $r): ?>
                         <tr class="fila-auditoria">
@@ -93,9 +124,15 @@ function icono_aud($accion, $mapa) {
                                     <?php echo htmlspecialchars($r['accion']); ?>
                                 </span>
                             </td>
-                            <td><?php echo htmlspecialchars($r['entidad']); ?></td>
+                            <td><?php echo htmlspecialchars($r['entidad']); ?><?php if ($r['id_institucion'] === null): ?> <span class="aud-global" title="Evento de plataforma, no de una institución">global</span><?php endif; ?></td>
                             <td class="td-center aud-id" data-sort="<?php echo $r['id_entidad'] !== null ? intval($r['id_entidad']) : 0; ?>"><?php echo $r['id_entidad'] !== null ? '#' . intval($r['id_entidad']) : '—'; ?></td>
                             <td class="aud-ip"><?php echo htmlspecialchars($r['ip_origen'] ?? '—'); ?></td>
+                            <td class="td-center">
+                                <?php $det = detalle_aud($r['datos_anteriores_json'] ?? null, $r['datos_nuevos_json'] ?? null); ?>
+                                <?php if ($det): ?>
+                                    <details class="aud-det"><summary title="Ver detalle"><i class="fas fa-circle-info"></i></summary><div class="aud-det-box"><?php echo $det; ?></div></details>
+                                <?php else: ?>—<?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -176,6 +213,18 @@ function icono_aud($accion, $mapa) {
     .aud-badge-accion { display: inline-flex; align-items: center; gap: 6px; background: rgba(52,152,219,.1); color: var(--color-primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
     .aud-id { color: var(--color-text-muted); }
     .aud-ip { font-family: 'Courier New', monospace; color: var(--color-text-muted); font-size: 12.5px; }
+    .aud-global { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:10px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; background:var(--color-info-bg); color:var(--color-info-text); }
+    .aud-det { position:relative; display:inline-block; }
+    .aud-det summary { list-style:none; cursor:pointer; color:var(--color-primary); font-size:15px; }
+    .aud-det summary::-webkit-details-marker { display:none; }
+    .aud-det[open] summary { color:var(--color-primary-dark); }
+    .aud-det-box { position:absolute; right:0; top:24px; z-index:20; min-width:280px; max-width:420px; text-align:left; background:var(--color-bg-elevated); border:1px solid var(--color-border); border-radius:10px; padding:12px 14px; box-shadow:0 8px 24px rgba(0,0,0,.25); }
+    .aud-detalle { margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:12.5px; }
+    .aud-detalle dt { color:var(--color-text-muted); text-transform:capitalize; white-space:nowrap; }
+    .aud-detalle dd { margin:0; color:var(--color-text); word-break:break-word; }
+    .aud-detalle dd i { color:var(--color-text-muted); font-size:10px; margin:0 4px; }
+    .aud-antes { color:var(--color-danger); text-decoration:line-through; opacity:.8; }
+    .aud-despues { color:var(--color-success); font-weight:600; }
     .aud-vacia { text-align: center; padding: 50px 20px; color: var(--color-text-muted); }
     .aud-vacia i { font-size: 32px; display: block; margin-bottom: 12px; opacity: .5; }
 

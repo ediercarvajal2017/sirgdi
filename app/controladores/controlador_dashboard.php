@@ -30,8 +30,9 @@ class ControladorDashboard {
      * RF-25: Página de Inicio - Información de la Institución
      */
     public function inicio() {
+        // Página de bienvenida (nombre, logo y presentación de la institución): la ve
+        // cualquier usuario autenticado. El permiso ver_dashboard protege los KPIs, no esto.
         $this->auth->requerir_autenticacion();
-        $this->autorizacion->requerir_permiso(PERMISO_VER_DASHBOARD);
 
         $id_institucion = $this->auth->obtener_id_institucion();
 
@@ -203,7 +204,8 @@ class ControladorDashboard {
             case 'auditoria':
                 $contenido = $servicio_exportacion->exportar_auditoria_csv(
                     $filtros['fecha_desde'],
-                    $filtros['fecha_hasta']
+                    $filtros['fecha_hasta'],
+                    $this->autorizacion->es_superadmin()
                 );
                 $nombre = 'auditoria_' . date('Y-m-d') . '.csv';
                 break;
@@ -238,7 +240,11 @@ class ControladorDashboard {
         $pagina = max(1, intval($_GET['pagina'] ?? 1));
         $offset = ($pagina - 1) * $por_pagina;
 
-        $where = 'WHERE a.id_institucion = :id_inst';
+        // El superadministrador ve además los eventos globales de la plataforma
+        // (cambios de permisos, instituciones, catálogo), que no pertenecen a ninguna institución.
+        $where = $this->autorizacion->es_superadmin()
+            ? 'WHERE (a.id_institucion = :id_inst OR a.id_institucion IS NULL)'
+            : 'WHERE a.id_institucion = :id_inst';
         $params = [':id_inst' => $id_institucion];
 
         if ($fecha_desde !== '') {
@@ -264,13 +270,14 @@ class ControladorDashboard {
 
         // Registros de la página actual
         $sql = "SELECT a.id_auditoria, a.accion, a.entidad, a.id_entidad,
-                       a.ip_origen, a.fecha_hora_accion,
+                       a.ip_origen, a.fecha_hora_accion, a.id_institucion,
+                       a.datos_anteriores_json, a.datos_nuevos_json,
                        u.nombre_completo,
                        CASE WHEN a.id_usuario IS NULL THEN 'Sistema' ELSE COALESCE(u.nombre_completo, CONCAT('Usuario #', a.id_usuario)) END AS actor
                 FROM registro_auditoria a
                 LEFT JOIN usuario u ON a.id_usuario = u.id_usuario
                 $where
-                ORDER BY a.fecha_hora_accion DESC
+                ORDER BY a.fecha_hora_accion DESC, a.id_auditoria DESC
                 LIMIT $por_pagina OFFSET $offset";
         $registros = $bd->obtener_todos($sql, $params);
 

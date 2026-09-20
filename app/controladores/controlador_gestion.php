@@ -186,6 +186,10 @@ class ControladorGestion {
                 $reporte['numero_ticket']
             );
 
+            ServicioAuditoria::registrar('asignar_tecnico', 'reporte', $id_reporte,
+                ['id_tecnico' => $reporte['id_tecnico_asignado'], 'id_estado' => $reporte['id_estado']],
+                ['id_tecnico' => $id_tecnico, 'tecnico' => $tecnico['nombre_completo'], 'id_estado' => ESTADO_EN_PROCESO, 'ticket' => $reporte['numero_ticket']]);
+
             // Redirigir de vuelta al Kanban con mensaje de éxito
             header('Location: ' . config('app.url_base') . '/?controlador=gestion&accion=kanban&exito=1');
             exit;
@@ -222,8 +226,14 @@ class ControladorGestion {
                 throw new Exception('Reporte requerido.');
             }
 
+            $previo = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
+
             // Eliminar reporte + hijos (devuelve rutas de evidencia para borrar del disco)
             $archivos = $this->modelo_reporte->eliminar($id_reporte, $id_institucion);
+
+            ServicioAuditoria::registrar('eliminar_reporte', 'reporte', $id_reporte,
+                $previo ? ['ticket' => $previo['numero_ticket'], 'id_estado' => $previo['id_estado'], 'descripcion' => mb_substr($previo['descripcion_problema'], 0, 200)] : null,
+                null);
 
             // Borrar archivos de evidencia del disco (si existen)
             foreach ($archivos as $ruta) {
@@ -317,6 +327,10 @@ class ControladorGestion {
                 $justificacion,
                 $id_usuario
             );
+
+            ServicioAuditoria::registrar('cambiar_estado', 'reporte', $id_reporte,
+                ['id_estado' => $reporte['id_estado']],
+                ['id_estado' => $id_estado_nuevo, 'ticket' => $reporte['numero_ticket']]);
 
             // Si vuelve a "En Proceso", reanudar SLA (RN-10)
             if ($id_estado_nuevo == ESTADO_EN_PROCESO && $reporte['fecha_pausa_sla']) {

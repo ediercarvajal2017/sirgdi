@@ -145,6 +145,9 @@ class ControladorReportes {
                 $descripcion
             );
 
+            ServicioAuditoria::registrar('crear_reporte', 'reporte', $id_reporte, null,
+                ['ticket' => $reporte['numero_ticket'], 'id_categoria' => $id_categoria, 'id_urgencia' => $id_urgencia, 'id_sede' => $id_sede]);
+
             // Redirigir a detalle del reporte creado
             $_SESSION['exito'] = 'Reporte creado correctamente. Ticket: ' . htmlspecialchars($reporte['numero_ticket']);
             header('Location: ' . config('app.url_base') . '/?controlador=reportes&accion=detalle&id=' . $id_reporte);
@@ -331,6 +334,10 @@ class ControladorReportes {
                 'descripcion_problema' => $descripcion,
             ]);
 
+            ServicioAuditoria::registrar('editar_reporte', 'reporte', $id_reporte,
+                ['id_sede' => $reporte['id_sede'], 'id_categoria' => $reporte['id_categoria'], 'id_urgencia' => $reporte['id_urgencia_declarada'], 'descripcion' => mb_substr($reporte['descripcion_problema'], 0, 200)],
+                ['id_sede' => $id_sede, 'id_categoria' => $id_categoria, 'id_urgencia' => $id_urgencia, 'descripcion' => mb_substr($descripcion, 0, 200), 'ticket' => $reporte['numero_ticket']]);
+
             $_SESSION['exito'] = 'Reporte actualizado correctamente.';
             header('Location: ' . config('app.url_base') . '/?controlador=reportes&accion=listar&exito=1');
             exit;
@@ -369,6 +376,9 @@ class ControladorReportes {
                     @unlink($ruta);
                 }
             }
+
+            ServicioAuditoria::registrar('eliminar_reporte', 'reporte', $id_reporte,
+                ['ticket' => $reporte['numero_ticket'], 'descripcion' => mb_substr($reporte['descripcion_problema'], 0, 200)], null);
 
             $_SESSION['exito'] = 'Reporte eliminado correctamente.';
             header('Location: ' . config('app.url_base') . '/?controlador=reportes&accion=listar&exito=1');
@@ -855,6 +865,10 @@ class ControladorReportes {
             $reporte    = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
 
             $this->guardar_evidencias_iniciales($id_reporte, $id_institucion, null);
+
+            ServicioAuditoria::registrar('crear_reporte_invitado', 'reporte', $id_reporte, null,
+                ['ticket' => $reporte['numero_ticket'], 'reportante' => $reporte['nombre_reportante']],
+                ['id_usuario' => null, 'id_institucion' => $id_institucion]);
 
             $this->servicio_notificacion->notificar_nuevo_reporte(
                 $id_reporte,
