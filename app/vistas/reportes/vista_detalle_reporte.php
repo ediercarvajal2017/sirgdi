@@ -128,7 +128,7 @@ $base = config('app.url_base');
                     <div class="ev-thumbs">
                         <?php foreach ($ev_reportante as $ev): ?>
                             <?php $url = $base . '/?controlador=tecnico&accion=descargar_evidencia&id=' . $ev['id_evidencia'] . '&inst=' . $inst; ?>
-                            <a href="<?php echo $url; ?>" target="_blank" class="ev-thumb" title="<?php echo htmlspecialchars($ev['descripcion'] ?? $ev['nombre_archivo_original']); ?>">
+                            <a href="<?php echo $url; ?>" class="ev-thumb" data-visor="reportante" title="<?php echo htmlspecialchars($ev['descripcion'] ?? $ev['nombre_archivo_original']); ?>" data-titulo="Foto del reportante<?php echo empty($ev['descripcion']) ? '' : ' — ' . htmlspecialchars($ev['descripcion']); ?>">
                                 <img src="<?php echo $url; ?>" alt="Evidencia del reportante" loading="lazy">
                             </a>
                         <?php endforeach; ?>
@@ -154,7 +154,7 @@ $base = config('app.url_base');
                                     <?php else: ?>
                                         <?php foreach ($grupos[$clave] as $ev): ?>
                                             <?php $url = $base . '/?controlador=tecnico&accion=descargar_evidencia&id=' . $ev['id_evidencia'] . '&inst=' . $inst; ?>
-                                            <a href="<?php echo $url; ?>" target="_blank" class="ev-thumb" title="<?php echo htmlspecialchars($ev['descripcion'] ?? $ev['nombre_archivo_original']); ?>">
+                                            <a href="<?php echo $url; ?>" class="ev-thumb" data-visor="tecnico" title="<?php echo htmlspecialchars($ev['descripcion'] ?? $ev['nombre_archivo_original']); ?>" data-titulo="<?php echo htmlspecialchars($titulo); ?><?php echo empty($ev['descripcion']) ? '' : ' — ' . htmlspecialchars($ev['descripcion']); ?>">
                                                 <img src="<?php echo $url; ?>" alt="Evidencia <?php echo $titulo; ?>" loading="lazy">
                                             </a>
                                         <?php endforeach; ?>
@@ -238,7 +238,7 @@ $base = config('app.url_base');
     .ev-etapa h4 span { color:var(--color-text-muted); font-weight:400; }
     .ev-thumbs { display:flex; flex-wrap:wrap; gap:10px; }
     .ev-vacia { color:var(--color-text-muted); font-size:13px; font-style:italic; }
-    .ev-thumb { display:block; width:88px; height:88px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border-subtle); transition:all .2s; }
+    .ev-thumb { display:block; width:88px; height:88px; border-radius:8px; overflow:hidden; border:2px solid var(--color-border-subtle); transition:all .2s; cursor:zoom-in; }
     .ev-thumb:hover { border-color:#3498DB; transform:scale(1.05); box-shadow:0 4px 12px rgba(52,152,219,.25); }
     .ev-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
 
@@ -274,3 +274,4 @@ function copiarEnlace() {
     });
 }
 </script>
+<script src="<?php echo asset_url('js/visor_imagenes.js'); ?>"></script>

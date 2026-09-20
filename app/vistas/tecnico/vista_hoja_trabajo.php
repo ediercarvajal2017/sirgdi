@@ -133,19 +133,21 @@ $clasificacion = trim(($detalle['categoria_nombre'] ?? '') . (empty($detalle['su
                 </span>
             </div>
 
-            <!-- Fotos ya subidas -->
+            <!-- Fotos ya subidas: miniaturas que se amplían al pulsar (visor_imagenes.js) -->
             <?php if ($tiene): ?>
-            <div class="fotos-lista">
-                <?php foreach ($fotos as $f): ?>
-                <div class="foto-item">
-                    <i class="fas fa-image"></i>
-                    <div class="foto-info">
-                        <span class="foto-nombre"><?php echo htmlspecialchars($f['nombre_archivo_original']); ?></span>
-                        <?php if (!empty($f['descripcion'])): ?>
-                        <span class="foto-desc"><?php echo htmlspecialchars($f['descripcion']); ?></span>
-                        <?php endif; ?>
-                    </div>
-                </div>
+            <div class="fotos-grid">
+                <?php foreach ($fotos as $i => $f):
+                    $url = $base . '/?controlador=tecnico&accion=descargar_evidencia&id=' . (int)$f['id_evidencia'];
+                    $titulo = $def['label'] . ' · foto ' . ($i + 1) . (empty($f['descripcion']) ? '' : ' — ' . $f['descripcion']);
+                ?>
+                <a href="<?php echo $url; ?>" class="foto-thumb" data-visor="evidencias"
+                   title="<?php echo htmlspecialchars($titulo); ?>" data-titulo="<?php echo htmlspecialchars($titulo); ?>">
+                    <img src="<?php echo $url; ?>" alt="<?php echo htmlspecialchars($titulo); ?>" loading="lazy">
+                    <span class="foto-thumb-zoom"><i class="fas fa-magnifying-glass-plus"></i></span>
+                    <?php if (!empty($f['descripcion'])): ?>
+                    <span class="foto-thumb-pie"><?php echo htmlspecialchars($f['descripcion']); ?></span>
+                    <?php endif; ?>
+                </a>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
@@ -357,6 +359,7 @@ $toast_exito_msg = [
 ][$_GET['exito'] ?? ''] ?? 'Cambios guardados.';
 require APP_PATH . '/vistas/comunes/toast_helper.php';
 ?>
+<script src="<?php echo asset_url('js/visor_imagenes.js'); ?>"></script>
 
 <style>
 :root {
@@ -470,12 +473,24 @@ require APP_PATH . '/vistas/comunes/toast_helper.php';
 .badge-pend { background:rgba(189,195,199,.3);   color:var(--color-text); }
 
 /* ── Lista fotos subidas ── */
-.fotos-lista { display:flex; flex-direction:column; gap:8px; }
-.foto-item   { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--light-bg); border-radius:8px; }
-.foto-item>i { color:var(--primary-blue); font-size:16px; }
-.foto-info   { display:flex; flex-direction:column; overflow:hidden; }
-.foto-nombre { font-size:12px; color:var(--dark-text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.foto-desc   { font-size:11px; color:var(--gray-text); }
+.fotos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)); gap:8px; }
+.foto-thumb {
+    position:relative; display:block; aspect-ratio:1; border-radius:8px; overflow:hidden;
+    background:var(--color-bg-subtle); border:1px solid var(--color-border-subtle);
+    cursor:zoom-in; transition:transform .15s, box-shadow .15s;
+}
+.foto-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.foto-thumb:hover, .foto-thumb:focus-visible { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.25); outline:none; border-color:var(--primary-blue); }
+.foto-thumb-zoom {
+    position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%;
+    background:rgba(0,0,0,.55); color:#fff; font-size:11px; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .15s;
+}
+.foto-thumb:hover .foto-thumb-zoom { opacity:1; }
+.foto-thumb-pie {
+    position:absolute; left:0; right:0; bottom:0; padding:4px 6px; font-size:10px; line-height:1.3; color:#fff;
+    background:linear-gradient(transparent, rgba(0,0,0,.75)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
 
 /* ── Formulario carga ── */
 .form-foto { display:flex; flex-direction:column; gap:10px; border-top:1px dashed var(--color-border-subtle); padding-top:14px; }
