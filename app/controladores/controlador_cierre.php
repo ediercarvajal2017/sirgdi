@@ -344,20 +344,19 @@ class ControladorCierre {
                 $id_usuario
             );
 
-            // RF-24: Notificar a reportante y rector
+            // RF-24: Notificar a reportante y rector. El correo del reportante ya vive
+            // en el propio reporte (correo_reportante) tanto para usuarios registrados
+            // como para invitados; re-consultarlo por id_reportante fallaba en silencio
+            // para invitados (id_reportante es NULL, la consulta no encuentra fila) y el
+            // correo de cierre nunca les llegaba.
             require_once APP_PATH . '/servicios/servicio_notificacion.php';
             $servicio_notificacion = new ServicioNotificacion();
-
-            // Obtener email del reportante
-            require_once APP_PATH . '/modelos/modelo_usuario.php';
-            $modelo_usuario = new ModeloUsuario();
-            $reportante = $modelo_usuario->obtener_por_id($reporte['id_reportante'], $id_institucion);
 
             $servicio_notificacion->notificar_reporte_cerrado(
                 $id_reporte,
                 $id_institucion,
                 $reporte['numero_ticket'],
-                $reportante['correo_electronico'] ?? null
+                $reporte['correo_reportante'] ?? null
             );
 
             ServicioAuditoria::registrar('cerrar_reporte', 'reporte', $id_reporte,

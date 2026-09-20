@@ -3,6 +3,11 @@
 
 // Estados del reporte (RN-12: inmutables)
 define('ESTADO_REGISTRADO', 1);
+// Vestigial: ControladorGestion::asignar_tecnico() pasa el reporte directo a
+// EN_PROCESO al asignar, así que ningún reporte queda realmente en este estado
+// hoy. Se conserva en el modelo, en TRANSICIONES_ESTADO_REPORTE y en las vistas
+// (kanban, mis_asignaciones) por si se retoma un flujo de asignación en dos
+// pasos; no se elimina para no perder ese trabajo ya hecho.
 define('ESTADO_ASIGNADO', 2);
 define('ESTADO_EN_PROCESO', 3);
 define('ESTADO_SOLUCIONADO', 4);

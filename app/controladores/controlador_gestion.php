@@ -167,7 +167,10 @@ class ControladorGestion {
             // Asignar
             $this->modelo_reporte->asignar_tecnico($id_reporte, $id_institucion, $id_tecnico);
 
-            // Cambiar estado a "En Proceso"
+            // Cambiar estado a "En Proceso" directamente: por diseño se salta
+            // ESTADO_ASIGNADO (queda vestigial, ver lib/constantes.php) en vez de
+            // esperar a que el técnico abra la hoja de trabajo para recién ahí
+            // marcar que empezó.
             $this->modelo_reporte->cambiar_estado(
                 $id_reporte,
                 $id_institucion,

@@ -46,7 +46,14 @@ class ModeloEncuesta {
     }
 
     /**
-     * Guardar respuestas de encuesta
+     * Guardar respuestas de encuesta.
+     *
+     * El "AND fue_respondida = 0" hace el check-and-set atómico a nivel de fila: si
+     * dos envíos casi simultáneos (doble clic, doble pestaña) llegan aquí, solo el
+     * primero afecta una fila — el segundo actualiza 0 filas en vez de pisar la
+     * respuesta ya guardada. Antes esa comprobación vivía solo en el controlador
+     * (leer, luego escribir), lo que dejaba una ventana de carrera entre ambos pasos.
+     * Devuelve cuántas filas se afectaron (0 o 1) para que el llamador lo sepa.
      */
     public function registrar_respuesta($id_encuesta, $puntuacion, $comentario) {
         $sql = 'UPDATE encuesta_satisfaccion
@@ -54,13 +61,15 @@ class ModeloEncuesta {
                     comentario = :comentario,
                     fecha_completada = NOW(),
                     fue_respondida = 1
-                WHERE id_encuesta = :id_encuesta';
+                WHERE id_encuesta = :id_encuesta AND fue_respondida = 0';
 
-        return $this->bd->ejecutar($sql, [
+        $stmt = $this->bd->ejecutar($sql, [
             ':id_encuesta' => $id_encuesta,
             ':puntuacion' => intval($puntuacion),
             ':comentario' => $comentario,
         ]);
+
+        return $stmt->rowCount();
     }
 
     /**
