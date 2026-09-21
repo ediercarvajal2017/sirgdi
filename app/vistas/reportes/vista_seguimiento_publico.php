@@ -358,7 +358,7 @@
         }
 
         .descripcion-box {
-            background: #F8FAFC;
+            background: var(--white);
             border: 1px solid var(--border);
             border-left: 4px solid var(--blue);
             border-radius: 8px;
