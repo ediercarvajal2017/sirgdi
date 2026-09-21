@@ -1,5 +1,5 @@
 -- ============================================================
--- SIRGDI v2.0 — Script de Datos Semilla (Seeds)
+-- ANA v2.0 — Script de Datos Semilla (Seeds)
 -- Ejecutar DESPUÉS de schema.sql
 -- ============================================================
 -- (USE omitido para Hostinger)
@@ -152,9 +152,9 @@ VALUES (1, 'Institución Educativa Demo', NULL, 1);
 --     7,
 --     17,
 --     '[6, 7]',
---     'SIRGDI — Reporte #{TICKET} registrado correctamente',
---     'SIRGDI — Su reporte #{TICKET} ha sido asignado a un técnico',
---     'SIRGDI — Reporte #{TICKET} cerrado: {DESCRIPCION_CORTA}'
+--     'ANA — Reporte #{TICKET} registrado correctamente',
+--     'ANA — Su reporte #{TICKET} ha sido asignado a un técnico',
+--     'ANA — Reporte #{TICKET} cerrado: {DESCRIPCION_CORTA}'
 -- );
 
 -- ============================================================
@@ -264,7 +264,7 @@ INSERT INTO usuario_rol (id_usuario, id_rol, id_institucion) VALUES
 (8, 1, 1);  -- docente2   → Reportante
 
 -- ============================================================
--- FIN DEL SCRIPT SEEDS — SIRGDI v2.0
+-- FIN DEL SCRIPT SEEDS — ANA v2.0
 -- ============================================================
 -- Registros insertados:
 --   urgencia:          4 filas

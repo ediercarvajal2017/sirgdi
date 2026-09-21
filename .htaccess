@@ -1,5 +1,5 @@
 # ============================================================
-# SIRGDI v2.0 — .htaccess de la RAÍZ del proyecto
+# ANA v2.0 — .htaccess de la RAÍZ del proyecto
 # ============================================================
 # El subdominio mantenimiento.ediertech.com apunta a esta carpeta
 # (la raíz del repositorio), NO a /public. Por eso aquí enrutamos

@@ -1,5 +1,5 @@
 -- ============================================================
--- SIRGDI v2.0 — Script DDL (Data Definition Language)
+-- ANA v2.0 — Script DDL (Data Definition Language)
 -- Motor: MySQL 8.0+  |  Engine: InnoDB  |  Charset: utf8mb4
 -- Norma de referencia: ERS-SIRGDI-v2.1.md
 -- ============================================================
@@ -649,7 +649,7 @@ DELIMITER ;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ============================================================
--- FIN DEL SCRIPT DDL — SIRGDI v2.0
+-- FIN DEL SCRIPT DDL — ANA v2.0
 -- ============================================================
 -- Tablas creadas: 22 tablas de negocio + 2 tablas intermedias = 24 total
 -- Triggers:       3 (inmutabilidad de campos críticos)
