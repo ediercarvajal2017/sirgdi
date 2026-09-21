@@ -32,10 +32,10 @@
 # (No se incluye "almacenamiento" porque los logos públicos se sirven por
 #  /almacenamiento/logos/... que el rewrite redirige a public/almacenamiento/.
 #  La carpeta privada de la raíz nunca es accesible: el rewrite envía todo a public/.)
-RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas)(/|$)
+RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas|tests|vendor)(/|$)
 
 # Bloquear archivos sensibles por extensión/nombre
-<FilesMatch "(^\.|\.env$|\.env\..*|\.md$|\.sql$|\.log$|\.lock$|\.json$|composer\.(json|lock))">
+<FilesMatch "(^\.|\.env$|\.env\..*|\.md$|\.sql$|\.log$|\.lock$|\.json$|\.xml$|composer\.(json|lock))">
     Require all denied
 </FilesMatch>
 

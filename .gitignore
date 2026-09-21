@@ -42,6 +42,10 @@ verificar_admin.php
 verificar_bd.php
 backfill_*.php
 
+# --- PHPUnit ---
+.phpunit.cache/
+.phpunit.result.cache
+
 # --- Sistema / editor ---
 .DS_Store
 Thumbs.db
