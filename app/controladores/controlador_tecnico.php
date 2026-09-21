@@ -374,6 +374,13 @@ class ControladorTecnico {
                 $id_usuario
             );
 
+            // RN-10: mientras espera revisión del gestor no corre por cuenta del
+            // técnico, así que el reloj del SLA se pausa aquí. Se reanuda en
+            // ControladorCierre::procesar_validar_solucion() si el gestor lo rechaza
+            // y vuelve a manos del técnico (antes esa reanudación existía pero nunca
+            // pausaba nada primero, así que el SLA en realidad nunca se detenía).
+            $this->modelo_reporte->pausar_sla($id_reporte, $id_institucion);
+
             // Hito: avisa al gestor (validación) y al reportante (avance de su ticket)
             require_once APP_PATH . '/servicios/servicio_notificacion.php';
             $servicio_notificacion = new ServicioNotificacion();
