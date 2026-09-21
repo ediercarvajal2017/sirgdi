@@ -227,15 +227,16 @@ class ControladorCierre {
 
             $encuesta_enviada = false;
 
-            // RF-22: la encuesta solo aplica a reportantes con cuenta registrada —
-            // encuesta_satisfaccion exige id_usuario_reportante (FK NOT NULL). Los
-            // reportes de invitado se omiten sin bloquear el flujo de cierre.
-            if (!empty($reporte['id_reportante']) && !empty($reporte['correo_reportante']) && !empty($reporte['token_seguimiento_publico'])) {
+            // RF-22: aplica tanto a reportantes con cuenta como a invitados — ambos
+            // tienen correo_reportante y token_seguimiento_publico. id_usuario_reportante
+            // (columna nullable) queda NULL para invitados; la respuesta pública se
+            // identifica por el token del reporte, no por ese id.
+            if (!empty($reporte['correo_reportante']) && !empty($reporte['token_seguimiento_publico'])) {
                 require_once APP_PATH . '/modelos/modelo_encuesta.php';
                 $modelo_encuesta = new ModeloEncuesta();
 
                 if (!$modelo_encuesta->obtener_por_reporte($id_reporte, $id_institucion)) {
-                    $modelo_encuesta->crear($id_reporte, $id_institucion, $reporte['id_reportante']);
+                    $modelo_encuesta->crear($id_reporte, $id_institucion, $reporte['id_reportante'] ?: null);
                 }
 
                 $link_encuesta = config('app.url_base')

@@ -508,7 +508,7 @@ CREATE TABLE IF NOT EXISTS encuesta_satisfaccion (
     id_encuesta             BIGINT UNSIGNED     NOT NULL AUTO_INCREMENT,
     id_reporte              BIGINT UNSIGNED     NOT NULL,
     id_institucion          BIGINT UNSIGNED     NOT NULL,
-    id_usuario_reportante   BIGINT UNSIGNED     NOT NULL,
+    id_usuario_reportante   BIGINT UNSIGNED     NULL     COMMENT 'NULL si el reportante fue invitado (sin cuenta registrada)',
     puntuacion              TINYINT UNSIGNED    NULL     COMMENT '1-5 estrellas, NULL si no respondió',
     comentario              TEXT                NULL,
     fue_respondida          TINYINT(1)          NOT NULL DEFAULT 0,
