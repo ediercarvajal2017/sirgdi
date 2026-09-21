@@ -432,6 +432,30 @@
             color: var(--text);
         }
 
+        /* ── EVIDENCIA FOTOGRÁFICA ── */
+        .evidencia-grupo { margin-bottom: 18px; }
+        .evidencia-grupo:last-child { margin-bottom: 0; }
+        .evidencia-grupo-tit {
+            font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px;
+            color: var(--text-light); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+        }
+        .fotos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+        .foto-thumb {
+            position: relative; display: block; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+            background: var(--bg); border: 1px solid var(--border); cursor: zoom-in;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .foto-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .foto-thumb:hover, .foto-thumb:focus-visible {
+            transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.25); outline: none; border-color: var(--blue);
+        }
+        .foto-thumb-zoom {
+            position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(0,0,0,.55); color: #fff; font-size: 10px; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .15s;
+        }
+        .foto-thumb:hover .foto-thumb-zoom { opacity: 1; }
+
         /* ── ENCUESTA DE SATISFACCIÓN (RF-22) ── */
         .encuesta-card {
             background: var(--white);
@@ -646,6 +670,22 @@ $pasos_flujo = [
 $id_estado_actual = $reporte['id_estado'] ?? 0;
 $es_anulado  = ($id_estado_actual === 8);
 $es_devuelto = ($id_estado_actual === 6);
+
+/* Evidencia fotográfica agrupada: 'reportante' son las fotos adjuntadas al crear
+ * el reporte; antes/durante/después son las del técnico durante la reparación. */
+$evidencias_por_etapa = ['reportante' => [], 'antes' => [], 'durante' => [], 'despues' => []];
+foreach (($evidencias ?? []) as $ev) {
+    $nombre_etapa = ModeloEvidencia::id_a_etapa($ev['id_etapa']);
+    if ($nombre_etapa && isset($evidencias_por_etapa[$nombre_etapa])) {
+        $evidencias_por_etapa[$nombre_etapa][] = $ev;
+    }
+}
+$etapas_tecnico_def = [
+    'antes'   => ['label' => 'Antes',    'icon' => 'fa-camera-retro'],
+    'durante' => ['label' => 'Durante',  'icon' => 'fa-person-digging'],
+    'despues' => ['label' => 'Después',  'icon' => 'fa-circle-check'],
+];
+$hay_evidencia_tecnico = count($evidencias_por_etapa['antes']) + count($evidencias_por_etapa['durante']) + count($evidencias_por_etapa['despues']) > 0;
 ?>
 
 <!-- Hero -->
@@ -792,6 +832,54 @@ $es_devuelto = ($id_estado_actual === 6);
         </div>
 
     </div>
+
+    <!-- ── Evidencia fotográfica ── -->
+    <?php if (!empty($evidencias_por_etapa['reportante']) || $hay_evidencia_tecnico): ?>
+    <div class="timeline-card">
+        <div class="timeline-title">
+            <i class="fas fa-camera"></i> Evidencia fotográfica
+        </div>
+
+        <?php if (!empty($evidencias_por_etapa['reportante'])): ?>
+        <div class="evidencia-grupo">
+            <div class="evidencia-grupo-tit">Fotos adjuntadas al reportar</div>
+            <div class="fotos-grid">
+                <?php foreach ($evidencias_por_etapa['reportante'] as $i => $f):
+                    $url = config('app.url_base') . '/?controlador=reportes&accion=descargar_evidencia_publica&id=' . (int)$f['id_evidencia'] . '&token=' . urlencode($reporte['token_seguimiento_publico']);
+                    $foto_titulo = 'Foto del reporte ' . ($i + 1) . (empty($f['descripcion']) ? '' : ' — ' . $f['descripcion']);
+                ?>
+                <a href="<?php echo $url; ?>" class="foto-thumb" data-visor="evidencias-seguimiento"
+                   title="<?php echo htmlspecialchars($foto_titulo); ?>" data-titulo="<?php echo htmlspecialchars($foto_titulo); ?>">
+                    <img src="<?php echo $url; ?>" alt="<?php echo htmlspecialchars($foto_titulo); ?>" loading="lazy">
+                    <span class="foto-thumb-zoom"><i class="fas fa-magnifying-glass-plus"></i></span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <?php foreach ($etapas_tecnico_def as $clave => $def):
+            $fotos = $evidencias_por_etapa[$clave];
+            if (!count($fotos)) continue;
+        ?>
+        <div class="evidencia-grupo">
+            <div class="evidencia-grupo-tit"><i class="fas <?php echo $def['icon']; ?>"></i> <?php echo $def['label']; ?> (técnico)</div>
+            <div class="fotos-grid">
+                <?php foreach ($fotos as $i => $f):
+                    $url = config('app.url_base') . '/?controlador=reportes&accion=descargar_evidencia_publica&id=' . (int)$f['id_evidencia'] . '&token=' . urlencode($reporte['token_seguimiento_publico']);
+                    $foto_titulo = $def['label'] . ' · foto ' . ($i + 1) . (empty($f['descripcion']) ? '' : ' — ' . $f['descripcion']);
+                ?>
+                <a href="<?php echo $url; ?>" class="foto-thumb" data-visor="evidencias-seguimiento"
+                   title="<?php echo htmlspecialchars($foto_titulo); ?>" data-titulo="<?php echo htmlspecialchars($foto_titulo); ?>">
+                    <img src="<?php echo $url; ?>" alt="<?php echo htmlspecialchars($foto_titulo); ?>" loading="lazy">
+                    <span class="foto-thumb-zoom"><i class="fas fa-magnifying-glass-plus"></i></span>
+                </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- ── Notas y avances (bitácora visible al reportante) ── -->
     <?php if (!empty($avances)): ?>
@@ -964,6 +1052,7 @@ function mostrarToast() {
     setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 </script>
+<script src="<?php echo asset_url('js/visor_imagenes.js'); ?>"></script>
 <script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 
 </body>

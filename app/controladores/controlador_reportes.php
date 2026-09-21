@@ -418,6 +418,12 @@ class ControladorReportes {
         require_once APP_PATH . '/modelos/modelo_avance.php';
         $avances = (new ModeloAvance())->listar_publicos($reporte['id_reporte']);
 
+        // Evidencia fotográfica: tanto las fotos que el reportante adjuntó al crear
+        // el reporte (etapa 'reportante') como las que el técnico sube durante la
+        // reparación (antes/durante/después) viven en la misma tabla.
+        require_once APP_PATH . '/modelos/modelo_evidencia.php';
+        $evidencias = (new ModeloEvidencia())->listar_por_reporte($reporte['id_reporte'], $reporte['id_institucion']);
+
         // RF-22: encuesta de satisfacción pendiente o ya respondida para este reporte
         require_once APP_PATH . '/modelos/modelo_encuesta.php';
         $encuesta = (new ModeloEncuesta())->obtener_por_reporte($reporte['id_reporte'], $reporte['id_institucion']);
@@ -428,11 +434,60 @@ class ControladorReportes {
             'sede' => $sede,
             'categoria' => $categoria,
             'avances' => $avances,
+            'evidencias' => $evidencias,
             'encuesta' => $encuesta,
             'csrf_token' => Validacion::generar_csrf_token(),
         ];
 
         $this->renderizar_vista_publica('reportes/vista_seguimiento_publico', $datos);
+    }
+
+    /**
+     * Sirve una foto de evidencia para la página pública de seguimiento.
+     * Público (token-based, sin autenticación) — misma lógica de
+     * ControladorTecnico::descargar_evidencia(), pero la posesión del token de
+     * seguimiento reemplaza a la sesión como prueba de acceso. La evidencia debe
+     * pertenecer exactamente al reporte que ese token autoriza (no solo a la misma
+     * institución), para que un token válido de un reporte no sirva para ver fotos
+     * de otro reporte cualquiera de la institución.
+     */
+    public function descargar_evidencia_publica() {
+        $token = $_GET['token'] ?? '';
+        if (!$token || !Validacion::validar_uuid($token)) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Token inválido.');
+        }
+
+        $reporte = $this->modelo_reporte->obtener_por_token_seguimiento($token);
+        if (!$reporte) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Reporte no encontrado.');
+        }
+
+        $id_evidencia = intval($_GET['id'] ?? 0);
+        require_once APP_PATH . '/modelos/modelo_evidencia.php';
+        $evidencia = (new ModeloEvidencia())->obtener_por_id($id_evidencia, $reporte['id_institucion']);
+
+        if (!$evidencia || (int)$evidencia['id_reporte'] !== (int)$reporte['id_reporte']) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Evidencia no encontrada.');
+        }
+
+        $ruta = $evidencia['url_archivo'] ?? '';
+        if (!$ruta || !file_exists($ruta)) {
+            http_response_code(HTTP_NOT_FOUND);
+            die('Archivo no encontrado en servidor.');
+        }
+
+        $disposition = isset($_GET['descargar']) ? 'attachment' : 'inline';
+        $mime = $evidencia['tipo_mime'] ?: 'image/jpeg';
+
+        header('Content-Type: ' . $mime);
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Disposition: ' . $disposition . '; filename="' . basename($ruta) . '"');
+        header('Content-Length: ' . filesize($ruta));
+        readfile($ruta);
+        exit;
     }
 
     /**
