@@ -3,7 +3,7 @@
         'name' => 'ana/ana',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3c1ca875ce720af89e7e7e2d3a6af7405d825c9f',
+        'reference' => '2f7971052e41c6e75491fabad7cf4d15f6a1403e',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'ana/ana' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3c1ca875ce720af89e7e7e2d3a6af7405d825c9f',
+            'reference' => '2f7971052e41c6e75491fabad7cf4d15f6a1403e',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -63,6 +63,15 @@
             'install_path' => __DIR__ . '/../phpmailer/phpmailer',
             'aliases' => array(),
             'dev_requirement' => false,
+        ),
+        'phpstan/phpstan' => array(
+            'pretty_version' => '2.2.14',
+            'version' => '2.2.14.0',
+            'reference' => '9c672e7a8e791dfc3d30e55f683e73fc0b63a3ac',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpstan/phpstan',
+            'aliases' => array(),
+            'dev_requirement' => true,
         ),
         'phpunit/php-code-coverage' => array(
             'pretty_version' => '11.0.12',

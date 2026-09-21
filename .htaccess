@@ -35,7 +35,7 @@
 RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas|tests|vendor)(/|$)
 
 # Bloquear archivos sensibles por extensión/nombre
-<FilesMatch "(^\.|\.env$|\.env\..*|\.md$|\.sql$|\.log$|\.lock$|\.json$|\.xml$|composer\.(json|lock))">
+<FilesMatch "(^\.|\.env$|\.env\..*|\.md$|\.sql$|\.log$|\.lock$|\.json$|\.xml$|\.neon$|composer\.(json|lock))">
     Require all denied
 </FilesMatch>
 

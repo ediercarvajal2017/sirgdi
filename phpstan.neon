@@ -1,0 +1,27 @@
+parameters:
+    level: 2
+
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+
+    # El proyecto no usa autoload de Composer para sus propias clases (todo es
+    # require_once, sin namespaces) — scanDirectories deja que PHPStan resuelva
+    # clases y constantes definidas en otros archivos sin necesidad de autoload.
+    scanDirectories:
+        - app
+        - lib
+        - configuracion
+
+    paths:
+        - app/controladores
+        - app/modelos
+        - app/servicios
+        - lib
+        - configuracion
+        - public/index.php
+
+    # app/vistas se excluye: son plantillas que reciben variables vía extract($datos)
+    # en el controlador, así que PHPStan las reportaría todas como "variable indefinida"
+    # sin que sea un bug real.
+    excludePaths:
+        - app/vistas/*

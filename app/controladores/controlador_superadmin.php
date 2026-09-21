@@ -469,6 +469,7 @@ class ControladorSuperadmin {
             }
 
             if ($id_sede) {
+                $accion = 'actualizar';
                 $modelo_sede->actualizar($id_sede, $id_institucion, [
                     'nombre' => $nombre,
                     'direccion' => $codigo_dane,
@@ -476,6 +477,7 @@ class ControladorSuperadmin {
                 ]);
                 $mensaje = 'Sede actualizada correctamente.';
             } else {
+                $accion = 'crear';
                 $modelo_sede->crear([
                     'id_institucion' => $id_institucion,
                     'nombre' => $nombre,
