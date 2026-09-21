@@ -1,5 +1,6 @@
 <?php
 $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_token() : '');
+$base = config('app.url_base');
 $por_etapa = ['antes' => [], 'durante' => [], 'despues' => []];
 foreach (($evidencias ?? []) as $ev) {
     $n = ModeloEvidencia::id_a_etapa($ev['id_etapa']);
@@ -35,12 +36,18 @@ $etapas_def = ['antes' => 'Antes', 'durante' => 'Durante', 'despues' => 'Despué
                         <span><?php echo count($fotos); ?> foto(s)</span>
                     </div>
                     <?php if (count($fotos)): ?>
-                        <?php foreach ($fotos as $f): ?>
-                            <div class="foto-item">
-                                <i class="fas fa-image"></i>
-                                <span><?php echo htmlspecialchars($f['nombre_archivo_original']); ?></span>
-                            </div>
-                        <?php endforeach; ?>
+                        <div class="fotos-grid">
+                            <?php foreach ($fotos as $i => $f):
+                                $url = $base . '/?controlador=tecnico&accion=descargar_evidencia&id=' . (int)$f['id_evidencia'];
+                                $foto_titulo = $titulo . ' · foto ' . ($i + 1) . (empty($f['descripcion']) ? '' : ' — ' . $f['descripcion']);
+                            ?>
+                            <a href="<?php echo $url; ?>" class="foto-thumb" data-visor="evidencias-validacion"
+                               title="<?php echo htmlspecialchars($foto_titulo); ?>" data-titulo="<?php echo htmlspecialchars($foto_titulo); ?>">
+                                <img src="<?php echo $url; ?>" alt="<?php echo htmlspecialchars($foto_titulo); ?>" loading="lazy">
+                                <span class="foto-thumb-zoom"><i class="fas fa-magnifying-glass-plus"></i></span>
+                            </a>
+                            <?php endforeach; ?>
+                        </div>
                     <?php else: ?>
                         <div class="foto-vacia">Sin evidencia</div>
                     <?php endif; ?>
@@ -82,6 +89,7 @@ $etapas_def = ['antes' => 'Antes', 'durante' => 'Durante', 'despues' => 'Despué
 
 <?php $toast_exito_msg = 'Validación registrada correctamente.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
 
+<script src="<?php echo asset_url('js/visor_imagenes.js'); ?>"></script>
 <script>
 // Hacer obligatorio el comentario si se rechaza
 document.getElementById('form-val').addEventListener('submit', function(e) {
@@ -119,9 +127,13 @@ document.getElementById('form-val').addEventListener('submit', function(e) {
 .etapa-tit span{font-size:11px;font-weight:500;color:var(--gray-text);}
 .etapa-tit.ok{border-bottom-color: var(--color-success);}
 .etapa-tit.pend{border-bottom-color:#E67E22;}
-.foto-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dark-text);}
-.foto-item i{color:var(--primary-blue);}
 .foto-vacia{font-size:12px;color:var(--gray-text);font-style:italic;}
+.fotos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;}
+.foto-thumb{position:relative;display:block;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--light-bg);border:1px solid #E8EDEF;cursor:zoom-in;transition:transform .15s,box-shadow .15s;}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-thumb:hover,.foto-thumb:focus-visible{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.25);outline:none;border-color:var(--primary-blue);}
+.foto-thumb-zoom{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
+.foto-thumb:hover .foto-thumb-zoom{opacity:1;}
 .form-modern-card{background:var(--color-bg-elevated);color:var(--color-text);border-radius:12px;padding:30px;box-shadow:0 4px 16px rgba(52,152,219,.08);border-left:4px solid var(--primary-blue);}
 .form-modern-card h3{margin-bottom:22px;color:var(--dark-text);font-size:20px;display:flex;align-items:center;gap:10px;}
 .form-modern-card h3 i{color:var(--primary-blue);}
