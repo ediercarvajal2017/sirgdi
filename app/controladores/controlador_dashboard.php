@@ -58,6 +58,30 @@ class ControladorDashboard {
     }
 
     /**
+     * RF-25: Dashboard de KPIs — estadísticas de reportes, satisfacción y SLA.
+     * La vista y los métodos que arman cada bloque ya existían; solo faltaba esta
+     * acción para conectarlos (nunca se enrutó a vista_dashboard_kpi.php).
+     */
+    public function kpi() {
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_VER_DASHBOARD);
+
+        $id_institucion = $this->auth->obtener_id_institucion();
+
+        $datos = [
+            'titulo' => 'Dashboard - ' . config('app.app_name'),
+            'kpis' => $this->obtener_kpis($id_institucion),
+            'reportes_por_estado' => $this->obtener_reportes_por_estado($id_institucion),
+            'reportes_por_urgencia' => $this->obtener_reportes_por_urgencia($id_institucion),
+            'promedio_dias_resolucion' => $this->obtener_promedio_dias_resolucion($id_institucion),
+            'satisfaccion' => $this->modelo_encuesta->obtener_estadisticas($id_institucion),
+            'sla_vencidos' => $this->modelo_sla->reportes_sla_vencido($id_institucion),
+        ];
+
+        $this->renderizar_vista('dashboard/vista_dashboard_kpi', $datos);
+    }
+
+    /**
      * Obtener KPIs principales
      */
     private function obtener_kpis($id_institucion) {
@@ -94,11 +118,13 @@ class ControladorDashboard {
 
         $estados = [
             1 => 'Registrado',
-            2 => 'En Proceso',
-            3 => 'Devuelto',
+            2 => 'Asignado',
+            3 => 'En Proceso',
             4 => 'Solucionado',
             5 => 'En Validación',
-            6 => 'Cerrado',
+            6 => 'Devuelto',
+            7 => 'Cerrado',
+            8 => 'Anulado',
         ];
 
         $resultado = [];

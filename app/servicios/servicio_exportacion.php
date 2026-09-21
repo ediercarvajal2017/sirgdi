@@ -22,19 +22,19 @@ class ServicioExportacion {
                     r.numero_ticket,
                     r.fecha_hora_registro,
                     CASE WHEN r.id_estado = 1 THEN "Registrado"
-                         WHEN r.id_estado = 2 THEN "En Proceso"
-                         WHEN r.id_estado = 3 THEN "Devuelto"
+                         WHEN r.id_estado = 2 THEN "Asignado"
+                         WHEN r.id_estado = 3 THEN "En Proceso"
                          WHEN r.id_estado = 4 THEN "Solucionado"
                          WHEN r.id_estado = 5 THEN "En Validación"
-                         WHEN r.id_estado = 6 THEN "Cerrado"
-                         WHEN r.id_estado = 7 THEN "Cancelado"
+                         WHEN r.id_estado = 6 THEN "Devuelto"
+                         WHEN r.id_estado = 7 THEN "Cerrado"
                          ELSE "Anulado" END as estado,
                     CASE WHEN r.id_urgencia_calculada = 1 THEN "No Urgente"
                          WHEN r.id_urgencia_calculada = 2 THEN "Moderado"
                          WHEN r.id_urgencia_calculada = 3 THEN "Importante"
                          ELSE "Urgente" END as urgencia,
                     r.descripcion_problema,
-                    r.nombre_reportante_reportante as reportante,
+                    r.nombre_reportante as reportante,
                     CASE WHEN r.es_anonimo = 1 THEN "Anónimo" ELSE r.correo_reportante END as contacto,
                     r.fecha_actualizacion
                 FROM reporte r
@@ -95,17 +95,17 @@ class ServicioExportacion {
                     r.descripcion_problema,
                     e.puntuacion,
                     CASE WHEN e.puntuacion >= 4 THEN "Satisfecho" ELSE "Insatisfecho" END as satisfaccion,
-                    e.comentario_reportante,
-                    e.fecha_respuesta
+                    e.comentario,
+                    e.fecha_completada
                 FROM encuesta_satisfaccion e
                 JOIN reporte r ON e.id_reporte = r.id_reporte
                 WHERE e.id_institucion = :id_institucion
-                AND e.respondida = 1
-                ORDER BY e.fecha_respuesta DESC';
+                AND e.fue_respondida = 1
+                ORDER BY e.fecha_completada DESC';
 
         $encuestas = $this->bd->obtener_todos($sql, [':id_institucion' => $this->id_institucion]);
 
-        return $this->generar_csv($encuestas, ['numero_ticket', 'descripcion_problema', 'puntuacion', 'satisfaccion', 'comentario_reportante', 'fecha_respuesta']);
+        return $this->generar_csv($encuestas, ['numero_ticket', 'descripcion_problema', 'puntuacion', 'satisfaccion', 'comentario', 'fecha_completada']);
     }
 
     /**

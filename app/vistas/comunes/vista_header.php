@@ -21,6 +21,16 @@
                 </a>
             </li>
 
+            <!-- Dashboard de KPIs (RF-25) -->
+            <?php if (in_array('ver_dashboard', $_SESSION['permisos'] ?? [])): ?>
+                <li class="nav-item">
+                    <a href="<?php echo config('app.url_base'); ?>/?controlador=dashboard&accion=kpi" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>ESTADÍSTICAS</span>
+                    </a>
+                </li>
+            <?php endif; ?>
+
             <!-- Reportes Section -->
             <li class="nav-item nav-dropdown">
                 <a href="#" class="nav-link" data-toggle="dropdown">
