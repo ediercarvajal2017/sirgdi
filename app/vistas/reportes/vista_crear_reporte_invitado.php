@@ -18,6 +18,9 @@ $urgencias = [
     <script>(function(){try{var t=localStorage.getItem('sirgdi_tema');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
     <title><?php echo htmlspecialchars($institucion['nombre']); ?> — Reportar Daño</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <?php if (!empty($turnstile_site_key)): ?>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <?php endif; ?>
     <style>
         :root {
             --inv-bg-1: #EBF5FB;
@@ -307,6 +310,12 @@ $urgencias = [
 
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
         <input type="hidden" name="id_institucion" value="<?php echo intval($id_institucion); ?>">
+
+        <!-- Honeypot anti-bot: invisible para personas, algunos bots lo rellenan igual. -->
+        <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+            <label for="sitio_web">Sitio web</label>
+            <input type="text" id="sitio_web" name="sitio_web" tabindex="-1" autocomplete="off">
+        </div>
 
         <!-- ── Sección 1: Datos del reportante ── -->
         <div class="inv-card">
@@ -617,6 +626,13 @@ $urgencias = [
                 <p id="cam-video-error-inv" class="cam-error" style="display:none;"></p>
             </div>
         </div>
+
+        <!-- ── CAPTCHA (Cloudflare Turnstile) ── -->
+        <?php if (!empty($turnstile_site_key)): ?>
+            <div class="inv-submit-wrap">
+                <div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($turnstile_site_key); ?>" data-theme="auto"></div>
+            </div>
+        <?php endif; ?>
 
         <!-- ── Botón enviar ── -->
         <div class="inv-submit-wrap">

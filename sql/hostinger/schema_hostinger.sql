@@ -349,6 +349,7 @@ CREATE TABLE IF NOT EXISTS reporte (
     -- Flags adicionales
     justificacion_anulacion         TEXT                NULL,
     es_reutilizable_solucion        TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'RF-20',
+    marcado_sospechoso              TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'Heurística anti-spam en reportes de invitado; no bloquea, solo marca para revisión',
     fecha_actualizacion             DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP
                                                                  ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id_reporte),

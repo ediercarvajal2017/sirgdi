@@ -74,7 +74,12 @@
                             $horas = round($item['sla_info']['horas_restantes'], 1);
                         ?>
                         <tr class="fila-reporte">
-                            <td class="td-ticket"><?php echo htmlspecialchars($r['numero_ticket']); ?></td>
+                            <td class="td-ticket">
+                                <?php echo htmlspecialchars($r['numero_ticket']); ?>
+                                <?php if (!empty($r['marcado_sospechoso'])): ?>
+                                    <i class="fas fa-triangle-exclamation" style="color:#E67E22; margin-left:4px;" title="El sistema marcó este reporte de invitado con señales de spam. Revisar antes de asignar."></i>
+                                <?php endif; ?>
+                            </td>
                             <td data-sort="<?php echo intval($id_estado); ?>">
                                 <span class="badge-estado <?php echo $clases_estado[$id_estado] ?? ''; ?>">
                                     <?php echo htmlspecialchars($estados_nombres[$id_estado]); ?>

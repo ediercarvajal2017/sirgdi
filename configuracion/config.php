@@ -79,6 +79,12 @@ $security_config = [
 
     // Salt para CSRF tokens
     'csrf_salt' => getenv('CSRF_SALT') ?: bin2hex(random_bytes(16)),
+
+    // CAPTCHA (Cloudflare Turnstile) para el formulario público de reporte de
+    // invitado. Si quedan vacías, el widget no se muestra y la verificación
+    // se omite (no bloquea el formulario mientras no se configure).
+    'turnstile_site_key'   => getenv('TURNSTILE_SITE_KEY') ?: '',
+    'turnstile_secret_key' => getenv('TURNSTILE_SECRET_KEY') ?: '',
 ];
 
 // === SESIÓN ===

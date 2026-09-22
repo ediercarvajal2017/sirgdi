@@ -905,6 +905,7 @@ class ControladorReportes {
             'institucion' => $institucion,
             'id_institucion' => $id_institucion,
             'error' => $_GET['error'] ?? null,
+            'turnstile_site_key' => config('security.turnstile_site_key'),
         ];
 
         $this->renderizar_vista_publica('reportes/vista_crear_reporte_invitado', $datos);
@@ -925,6 +926,14 @@ class ControladorReportes {
             die('Institución requerida.');
         }
 
+        // Honeypot anti-bot: campo oculto por CSS que ningún humano completa.
+        // Se rechaza en silencio (misma redirección que un envío normal) para
+        // no revelar al bot que fue detectado.
+        if (!empty($_POST['sitio_web'])) {
+            $this->redirigir_invitado($id_institucion);
+            exit;
+        }
+
         // Anti-spam: máximo 5 reportes de invitado cada 10 minutos por IP.
         // Cuenta cada intento (éxito o error de validación) para frenar scripts automatizados.
         require_once LIB_PATH . '/limitador_tasa.php';
@@ -935,13 +944,24 @@ class ControladorReportes {
         }
         LimitadorTasa::registrar($clave_rate_limit, 600);
 
+        // CAPTCHA (Cloudflare Turnstile). No bloquea si no está configurado.
+        $turnstile_ok = Validacion::verificar_turnstile(
+            $_POST['cf-turnstile-response'] ?? '',
+            config('security.turnstile_secret_key'),
+            $_SERVER['REMOTE_ADDR'] ?? null
+        );
+        if (!$turnstile_ok) {
+            $this->redirigir_invitado($id_institucion, 'No se pudo verificar que eres una persona. Intenta de nuevo.');
+            exit;
+        }
+
         $nombres   = Validacion::sanitizar_texto($_POST['nombres']   ?? '');
         $apellidos = Validacion::sanitizar_texto($_POST['apellidos']  ?? '');
         $correo    = Validacion::sanitizar_texto($_POST['correo']     ?? '');
         $telefono  = Validacion::sanitizar_texto($_POST['telefono']   ?? '');
 
         $id_sede         = intval($_POST['id_sede']              ?? 0);
-        $area_texto      = trim($_POST['area']                   ?? '');
+        $area_texto      = Validacion::sanitizar_texto($_POST['area'] ?? '');
         $id_categoria    = intval($_POST['id_categoria']         ?? 0);
         $id_subcategoria = intval($_POST['id_subcategoria']      ?? 0);
         $id_urgencia     = intval($_POST['id_urgencia_declarada'] ?? URGENCIA_NO_URGENTE);
@@ -978,6 +998,11 @@ class ControladorReportes {
                 throw new Exception('Sede no válida para esta institución.');
             }
 
+            // Heurística anti-spam: marca (no bloquea) reportes de invitado con
+            // señales de spam para que gestor/rector los revisen con prioridad.
+            $marcado_sospechoso = (Validacion::contiene_spam_probable($descripcion)
+                || Validacion::contiene_spam_probable($area_texto)) ? 1 : 0;
+
             $datos_reporte = [
                 'id_institucion'            => $id_institucion,
                 'id_sede'                   => $id_sede,
@@ -993,6 +1018,7 @@ class ControladorReportes {
                 'correo_reportante'         => $correo ?: null,
                 'telefono_reportante'       => $telefono ?: null,
                 'es_anonimo'                => 0,
+                'marcado_sospechoso'        => $marcado_sospechoso,
             ];
 
             $id_reporte = $this->modelo_reporte->crear($datos_reporte);
@@ -1008,7 +1034,8 @@ class ControladorReportes {
                 $id_reporte,
                 $id_institucion,
                 $reporte['numero_ticket'],
-                $descripcion
+                $descripcion,
+                (bool) $marcado_sospechoso
             );
 
             header('Location: ' . config('app.url_base')

@@ -187,4 +187,98 @@ class Validacion {
         }
         return $_SESSION['csrf_token'];
     }
+
+    /**
+     * Verificar un token de Cloudflare Turnstile contra la API de Cloudflare.
+     * Si $clave_secreta viene vacía (CAPTCHA no configurado aún), no bloquea:
+     * devuelve true para no romper el formulario mientras no se active.
+     */
+    public static function verificar_turnstile($token, $clave_secreta, $ip_remota = null) {
+        if ($clave_secreta === '' || $clave_secreta === null) {
+            return true;
+        }
+        if (empty($token)) {
+            return false;
+        }
+
+        $datos = [
+            'secret'   => $clave_secreta,
+            'response' => $token,
+        ];
+        if ($ip_remota) {
+            $datos['remoteip'] = $ip_remota;
+        }
+
+        $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query($datos),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 8,
+        ]);
+        $respuesta = curl_exec($ch);
+        $fallo_red = curl_errno($ch) !== 0;
+        curl_close($ch);
+
+        if ($fallo_red || $respuesta === false) {
+            // Fallo de red hacia Cloudflare: no bloquear a un usuario legítimo
+            // por una caída del servicio externo.
+            return true;
+        }
+
+        $resultado = json_decode($respuesta, true);
+        return !empty($resultado['success']);
+    }
+
+    /**
+     * Heurística ligera anti-spam para texto libre (RN de moderación de
+     * reportes de invitado). No es un filtro perfecto ni pretende serlo:
+     * su función es marcar reportes sospechosos para revisión prioritaria,
+     * nunca bloquear el envío (evita falsos positivos contra ciudadanos
+     * reales reportando un daño urgente).
+     */
+    public static function contiene_spam_probable($texto) {
+        $texto = (string) $texto;
+        if ($texto === '') {
+            return false;
+        }
+
+        // 1) Demasiados enlaces
+        if (preg_match_all('/\bhttps?:\/\/|\bwww\./i', $texto) >= 2) {
+            return true;
+        }
+
+        // 2) Caracter repetido excesivamente (ej. "aaaaaaaaaa", "!!!!!!!!")
+        if (preg_match('/(.)\1{7,}/u', $texto)) {
+            return true;
+        }
+
+        // 3) Texto largo casi todo en mayúsculas
+        $letras = preg_replace('/[^\p{L}]/u', '', $texto);
+        if (mb_strlen($letras) >= 25) {
+            $mayusculas = preg_replace('/[^\p{Lu}]/u', '', $letras);
+            if (mb_strlen($mayusculas) / mb_strlen($letras) > 0.7) {
+                return true;
+            }
+        }
+
+        // 4) Palabras/frases típicas de spam (lista corta, ampliable)
+        $patrones_spam = [
+            'haz clic aqui', 'haz click aqui', 'gana dinero', 'dinero facil',
+            'prestamo urgente', 'casino', 'viagra', 'oferta exclusiva',
+            'compra ahora', 'suscribete', 'bit.ly', 'tinyurl',
+        ];
+        $normalizado = strtolower(preg_replace(
+            ['/[áàä]/u', '/[éèë]/u', '/[íìï]/u', '/[óòö]/u', '/[úùü]/u'],
+            ['a', 'e', 'i', 'o', 'u'],
+            $texto
+        ));
+        foreach ($patrones_spam as $patron) {
+            if (strpos($normalizado, $patron) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

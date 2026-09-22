@@ -17,12 +17,20 @@ class ServicioNotificacion {
     // ─── API pública ────────────────────────────────────────────────────────
 
     /** RF-08: Nuevo reporte — avisa a Gestor y Rector */
-    public function notificar_nuevo_reporte($id_reporte, $id_institucion, $numero_ticket, $descripcion) {
-        $asunto  = "Nuevo reporte #{$numero_ticket}";
-        $cuerpo  = $this->plantilla('Nuevo Reporte Registrado', [
+    public function notificar_nuevo_reporte($id_reporte, $id_institucion, $numero_ticket, $descripcion, $marcado_sospechoso = false) {
+        $asunto = "Nuevo reporte #{$numero_ticket}";
+        $intro  = 'Se ha registrado un nuevo reporte que requiere atención.';
+        if ($marcado_sospechoso) {
+            $asunto = "[Revisar] Nuevo reporte #{$numero_ticket}";
+            $intro  = '⚠️ Este reporte fue enviado por un remitente sin cuenta y el sistema lo marcó '
+                . 'con señales típicas de spam (enlaces, texto repetido u otro patrón). '
+                . 'Revísalo antes de asignarlo — puede ser legítimo igual, pero conviene verificarlo primero.';
+        }
+
+        $cuerpo = $this->plantilla('Nuevo Reporte Registrado', [
             'Ticket'       => $numero_ticket,
             'Descripción'  => htmlspecialchars(substr($descripcion, 0, 200)),
-        ], 'Se ha registrado un nuevo reporte que requiere atención.');
+        ], $intro);
 
         $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector']);
     }
