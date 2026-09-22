@@ -172,6 +172,21 @@ class BaseDatos {
     }
 
     /**
+     * Iniciar/revertir transacción manualmente (uso: pruebas de integración que
+     * envuelven cada prueba en una transacción y la revierten en tearDown, sin
+     * dejar datos de prueba en la base de datos real).
+     */
+    public function iniciar_transaccion() {
+        $this->pdo->beginTransaction();
+    }
+
+    public function revertir_transaccion() {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
+    }
+
+    /**
      * Ejecutar transacción
      * $callback recibe $this como parámetro
      */
