@@ -56,37 +56,101 @@ class ServicioPrioridad {
      * Escalar a URGENTE si SLA está dentro de 1 hora
      */
     public function evaluar_escalacion_sla($id_reporte, $id_institucion) {
+        $r = $this->revisar_sla($id_reporte, $id_institucion);
+        return $r['escalado'];
+    }
+
+    /**
+     * Revisa el SLA de un reporte: escala la urgencia si procede y avisa.
+     *
+     * Antes, escalar y avisar eran la misma cosa: solo se notificaba cuando la
+     * urgencia subía. Eso dejaba fuera justo el caso más grave — un reporte que
+     * ya estaba en URGENTE y además incumplía su SLA no generaba ningún aviso,
+     * porque no había nada que escalar. En producción había reportes vencidos
+     * por más de 600 horas sin que se avisara a nadie.
+     *
+     * El aviso se manda una sola vez por reporte y por estado de SLA. La marca
+     * se guarda en registro_auditoria, que ya existe y es visible en la
+     * aplicación, en lugar de añadir una tabla nueva solo para esto.
+     *
+     * @return array [estado_sla, escalado, avisado]
+     */
+    public function revisar_sla($id_reporte, $id_institucion) {
         require_once APP_PATH . '/modelos/modelo_sla.php';
+        require_once APP_PATH . '/servicios/servicio_auditoria.php';
         $modelo_sla = new ModeloSLA();
+
+        $resultado = ['estado_sla' => null, 'escalado' => false, 'avisado' => false];
 
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
         if (!$reporte) {
-            return false;
+            return $resultado;
         }
 
         $sla_info = $modelo_sla->calcular_vencimiento($reporte);
+        $estado = $sla_info['estado_sla'] ?? null;
+        $resultado['estado_sla'] = $estado;
 
-        // Si SLA está por vencer o vencido, escalar
-        if (($sla_info['estado_sla'] === 'cerca' || $sla_info['estado_sla'] === 'vencido') &&
-            $reporte['id_urgencia_calculada'] != URGENCIA_URGENTE) {
+        if ($estado !== 'cerca' && $estado !== 'vencido') {
+            return $resultado;
+        }
 
+        $razon = $estado === 'vencido' ? 'SLA vencido' : 'SLA por vencer';
+
+        // 1) Escalar la urgencia, si todavía no está al máximo.
+        if ($reporte['id_urgencia_calculada'] != URGENCIA_URGENTE) {
             $this->modelo_reporte->actualizar($id_reporte, $id_institucion, [
                 'id_urgencia_calculada' => URGENCIA_URGENTE,
             ]);
-
-            $this->registrar_escalacion($id_reporte, $id_institucion, $reporte['id_urgencia_calculada'], URGENCIA_URGENTE, 'SLA por vencer');
-
-            // Notificar
-            if ($sla_info['estado_sla'] === 'vencido') {
-                $this->servicio_notificacion->notificar_sla_vencido($id_reporte, $id_institucion, $reporte['numero_ticket']);
-            } else {
-                $this->servicio_notificacion->notificar_sla_vencimiento_proximo($id_reporte, $id_institucion, $reporte['numero_ticket']);
-            }
-
-            return true;
+            $this->registrar_escalacion(
+                $id_reporte, $id_institucion,
+                $reporte['id_urgencia_calculada'], URGENCIA_URGENTE, $razon
+            );
+            $resultado['escalado'] = true;
         }
 
-        return false;
+        // 2) Avisar, una sola vez por estado de SLA.
+        $accion_aviso = 'aviso_sla_' . $estado;
+        if ($this->ya_avisado($id_reporte, $id_institucion, $accion_aviso)) {
+            return $resultado;
+        }
+
+        if ($estado === 'vencido') {
+            $this->servicio_notificacion->notificar_sla_vencido(
+                $id_reporte, $id_institucion, $reporte['numero_ticket']
+            );
+        } else {
+            $this->servicio_notificacion->notificar_sla_vencimiento_proximo(
+                $id_reporte, $id_institucion, $reporte['numero_ticket']
+            );
+        }
+
+        ServicioAuditoria::registrar(
+            $accion_aviso, 'reporte', $id_reporte, null,
+            ['numero_ticket' => $reporte['numero_ticket'], 'estado_sla' => $estado],
+            ['id_usuario' => null, 'id_institucion' => $id_institucion]
+        );
+
+        $resultado['avisado'] = true;
+        return $resultado;
+    }
+
+    /** ¿Ya se envió este aviso para este reporte? */
+    private function ya_avisado($id_reporte, $id_institucion, $accion) {
+        $fila = $this->bd->obtener_uno(
+            'SELECT 1 AS existe FROM registro_auditoria
+             WHERE accion = :accion AND entidad = :entidad
+               AND id_entidad = :id AND id_institucion = :inst
+             LIMIT 1',
+            [
+                ':accion'  => $accion,
+                ':entidad' => 'reporte',
+                ':id'      => $id_reporte,
+                ':inst'    => $id_institucion,
+            ]
+        );
+
+        return !empty($fila);
     }
 
     /**

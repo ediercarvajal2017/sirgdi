@@ -224,14 +224,40 @@ class ServicioNotificacion {
         $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector']);
     }
 
-    /** SLA vencido — avisa a Gestor, Rector y Admin */
+    /** SLA vencido — avisa a Gestor, Rector y Admin de Institución */
     public function notificar_sla_vencido($id_reporte, $id_institucion, $numero_ticket) {
         $asunto = "🚨 CRÍTICO SLA VENCIDO: Reporte #{$numero_ticket}";
         $cuerpo = $this->plantilla('SLA Vencido', [
             'Ticket' => $numero_ticket,
         ], 'El reporte ha superado el tiempo máximo de atención establecido en el SLA.');
 
-        $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector', 'admin']);
+        // 'admin' no coincidía con nada: enviar_a_roles compara contra
+        // rol.nombre_rol completo, y el rol se llama 'Admin de Institución'.
+        // El aviso más crítico del sistema no le llegaba nunca.
+        $this->enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, ['gestor', 'rector', 'Admin de Institución']);
+    }
+
+    /**
+     * Cuántas personas recibirían un aviso dirigido a estos roles.
+     * El cron lo usa para advertir cuando una institución no tiene a nadie
+     * que pueda recibir las alertas de SLA: sin esto, los avisos se generan
+     * y se descartan sin que nadie lo note.
+     */
+    public function contar_destinatarios_por_roles($id_institucion, array $roles) {
+        if (empty($roles)) return 0;
+
+        $marcadores = implode(',', array_fill(0, count($roles), '?'));
+        $sql = "SELECT COUNT(DISTINCT u.id_usuario) AS n
+                FROM usuario u
+                JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                JOIN rol r          ON r.id_rol = ur.id_rol
+                WHERE u.id_institucion = ? AND u.activo = 1
+                  AND r.nombre_rol IN ({$marcadores})";
+
+        $fila = $this->bd->ejecutar($sql, array_merge([$id_institucion], $roles))
+                         ->fetch(PDO::FETCH_ASSOC);
+
+        return (int)($fila['n'] ?? 0);
     }
 
     /** RF-23: Encuesta de satisfacción enviada al reportante */

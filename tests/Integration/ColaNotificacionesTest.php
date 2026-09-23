@@ -74,6 +74,15 @@ final class ColaNotificacionesTest extends BaseDbTestCase
         // Una fila que ya alcanzó el máximo no debe volver a intentarse:
         // de lo contrario el cron reintentaría para siempre una dirección
         // inválida, en cada ejecución.
+        //
+        // La cola mira toda la tabla, así que primero se vacía de pendientes
+        // dentro de la transacción de la prueba. Sin esto, el resultado
+        // dependería de lo que hubiera en la base de desarrollo en ese momento
+        // (y además intentaría enviar correo de verdad).
+        $this->bd->ejecutar(
+            "UPDATE notificacion SET estado_envio = 'enviado' WHERE estado_envio = 'pendiente'"
+        );
+
         $this->bd->insertar('notificacion', [
             'id_institucion'          => self::ID_INSTITUCION,
             'id_usuario_destinatario' => self::ID_USUARIO,
