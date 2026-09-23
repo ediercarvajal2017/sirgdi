@@ -122,6 +122,43 @@
         </nav>
 
         <div class="header-actions">
+            <?php
+            // Campana: avisos sin leer. Es el canal de respaldo cuando el correo
+            // falla, así que no depende del estado de envío del email.
+            $_no_leidas = 0;
+            if (!empty($_SESSION['id_usuario']) && !empty($_SESSION['id_institucion'])) {
+                require_once APP_PATH . '/servicios/servicio_notificacion.php';
+                try {
+                    $_no_leidas = (new ServicioNotificacion())->contar_no_leidas(
+                        $_SESSION['id_usuario'],
+                        $_SESSION['id_institucion']
+                    );
+                } catch (Throwable $e) {
+                    // Un fallo aquí no debe tumbar la cabecera de todas las pantallas.
+                    $_no_leidas = 0;
+                }
+            }
+            ?>
+            <div class="header-campana" id="campanaDropdown">
+                <button type="button" class="header-campana-btn" onclick="toggleCampana(event)"
+                        aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-bell"></i>
+                    <span class="header-campana-badge<?php echo $_no_leidas ? '' : ' oculto'; ?>"
+                          id="campanaBadge"><?php echo $_no_leidas > 99 ? '99+' : (int)$_no_leidas; ?></span>
+                </button>
+                <div class="header-campana-panel" id="campanaPanel">
+                    <div class="header-campana-cabecera">
+                        <span>Notificaciones</span>
+                        <button type="button" class="header-campana-todas" onclick="marcarTodasLeidas(event)">
+                            Marcar todas
+                        </button>
+                    </div>
+                    <ul class="header-campana-lista" id="campanaLista">
+                        <li class="header-campana-cargando">Cargando…</li>
+                    </ul>
+                </div>
+            </div>
+
             <div class="header-user-dropdown" id="userDropdown">
                 <button type="button" class="header-user-info" onclick="toggleUserMenu(event)">
                     <i class="fas fa-user-circle"></i>
@@ -317,6 +354,151 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.3px;
+    }
+
+    /* ── Campana de notificaciones ─────────────────────────────── */
+    .header-campana { position: relative; flex-shrink: 0; }
+
+    .header-campana-btn {
+        position: relative;
+        background: none;
+        border: none;
+        font-size: 19px;
+        color: var(--dark-text);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        line-height: 1;
+        /* 44px de área táctil aunque el icono sea pequeño */
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .header-campana-btn:hover { background: var(--color-bg-hover); color: var(--color-primary); }
+    }
+
+    .header-campana-badge {
+        position: absolute;
+        top: 4px;
+        right: 2px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: var(--color-danger, #e74c3c);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 18px;
+        text-align: center;
+    }
+
+    .header-campana-badge.oculto { display: none; }
+
+    .header-campana-panel {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        width: 330px;
+        max-width: calc(100vw - 32px);
+        background: var(--color-bg-elevated);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(44, 62, 80, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-6px);
+        transition: all 0.2s ease;
+        z-index: 1100;
+        overflow: hidden;
+    }
+
+    .header-campana.open .header-campana-panel {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .header-campana-cabecera {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--color-border-subtle);
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--color-text);
+    }
+
+    .header-campana-todas {
+        background: none;
+        border: none;
+        color: var(--color-primary);
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 6px;
+    }
+
+    .header-campana-lista {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .header-campana-lista li { border-bottom: 1px solid var(--color-border-subtle); }
+    .header-campana-lista li:last-child { border-bottom: none; }
+
+    .header-campana-lista a {
+        display: block;
+        padding: 11px 14px;
+        text-decoration: none;
+        color: var(--color-text);
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .header-campana-lista a:hover { background: var(--color-bg-hover); }
+    }
+
+    .header-campana-lista .campana-fecha {
+        display: block;
+        margin-top: 3px;
+        font-size: 11.5px;
+        color: var(--color-text-muted);
+    }
+
+    .header-campana-vacio,
+    .header-campana-cargando {
+        padding: 22px 14px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--color-text-muted);
+    }
+
+    /* En móvil el panel medía 330px anclado a un botón pegado al borde
+       derecho, así que su lado izquierdo se salía de la pantalla. Se ancla al
+       header completo y se estira entre los dos márgenes.
+       El contenedor pasa a estático para eso; el globo del contador sigue en
+       su sitio porque se ancla al botón, que sí está posicionado. */
+    @media (max-width: 768px) {
+        .header-campana { position: static; }
+
+        .header-campana-panel {
+            left: 16px;
+            right: 16px;
+            width: auto;
+            max-width: none;
+        }
     }
 
     .header-user-menu {
@@ -779,7 +961,12 @@
     }
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') cerrarMobileNav();
+        if (e.key !== 'Escape') return;
+        cerrarMobileNav();
+        var camp = document.getElementById('campanaDropdown');
+        if (camp) camp.classList.remove('open');
+        var dd = document.getElementById('userDropdown');
+        if (dd) dd.classList.remove('open');
     });
 
     // Menú desplegable del usuario (clic en el nombre)
@@ -789,11 +976,102 @@
         if (dd) dd.classList.toggle('open');
     }
 
+    // ── Campana de notificaciones ──────────────────────────────────
+    var campanaCargada = false;
+    var campanaBaseUrl = '<?php echo config('app.url_base'); ?>';
+    var campanaCsrf = '<?php
+        // No todas las pantallas generan token (solo las que traen formulario),
+        // y "marcar todas" es un POST que sí lo exige. generar_csrf_token() lo
+        // crea únicamente si falta, así que no invalida el de un formulario ya
+        // pintado en esta misma página.
+        require_once LIB_PATH . '/validacion.php';
+        echo htmlspecialchars(Validacion::generar_csrf_token(), ENT_QUOTES);
+    ?>';
+
+    function toggleCampana(e) {
+        e.stopPropagation();
+        var c = document.getElementById('campanaDropdown');
+        if (!c) return;
+
+        var abierta = c.classList.toggle('open');
+        var btn = c.querySelector('.header-campana-btn');
+        if (btn) btn.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+
+        // Se piden al abrir, no en cada carga de página: la cabecera ya trae
+        // el contador, que es lo único que se necesita para pintar el globo.
+        if (abierta && !campanaCargada) cargarNotificaciones();
+    }
+
+    function cargarNotificaciones() {
+        var lista = document.getElementById('campanaLista');
+        if (!lista) return;
+
+        fetch(campanaBaseUrl + '/?controlador=notificaciones&accion=listar', {
+            credentials: 'same-origin'
+        })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function (data) {
+            campanaCargada = true;
+            lista.innerHTML = '';
+
+            if (!data.items || data.items.length === 0) {
+                lista.innerHTML = '<li class="header-campana-vacio">No tienes avisos sin leer</li>';
+                return;
+            }
+
+            data.items.forEach(function (n) {
+                var li = document.createElement('li');
+                var a = document.createElement('a');
+                a.href = campanaBaseUrl + '/?controlador=notificaciones&accion=abrir&id='
+                       + encodeURIComponent(n.id)
+                       + (n.reporte ? '&reporte=' + encodeURIComponent(n.reporte) : '');
+                a.textContent = n.asunto;
+
+                var fecha = document.createElement('span');
+                fecha.className = 'campana-fecha';
+                fecha.textContent = n.fecha;
+                a.appendChild(fecha);
+
+                li.appendChild(a);
+                lista.appendChild(li);
+            });
+        })
+        .catch(function () {
+            lista.innerHTML = '<li class="header-campana-vacio">No se pudieron cargar los avisos</li>';
+        });
+    }
+
+    function marcarTodasLeidas(e) {
+        e.stopPropagation();
+
+        var cuerpo = new FormData();
+        cuerpo.append('csrf_token', campanaCsrf);
+
+        fetch(campanaBaseUrl + '/?controlador=notificaciones&accion=marcar_todas', {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: cuerpo
+        })
+        .then(function () {
+            var badge = document.getElementById('campanaBadge');
+            if (badge) { badge.textContent = '0'; badge.classList.add('oculto'); }
+            var lista = document.getElementById('campanaLista');
+            if (lista) lista.innerHTML = '<li class="header-campana-vacio">No tienes avisos sin leer</li>';
+        })
+        .catch(function () { /* si falla, al recargar la página se verá el estado real */ });
+    }
+
     // Cerrar los menús al hacer clic fuera de ellos
     document.addEventListener('click', function(e) {
         const dd = document.getElementById('userDropdown');
         if (dd && dd.classList.contains('open') && !dd.contains(e.target)) {
             dd.classList.remove('open');
+        }
+        const camp = document.getElementById('campanaDropdown');
+        if (camp && camp.classList.contains('open') && !camp.contains(e.target)) {
+            camp.classList.remove('open');
+            var b = camp.querySelector('.header-campana-btn');
+            if (b) b.setAttribute('aria-expanded', 'false');
         }
         document.querySelectorAll('.nav-dropdown.open').forEach(nd => {
             if (!nd.contains(e.target)) nd.classList.remove('open');

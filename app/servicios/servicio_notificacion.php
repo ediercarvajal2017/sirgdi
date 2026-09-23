@@ -310,19 +310,99 @@ class ServicioNotificacion {
         $this->enviar_email($email, $nombre, $asunto, $cuerpo, null, null, 'reset_password', false);
     }
 
-    /** Obtener notificaciones pendientes de un usuario (para campana in-app) */
-    public function obtener_pendientes($id_usuario, $id_institucion) {
-        $sql = 'SELECT * FROM notificacion
-                WHERE id_institucion = :inst
-                  AND id_usuario_destinatario = :usu
-                  AND estado_envio = "pendiente"
-                ORDER BY fecha_creacion DESC
-                LIMIT 50';
+    /**
+     * Notificaciones sin leer de un usuario, para la campana.
+     *
+     * Deliberadamente NO filtra por estado_envio. La versión anterior
+     * (obtener_pendientes) sí lo hacía, lo que dejaba la campana al revés de
+     * como debe funcionar: mostraba solo los avisos cuyo correo había fallado,
+     * y los hacía desaparecer en cuanto el envío salía bien.
+     *
+     * Que sea independiente del correo es justo lo que convierte a la campana
+     * en la red de seguridad cuando el SMTP se cae: el técnico ve que le
+     * asignaron trabajo aunque el correo no llegue nunca.
+     */
+    public function obtener_no_leidas($id_usuario, $id_institucion, $limite = 15) {
+        $limite = max(1, min((int)$limite, 50));
 
-        return $this->bd->obtener_todos($sql, [
-            ':inst' => $id_institucion,
-            ':usu'  => $id_usuario,
-        ]);
+        return $this->bd->obtener_todos(
+            'SELECT id_notificacion, id_reporte, tipo_evento, asunto, fecha_creacion
+             FROM notificacion
+             WHERE id_institucion = :inst
+               AND id_usuario_destinatario = :usu
+               AND fecha_leida IS NULL
+             ORDER BY fecha_creacion DESC
+             LIMIT ' . $limite,
+            [':inst' => $id_institucion, ':usu' => $id_usuario]
+        );
+    }
+
+    /** Cuántas notificaciones sin leer tiene el usuario (para el contador). */
+    public function contar_no_leidas($id_usuario, $id_institucion) {
+        $fila = $this->bd->obtener_uno(
+            'SELECT COUNT(*) AS n FROM notificacion
+             WHERE id_institucion = :inst
+               AND id_usuario_destinatario = :usu
+               AND fecha_leida IS NULL',
+            [':inst' => $id_institucion, ':usu' => $id_usuario]
+        );
+
+        return (int)($fila['n'] ?? 0);
+    }
+
+    /**
+     * Marca una notificación como leída.
+     * El id de usuario e institución van en el WHERE, no solo en la búsqueda
+     * previa: así nadie puede marcar como leída la notificación de otro
+     * manipulando el id de la URL.
+     */
+    public function marcar_leida($id_notificacion, $id_usuario, $id_institucion) {
+        return $this->bd->ejecutar(
+            'UPDATE notificacion SET fecha_leida = NOW()
+             WHERE id_notificacion = ? AND id_usuario_destinatario = ?
+               AND id_institucion = ? AND fecha_leida IS NULL',
+            [$id_notificacion, $id_usuario, $id_institucion]
+        );
+    }
+
+    /** Marca todas las del usuario como leídas. */
+    public function marcar_todas_leidas($id_usuario, $id_institucion) {
+        return $this->bd->ejecutar(
+            'UPDATE notificacion SET fecha_leida = NOW()
+             WHERE id_usuario_destinatario = ? AND id_institucion = ? AND fecha_leida IS NULL',
+            [$id_usuario, $id_institucion]
+        );
+    }
+
+    /**
+     * Correo de aviso al responsable técnico de la plataforma (no a un usuario
+     * de una institución). Lo usa el cron de salud para reportar problemas que
+     * de otro modo solo se verían entrando por SSH a mirar los logs.
+     *
+     * No se registra en la tabla notificacion: esa tabla es de avisos a
+     * usuarios del sistema, y estos van a quien opera la plataforma.
+     *
+     * El destino sale de ALERTA_EMAIL, o BACKUP_ALERTA_EMAIL (ya se usaba para
+     * los fallos de respaldo), o en último caso el remitente configurado.
+     */
+    public function enviar_alerta_administrador($asunto, $cuerpo_html) {
+        $destino = getenv('ALERTA_EMAIL')
+            ?: (getenv('BACKUP_ALERTA_EMAIL') ?: ($this->smtp['from_email'] ?? ''));
+
+        if (empty($destino)) {
+            $this->log('No hay destinatario para alertas de administración');
+            return false;
+        }
+
+        $error = $this->enviar_smtp($destino, 'Administración', $asunto, $cuerpo_html);
+
+        if ($error === null) {
+            $this->log("ALERTA ADMIN enviada a {$destino} [{$asunto}]");
+            return true;
+        }
+
+        $this->log("ALERTA ADMIN fallida a {$destino}: {$error}");
+        return false;
     }
 
     /** Marcar notificación como enviada */

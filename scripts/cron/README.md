@@ -15,7 +15,8 @@ fuera de la línea de comandos.
 | Script | Frecuencia sugerida | Qué hace |
 |---|---|---|
 | `evaluar_sla.php` | cada hora | Recorre los reportes abiertos de cada institución activa. Si el SLA está por vencer o ya venció, escala la urgencia a URGENTE, lo anota en auditoría y avisa por correo a gestor, rector y admin. |
-| `enviar_notificaciones_pendientes.php` | cada 15 minutos | Reintenta los correos que no salieron. Anota el motivo y el número de intentos; tras 5 intentos marca la notificación como `fallido` y deja de insistir. |
+| `enviar_notificaciones_pendientes.php` | cada 15 minutos | Reintenta los correos que no salieron. Anota el motivo y el número de intentos; tras 5 intentos marca la notificación como `fallido` y deja de insistir. Lo que lleva más de 48 h sin poder enviarse caduca en vez de entregarse tarde. |
+| `revisar_salud.php` | una vez al día | Reúne los problemas de las últimas 24 h y manda **un** correo si hay algo que mirar. Si todo está bien no escribe a nadie. |
 
 Ambos usan un candado de archivo, así que dos ejecuciones no se pisan si una
 tarda más que su intervalo.
@@ -41,6 +42,12 @@ despliegue actual, así que se pegan tal cual.
 /usr/bin/php /home/u397951547/domains/jlcserviciosintegrales.com/public_html/mto/scripts/cron/enviar_notificaciones_pendientes.php >/dev/null 2>&1
 ```
 
+**Revisión de salud — una vez al día:**
+
+```
+/usr/bin/php /home/u397951547/domains/jlcserviciosintegrales.com/public_html/mto/scripts/cron/revisar_salud.php >/dev/null 2>&1
+```
+
 Si el panel pide la frecuencia por separado en vez de una línea de cron, usar
 "Cada hora" para el primero y "Cada 15 minutos" para el segundo.
 
@@ -57,10 +64,25 @@ Cada script deja su propio archivo en `almacenamiento/logs/`:
 - `cron_sla.log` — cuántos reportes se revisaron y cuáles se escalaron
 - `cron_notificaciones.log` — cuántos correos salieron, fallaron o se dieron
   por perdidos
+- `cron_salud.log` — qué problemas se detectaron y si el aviso llegó a salir
 
 Ojo: `almacenamiento/logs/` está en `.gitignore`, así que estos archivos viven
 solo en el servidor. Si una notificación aparece como `fallido`, el motivo
 concreto queda en la columna `razon_fallo` de la tabla `notificacion`.
+
+## A quién llegan las alertas de salud
+
+`revisar_salud.php` escribe al primero de estos que esté definido en el `.env`:
+
+1. `ALERTA_EMAIL`
+2. `BACKUP_ALERTA_EMAIL` (ya se usaba para los fallos de respaldo)
+3. el remitente configurado en `SMTP_FROM_EMAIL`
+
+Qué vigila: correos que no llegaron, errores de base de datos, instituciones
+sin Gestor ni Rector, reportes abiertos más de 3 días sin técnico, y si el
+respaldo lleva más de 48 horas sin ejecutarse. Esto último importa porque la
+alerta de respaldo solo salta si el respaldo **se ejecuta** y falla; si la
+tarea desaparece del panel, nadie se enteraría.
 
 ## Probar a mano antes de confiar en el cron
 
@@ -69,6 +91,7 @@ Conectado por SSH, desde la raíz del sitio:
 ```bash
 php scripts/cron/evaluar_sla.php
 php scripts/cron/enviar_notificaciones_pendientes.php
+php scripts/cron/revisar_salud.php
 ```
 
 Ambos imprimen un resumen y terminan con código 0 si todo fue bien.
