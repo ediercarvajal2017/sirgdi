@@ -180,11 +180,11 @@
     .tabla-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
     .buscador { position:relative; flex:1; max-width:420px; }
     .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:14px; }
-    .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--color-primary); border-radius:8px; font-size:14px; background:var(--color-bg-subtle); color:var(--color-text); box-sizing:border-box; }
+    .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--color-primary); border-radius:8px; font-size:16px; background:var(--color-bg-subtle); color:var(--color-text); box-sizing:border-box; }
     .buscador input:focus { outline:none; border-color:var(--color-primary-dark); background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
     .filtro-estado-wrap { position:relative; display:flex; align-items:center; }
     .filtro-estado-wrap i { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:13px; pointer-events:none; }
-    .filtro-estado-wrap select { appearance:none; -webkit-appearance:none; padding:11px 36px 11px 36px; border:2px solid var(--color-primary); border-radius:8px; font-size:14px; background:var(--color-bg-subtle); color:var(--color-text); cursor:pointer; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237F8C8D' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; }
+    .filtro-estado-wrap select { appearance:none; -webkit-appearance:none; padding:11px 36px 11px 36px; border:2px solid var(--color-primary); border-radius:8px; font-size:16px; background:var(--color-bg-subtle); color:var(--color-text); cursor:pointer; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237F8C8D' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>"); background-repeat:no-repeat; background-position:right 12px center; }
     .filtro-estado-wrap select:focus { outline:none; border-color:var(--color-primary-dark); background-color:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
     .total-reportes { color:var(--color-text-muted); font-size:14px; }
     .total-reportes strong { color:var(--color-text); }
@@ -682,8 +682,8 @@
         font-size: 24px;
         cursor: pointer;
         color: var(--gray-text);
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         display: flex;
         align-items: center;

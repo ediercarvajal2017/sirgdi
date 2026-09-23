@@ -172,7 +172,7 @@ function icono_aud($accion, $mapa) {
     .aud-filtros { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; background: var(--color-bg-elevated); padding: 18px 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(52,152,219,.08); margin-bottom: 16px; }
     .aud-campo { display: flex; flex-direction: column; gap: 5px; }
     .aud-campo label { font-size: 12px; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .3px; }
-    .aud-campo input { padding: 10px 12px; border: 2px solid var(--color-border); border-radius: 8px; font-size: 14px; background: var(--color-bg-subtle); color: var(--color-text); }
+    .aud-campo input { padding: 10px 12px; border: 2px solid var(--color-border); border-radius: 8px; font-size: 16px; background: var(--color-bg-subtle); color: var(--color-text); }
     .aud-campo input:focus { outline: none; border-color: var(--color-primary); background: var(--color-bg-elevated); }
     .aud-acciones-filtro { display: flex; gap: 8px; }
 
@@ -190,13 +190,13 @@ function icono_aud($accion, $mapa) {
     .tabla-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
     .tabla-toolbar .buscador { position:relative; flex:1; max-width:420px; }
     .tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:14px; }
-    .tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--color-bg-subtle); color:var(--color-text); box-sizing:border-box; }
+    .tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:16px; background:var(--color-bg-subtle); color:var(--color-text); box-sizing:border-box; }
     .tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
     .toolbar-derecha { display:flex; align-items:center; gap:14px; }
     .total-auditoria { color:var(--color-text-muted); font-size:14px; }
     .total-auditoria strong { color:var(--color-text); }
 
-    .aud-tabla-wrap { background: var(--color-bg-elevated); border-radius: 10px; box-shadow: 0 2px 12px rgba(52,152,219,.08); overflow: hidden; }
+    .aud-tabla-wrap { background: var(--color-bg-elevated); border-radius: 10px; box-shadow: 0 2px 12px rgba(52,152,219,.08); overflow: auto; }
     .tabla-auditoria { width: 100%; border-collapse: collapse; }
     .tabla-auditoria thead th { background: var(--color-bg-subtle); color: var(--color-text); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; text-align: left; padding: 14px 16px; border-bottom: 2px solid var(--color-border); white-space: nowrap; }
     .tabla-auditoria th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }

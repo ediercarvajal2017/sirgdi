@@ -253,7 +253,7 @@ $base = config('app.url_base');
 
     .seg-info { color:var(--color-text-muted); font-size:13.5px; margin:0 0 10px; }
     .seg-link-row { display:flex; gap:10px; flex-wrap:wrap; }
-    .input-modern { flex:1; min-width:220px; padding:11px 14px; border:2px solid var(--color-border); background:var(--color-bg-subtle); color:var(--color-text); border-radius:8px; font-size:13px; box-sizing:border-box; }
+    .input-modern { flex:1; min-width:220px; padding:11px 14px; border:2px solid var(--color-border); background:var(--color-bg-subtle); color:var(--color-text); border-radius:8px; font-size:16px; box-sizing:border-box; }
     .tracking-link { font-family:'Courier New',monospace; }
 
     .det-actions { display:flex; gap:14px; margin-top:8px; flex-wrap:wrap; }

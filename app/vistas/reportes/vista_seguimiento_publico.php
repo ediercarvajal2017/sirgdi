@@ -501,7 +501,7 @@
             border-radius: 10px;
             padding: 12px 14px;
             font-family: inherit;
-            font-size: 13px;
+            font-size: 16px;
             color: var(--text);
             background: var(--bg);
             resize: vertical;

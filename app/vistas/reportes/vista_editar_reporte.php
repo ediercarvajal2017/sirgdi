@@ -127,7 +127,7 @@
     .form-group { margin-bottom: 16px; }
     .form-group label { display:block; font-weight:600; margin-bottom:8px; color:var(--color-text); font-size:14px; }
     .required { color: var(--color-danger); }
-    .input-modern { width:100%; padding:12px 14px; border:2px solid var(--color-border); background:var(--color-bg-subtle); color:var(--color-text); border-radius:8px; font-size:15px; font-family:inherit; transition:all .25s; box-sizing:border-box; }
+    .input-modern { width:100%; padding:12px 14px; border:2px solid var(--color-border); background:var(--color-bg-subtle); color:var(--color-text); border-radius:8px; font-size:16px; font-family:inherit; transition:all .25s; box-sizing:border-box; }
     .input-modern:focus { outline:none; border-color:#3498DB; background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.12); }
     textarea.input-modern { resize:vertical; }
     .form-group small { display:flex; align-items:center; gap:6px; color:var(--color-text-muted); font-size:12.5px; margin-top:6px; }

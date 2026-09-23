@@ -452,7 +452,8 @@
         z-index: 1000;
     }
 
-    .nav-dropdown:hover .dropdown-menu {
+    .nav-dropdown:hover .dropdown-menu,
+    .nav-dropdown.open .dropdown-menu {
         display: block;
     }
 
@@ -597,9 +598,18 @@
 </style>
 
 <script>
+    // Menús REPORTES/CONFIGURACIÓN: antes solo abrían por :hover (CSS), que no
+    // existe de forma confiable en pantallas táctiles. Ahora también alternan
+    // por clic/tap, igual que el menú de usuario.
     document.querySelectorAll('[data-toggle="dropdown"]').forEach(trigger => {
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            const parent = trigger.closest('.nav-dropdown');
+            if (!parent) return;
+            const yaAbierto = parent.classList.contains('open');
+            document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'));
+            if (!yaAbierto) parent.classList.add('open');
         });
     });
 
@@ -610,12 +620,15 @@
         if (dd) dd.classList.toggle('open');
     }
 
-    // Cerrar el menú al hacer clic fuera de él
+    // Cerrar los menús al hacer clic fuera de ellos
     document.addEventListener('click', function(e) {
         const dd = document.getElementById('userDropdown');
         if (dd && dd.classList.contains('open') && !dd.contains(e.target)) {
             dd.classList.remove('open');
         }
+        document.querySelectorAll('.nav-dropdown.open').forEach(nd => {
+            if (!nd.contains(e.target)) nd.classList.remove('open');
+        });
     });
 </script>
 

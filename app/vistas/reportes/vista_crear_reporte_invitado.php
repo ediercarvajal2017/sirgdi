@@ -158,7 +158,7 @@ $urgencias = [
             width: 100%; padding: 11px 14px;
             border: 2px solid var(--inv-input-border, #D6EAF8);
             border-radius: 8px;
-            font-family: inherit; font-size: 14px;
+            font-family: inherit; font-size: 16px;
             background: var(--inv-input-bg, #F8FBFC); color: var(--inv-text);
             transition: border-color .25s, box-shadow .25s;
         }
@@ -223,7 +223,7 @@ $urgencias = [
         .ev-preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px; margin-bottom:10px; }
         .ev-preview-item { position:relative; border-radius:10px; overflow:hidden; background:var(--inv-input-bg); aspect-ratio:1; box-shadow:0 2px 8px rgba(0,0,0,.08); }
         .ev-preview-item img, .ev-preview-item video { width:100%; height:100%; object-fit:cover; display:block; }
-        .ev-preview-item .ev-remove { position:absolute; top:5px; right:5px; background:rgba(231,76,60,.9); color:#fff; border:none; border-radius:50%; width:24px; height:24px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; }
+        .ev-preview-item .ev-remove { position:absolute; top:4px; right:4px; background:rgba(231,76,60,.9); color:#fff; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
         .ev-preview-item .ev-remove:hover { background:#E74C3C; }
         .ev-preview-item .ev-label { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.5); color:#fff; font-size:10px; padding:3px 6px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .ev-hint { font-size:11.5px; color:var(--inv-text-muted); display:flex; align-items:center; gap:5px; margin-top:4px; }

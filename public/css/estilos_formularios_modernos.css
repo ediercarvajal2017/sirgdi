@@ -11,7 +11,10 @@
     color: var(--color-text) !important;
     border-radius: 8px !important;
     padding: 12px 15px !important;
-    font-size: 15px !important;
+    /* 16px mínimo: por debajo de esto, Safari/iOS hace zoom automático al
+       enfocar el campo. Este !important gana la cascada sobre cualquier
+       regla local de 16px, así que se corrige aquí en la fuente. */
+    font-size: 16px !important;
     transition: all 0.3s ease !important;
 }
 
@@ -60,7 +63,7 @@
     padding: 12px 15px;
     border: 2px solid var(--light-blue);
     border-radius: 8px;
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     transition: all 0.3s ease;
     background-color: var(--color-bg-subtle);

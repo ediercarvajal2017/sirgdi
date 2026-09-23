@@ -336,7 +336,7 @@ select.input-modern {
 .tabla-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
 .tabla-toolbar .buscador { position:relative; flex:1; max-width:420px; }
 .tabla-toolbar .buscador i { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--color-text-muted); font-size:14px; }
-.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:14px; background:var(--light-bg); color:var(--color-text); box-sizing:border-box; }
+.tabla-toolbar .buscador input { width:100%; padding:11px 14px 11px 40px; border:2px solid var(--primary-blue); border-radius:8px; font-size:16px; background:var(--light-bg); color:var(--color-text); box-sizing:border-box; }
 .tabla-toolbar .buscador input:focus { outline:none; border-color:var(--dark-blue); background:var(--color-bg-elevated); box-shadow:0 0 0 4px rgba(52,152,219,.1); }
 .total-sla { color:var(--color-text-muted); font-size:14px; }
 .total-sla strong { color:var(--dark-text); }
