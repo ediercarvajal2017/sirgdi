@@ -681,6 +681,23 @@ textarea.form-control {
    (íconos/botones) pueden omitir data-label para no mostrar una etiqueta.
    Breakpoint unificado del sistema: 768px (tablet hacia abajo). */
 @media (max-width: 768px) {
+    /* En modo tarjetas el contenido crece mucho en alto. Si el contenedor
+       conserva su max-height con scroll interno, solo se ve el primer bloque
+       y el resto queda atrapado en un scroll anidado que en un teléfono es
+       difícil de descubrir y pelea con el scroll de la página. */
+    .tabla-responsive-wrap {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Las columnas fijas (sticky) y los min-width son para el layout de
+       tabla con scroll horizontal; en tarjetas sobran y desbordan. */
+    .tabla-responsive-wrap td,
+    .tabla-responsive-wrap th {
+        position: static !important;
+        min-width: 0 !important;
+    }
+
     .tabla-responsive-wrap table,
     .tabla-responsive-wrap thead,
     .tabla-responsive-wrap tbody,
