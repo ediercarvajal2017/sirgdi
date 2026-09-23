@@ -6,6 +6,9 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as MailException;
 
 class ServicioNotificacion {
+    /** Intentos de envio antes de dar una notificacion por perdida. */
+    const MAX_INTENTOS_ENVIO = 5;
+
     private $bd;
     private $smtp;
 
@@ -378,16 +381,35 @@ class ServicioNotificacion {
             ? $this->registrar_en_bd($id_institucion, $id_reporte, $asunto, $cuerpo_html, $tipo_evento, $id_usuario_dest)
             : null;
 
-        // Si no hay SMTP configurado, solo loggear
+        $error = $this->enviar_smtp($destino, $nombre_dest, $asunto, $cuerpo_html);
+
+        if ($error === null) {
+            if ($id_notif) $this->marcar_enviada($id_notif);
+            $this->log("OK: {$destino} [{$asunto}]");
+            return true;
+        }
+
+        // El fallo queda anotado en la fila: así el reintento por cron sabe
+        // cuántas veces se ha probado y por qué falló. Antes el valor de
+        // retorno se descartaba y la notificación se perdía en silencio.
+        if ($id_notif) $this->registrar_fallo($id_notif, $error);
+        $this->log("ERROR enviando a {$destino}: {$error}");
+        return false;
+    }
+
+    /**
+     * Envío SMTP puro, sin tocar la base de datos.
+     * Devuelve null si se envió, o el motivo del fallo como texto.
+     * Lo usan tanto el envío en caliente como el reintento por cron.
+     */
+    private function enviar_smtp($destino, $nombre_dest, $asunto, $cuerpo_html) {
         if (empty($this->smtp['username'])) {
-            $this->log("SMTP no configurado — email no enviado a {$destino} [{$asunto}]");
-            return false;
+            return 'SMTP no configurado (falta SMTP_USER en el .env)';
         }
 
         $autoload = ROOT_PATH . '/vendor/autoload.php';
         if (!file_exists($autoload)) {
-            $this->log("vendor/autoload.php no encontrado — instalar dependencias con: composer install");
-            return false;
+            return 'vendor/autoload.php no encontrado — ejecutar composer install';
         }
         require_once $autoload;
 
@@ -412,15 +434,92 @@ class ServicioNotificacion {
             $mail->AltBody = strip_tags(str_replace(['<br>', '<br/>'], "\n", $cuerpo_html));
 
             $mail->send();
-
-            if ($id_notif) $this->marcar_enviada($id_notif);
-            $this->log("OK: {$destino} [{$asunto}]");
-            return true;
+            return null;
 
         } catch (MailException $e) {
-            $this->log("ERROR enviando a {$destino}: " . $e->getMessage());
-            return false;
+            return $e->getMessage();
         }
+    }
+
+    /**
+     * Anota un intento fallido. Al llegar a $max_intentos la fila pasa a
+     * 'fallido' y el cron deja de reintentarla.
+     */
+    public function registrar_fallo($id_notificacion, $razon, $max_intentos = self::MAX_INTENTOS_ENVIO) {
+        $fila = $this->bd->obtener_uno(
+            'SELECT intentos FROM notificacion WHERE id_notificacion = :id',
+            [':id' => $id_notificacion]
+        );
+        $intentos = (int)($fila['intentos'] ?? 0) + 1;
+
+        $this->bd->actualizar(
+            'notificacion',
+            [
+                'intentos'     => $intentos,
+                'razon_fallo'  => mb_substr((string)$razon, 0, 1000),
+                'estado_envio' => $intentos >= $max_intentos ? 'fallido' : 'pendiente',
+            ],
+            'id_notificacion = :id',
+            [':id' => $id_notificacion]
+        );
+
+        return $intentos;
+    }
+
+    /**
+     * Reintenta las notificaciones que quedaron sin enviar.
+     *
+     * El envío normal es síncrono: si el SMTP está caído en ese momento, el
+     * correo se perdía para siempre porque nada volvía a intentarlo. La tabla
+     * ya estaba preparada para esto (índice idx_noti_cola, columnas intentos y
+     * razon_fallo); solo faltaba quien la recorriera.
+     *
+     * @return array Resumen: procesadas, enviadas, fallidas, agotadas.
+     */
+    public function reintentar_pendientes($limite = 50, $max_intentos = self::MAX_INTENTOS_ENVIO) {
+        $limite = max(1, min((int)$limite, 200));
+
+        $pendientes = $this->bd->obtener_todos(
+            'SELECT id_notificacion, id_usuario_destinatario, asunto, cuerpo_html, intentos
+             FROM notificacion
+             WHERE estado_envio = :estado AND intentos < :max
+             ORDER BY fecha_programada ASC
+             LIMIT ' . $limite,
+            [':estado' => 'pendiente', ':max' => $max_intentos]
+        );
+
+        $resumen = ['procesadas' => 0, 'enviadas' => 0, 'fallidas' => 0, 'agotadas' => 0];
+
+        foreach ($pendientes as $n) {
+            $resumen['procesadas']++;
+            $usuario = $this->obtener_usuario($n['id_usuario_destinatario']);
+
+            if (!$usuario || empty($usuario['correo_electronico'])) {
+                $intentos = $this->registrar_fallo($n['id_notificacion'], 'Destinatario sin correo', $max_intentos);
+                $resumen[$intentos >= $max_intentos ? 'agotadas' : 'fallidas']++;
+                continue;
+            }
+
+            $error = $this->enviar_smtp(
+                $usuario['correo_electronico'],
+                $usuario['nombre_completo'] ?? '',
+                $n['asunto'],
+                $n['cuerpo_html']
+            );
+
+            if ($error === null) {
+                $this->marcar_enviada($n['id_notificacion']);
+                $this->log("REINTENTO OK: {$usuario['correo_electronico']} [{$n['asunto']}]");
+                $resumen['enviadas']++;
+                continue;
+            }
+
+            $intentos = $this->registrar_fallo($n['id_notificacion'], $error, $max_intentos);
+            $this->log("REINTENTO FALLO ({$intentos}/{$max_intentos}): {$usuario['correo_electronico']} — {$error}");
+            $resumen[$intentos >= $max_intentos ? 'agotadas' : 'fallidas']++;
+        }
+
+        return $resumen;
     }
 
     /**

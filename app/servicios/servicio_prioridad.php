@@ -176,33 +176,22 @@ class ServicioPrioridad {
      * Registrar escalación en auditoría
      */
     private function registrar_escalacion($id_reporte, $id_institucion, $urgencia_anterior, $urgencia_nueva, $razon) {
-        $datos_escalacion = [
-            'id_reporte' => $id_reporte,
-            'id_institucion' => $id_institucion,
-            'urgencia_anterior' => $urgencia_anterior,
-            'urgencia_nueva' => $urgencia_nueva,
-            'razon_escalacion' => $razon,
-            'id_usuario_sistema' => null, // Escalación automática
-            'fecha_hora_escalacion' => date('Y-m-d H:i:s'),
-        ];
+        // Antes esto insertaba en una tabla `escalacion_urgencia` que nunca
+        // llegó a crearse (no está en el esquema ni en producción), y el fallo
+        // se tragaba con @error_log: las escalaciones no dejaban rastro alguno.
+        // Se registran en registro_auditoria, que sí existe, ya se usa y tiene
+        // pantalla propia en la aplicación, así que el gestor puede verlas.
+        require_once APP_PATH . '/servicios/servicio_auditoria.php';
 
-        // Crear tabla de auditoría si no existe (o insertar en auditoría existente)
-        $sql = 'INSERT INTO escalacion_urgencia (id_reporte, id_institucion, urgencia_anterior, urgencia_nueva, razon_escalacion, fecha_hora_escalacion)
-                VALUES (:id_reporte, :id_institucion, :urgencia_anterior, :urgencia_nueva, :razon, :fecha)';
-
-        try {
-            $this->bd->ejecutar($sql, [
-                ':id_reporte' => $datos_escalacion['id_reporte'],
-                ':id_institucion' => $datos_escalacion['id_institucion'],
-                ':urgencia_anterior' => $datos_escalacion['urgencia_anterior'],
-                ':urgencia_nueva' => $datos_escalacion['urgencia_nueva'],
-                ':razon' => $datos_escalacion['razon_escalacion'],
-                ':fecha' => $datos_escalacion['fecha_hora_escalacion'],
-            ]);
-        } catch (Exception $e) {
-            // Log silenciosamente si la tabla no existe aún
-            @error_log('Escalación: ' . $e->getMessage());
-        }
+        ServicioAuditoria::registrar(
+            'escalar_urgencia',
+            'reporte',
+            $id_reporte,
+            ['id_urgencia_calculada' => $urgencia_anterior],
+            ['id_urgencia_calculada' => $urgencia_nueva, 'razon' => $razon],
+            // El cron no tiene sesión: la escalación es del sistema, no de una persona.
+            ['id_usuario' => null, 'id_institucion' => $id_institucion]
+        );
     }
 
     /**
