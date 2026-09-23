@@ -40,8 +40,10 @@ php_value max_file_uploads 10
     # Referrer Policy
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
-    # HSTS: forzar HTTPS por 1 año (activar solo cuando SSL esté confirmado)
-    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    # HSTS: forzar HTTPS por 1 año. Activo desde 2026-09 (SSL de Let's Encrypt
+    # verificado y estable). Sin "preload" a propósito: entrar en la lista de
+    # precarga de los navegadores es muy difícil de revertir.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
     # Content Security Policy — permite CDNs usados por la app
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data: blob:; frame-src https://challenges.cloudflare.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"

@@ -44,7 +44,6 @@ RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas|tests|vendor|scripts|alm
     Options -Indexes
 </IfModule>
 
-# HSTS: una vez que HTTPS esté activo y verificado, descomentar esta línea
-# <IfModule mod_headers.c>
-#     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-# </IfModule>
+# HSTS y el resto de cabeceras de seguridad se definen en public/.htaccess,
+# que es donde terminan todas las peticiones tras el rewrite de arriba.
+# No duplicarlas aquí: se heredan.

@@ -240,6 +240,10 @@ class ServicioAutenticacion {
         // User agent para validación adicional
         $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
+        // Versión de credenciales: si cambia en BD (por un cambio o
+        // restablecimiento de contraseña), esta sesión deja de ser válida.
+        $_SESSION['version_credenciales'] = (int)($usuario['version_credenciales'] ?? 1);
+
         // Regenerar ID de sesión (prevenir session fixation - OWASP)
         session_regenerate_id(true);
 
@@ -357,23 +361,53 @@ class ServicioAutenticacion {
             return false;
         }
 
-        // Re-verificar periódicamente (cada 5 min) que el usuario sigue activo en BD:
-        // si un admin desactiva la cuenta, la sesión ya abierta se corta en poco tiempo
-        // en vez de seguir siendo válida hasta que expire por timeout normal.
-        $ultima_verificacion = $_SESSION['ultima_verificacion_activo'] ?? 0;
-        if (($tiempo_actual - $ultima_verificacion) > 300) {
-            $usuario_actual = $this->modelo_usuario->obtener_por_id($_SESSION['id_usuario'], $_SESSION['id_institucion']);
-            if (!$usuario_actual || !$usuario_actual['activo']) {
-                $this->destruir_sesion('usuario_desactivado');
-                return false;
-            }
-            $_SESSION['ultima_verificacion_activo'] = $tiempo_actual;
+        // Revalidar contra la BD en cada petición: una única consulta por clave
+        // primaria que trae solo dos columnas. Antes esto se hacía cada 5 minutos,
+        // lo que dejaba una ventana en la que una cuenta desactivada —o una
+        // contraseña ya cambiada tras un robo de sesión— seguía operando.
+        $estado = $this->modelo_usuario->obtener_estado_sesion(
+            $_SESSION['id_usuario'],
+            $_SESSION['id_institucion']
+        );
+
+        if (!$estado || !$estado['activo']) {
+            $this->destruir_sesion('usuario_desactivado');
+            return false;
+        }
+
+        // Cambio o restablecimiento de contraseña: las demás sesiones caen.
+        // La sesión que originó el cambio actualiza su propia versión, así que
+        // quien cambia su contraseña no se expulsa a sí mismo.
+        $version_sesion = (int)($_SESSION['version_credenciales'] ?? 1);
+        if ((int)$estado['version_credenciales'] !== $version_sesion) {
+            $this->destruir_sesion('credenciales_cambiadas');
+            return false;
         }
 
         // Actualizar último acceso
         $_SESSION['ultima_actividad'] = $tiempo_actual;
 
         return true;
+    }
+
+    /**
+     * Sincroniza esta sesión con la versión de credenciales que hay en BD.
+     * Se llama justo después de que el propio usuario cambie su contraseña,
+     * para cerrar sus otras sesiones sin cerrar la que está usando.
+     */
+    public function refrescar_version_credenciales() {
+        if (!$this->esta_autenticado()) {
+            return;
+        }
+
+        $estado = $this->modelo_usuario->obtener_estado_sesion(
+            $_SESSION['id_usuario'],
+            $_SESSION['id_institucion']
+        );
+
+        if ($estado) {
+            $_SESSION['version_credenciales'] = (int)$estado['version_credenciales'];
+        }
     }
 
     /**

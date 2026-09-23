@@ -85,6 +85,12 @@ class ModeloUsuario {
 
     /**
      * Actualizar usuario
+     *
+     * Si el cambio incluye la contraseña, se incrementa version_credenciales.
+     * Eso invalida de inmediato cualquier otra sesión abierta de ese usuario
+     * (ver ServicioAutenticacion::validar_sesion_vigente). Va aquí, y no en
+     * cada llamador, para que ninguna ruta futura que cambie la contraseña se
+     * olvide de hacerlo.
      */
     public function actualizar($id_usuario, $id_institucion, $datos) {
         $where = 'id_usuario = :id_usuario AND id_institucion = :id_institucion';
@@ -93,7 +99,37 @@ class ModeloUsuario {
             ':id_institucion' => $id_institucion,
         ];
 
-        return $this->bd->actualizar('usuario', $datos, $where, $parametros_where);
+        $resultado = $this->bd->actualizar('usuario', $datos, $where, $parametros_where);
+
+        if (array_key_exists('hash_contrasena', $datos)) {
+            $this->invalidar_sesiones($id_usuario, $id_institucion);
+        }
+
+        return $resultado;
+    }
+
+    /**
+     * Incrementa la versión de credenciales: toda sesión abierta con la versión
+     * anterior deja de ser válida en la siguiente petición.
+     */
+    public function invalidar_sesiones($id_usuario, $id_institucion) {
+        return $this->bd->ejecutar(
+            'UPDATE usuario SET version_credenciales = version_credenciales + 1
+             WHERE id_usuario = ? AND id_institucion = ?',
+            [$id_usuario, $id_institucion]
+        );
+    }
+
+    /**
+     * Datos mínimos para revalidar una sesión abierta, en una sola consulta
+     * por clave primaria. Devuelve null si el usuario ya no existe.
+     */
+    public function obtener_estado_sesion($id_usuario, $id_institucion) {
+        return $this->bd->obtener_uno(
+            'SELECT activo, version_credenciales
+             FROM usuario WHERE id_usuario = :id AND id_institucion = :inst',
+            [':id' => $id_usuario, ':inst' => $id_institucion]
+        );
     }
 
     /**

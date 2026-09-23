@@ -61,4 +61,44 @@ final class ModeloUsuarioTest extends BaseDbTestCase
             'hash_contrasena' => password_hash('Cambiar@2026!', PASSWORD_BCRYPT),
         ]);
     }
+
+    public function testCambiarContrasenaIncrementaVersionDeCredenciales(): void
+    {
+        // Hallazgo M2: al cambiar la contraseña, las sesiones abiertas debían
+        // dejar de ser válidas. El mecanismo es esta versión: si sube, la
+        // sesión que guarda la anterior se cierra en la siguiente petición.
+        $usuario = $this->modelo->obtener_por_email(self::CORREO_SEED, self::ID_INSTITUCION);
+        $this->assertNotFalse($usuario, 'Precondición: el usuario semilla debe existir.');
+
+        $antes = $this->modelo->obtener_estado_sesion($usuario['id_usuario'], self::ID_INSTITUCION);
+
+        $this->modelo->actualizar($usuario['id_usuario'], self::ID_INSTITUCION, [
+            'hash_contrasena' => password_hash('OtraClave@2026!', PASSWORD_BCRYPT),
+        ]);
+
+        $despues = $this->modelo->obtener_estado_sesion($usuario['id_usuario'], self::ID_INSTITUCION);
+
+        $this->assertSame(
+            (int) $antes['version_credenciales'] + 1,
+            (int) $despues['version_credenciales']
+        );
+    }
+
+    public function testActualizarSinTocarLaContrasenaNoInvalidaSesiones(): void
+    {
+        // Editar el teléfono o el cargo no debe expulsar a nadie.
+        $usuario = $this->modelo->obtener_por_email(self::CORREO_SEED, self::ID_INSTITUCION);
+        $antes = $this->modelo->obtener_estado_sesion($usuario['id_usuario'], self::ID_INSTITUCION);
+
+        $this->modelo->actualizar($usuario['id_usuario'], self::ID_INSTITUCION, [
+            'cargo_descripcion' => 'Cargo de prueba',
+        ]);
+
+        $despues = $this->modelo->obtener_estado_sesion($usuario['id_usuario'], self::ID_INSTITUCION);
+
+        $this->assertSame(
+            (int) $antes['version_credenciales'],
+            (int) $despues['version_credenciales']
+        );
+    }
 }

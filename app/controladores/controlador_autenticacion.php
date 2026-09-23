@@ -216,8 +216,13 @@ class ControladorAutenticacion {
                 $contrasena_nueva
             );
 
+            // El cambio invalidó todas las sesiones del usuario (incluida esta).
+            // Adoptamos la nueva versión para no expulsar a quien acaba de
+            // cambiar su propia contraseña; las demás sesiones sí caen.
+            $this->auth->refrescar_version_credenciales();
+
             ServicioAuditoria::registrar('cambiar_contrasena', 'usuario', $this->auth->obtener_id_usuario());
-            $this->redirigir_cambiar_contrasena('Contraseña cambiada exitosamente.', 'exito');
+            $this->redirigir_cambiar_contrasena('Contraseña cambiada exitosamente. Se cerraron tus otras sesiones.', 'exito');
         } catch (Exception $e) {
             $this->redirigir_cambiar_contrasena($e->getMessage(), 'error');
         }

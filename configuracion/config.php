@@ -60,31 +60,64 @@ $smtp_config = [
 ];
 
 // === SEGURIDAD ===
-// ENCRYPTION_KEY cifra datos persistentes (ej. secretos TOTP de 2FA). Si faltara y se
-// generara una clave aleatoria "de emergencia" en cada request, los datos ya cifrados
-// quedarían indescifrables de forma silenciosa e intermitente. Mejor fallar fuerte y
-// claro al arrancar que fallar en silencio más tarde.
-$_encryption_key_env = getenv('ENCRYPTION_KEY');
-if ($_encryption_key_env === false || $_encryption_key_env === '') {
-    die('Configuración incompleta: falta ENCRYPTION_KEY en configuracion/.env. '
-        . 'Genera una con: php -r "echo bin2hex(random_bytes(32));" y agrégala al .env.');
+// El nombre del entorno se resuelve aquí porque en producción se exige lo que
+// en desarrollo puede faltar. Se reutiliza más abajo en $app_config.
+$env_actual = getenv('ENV') ?: 'development';
+$_es_produccion = ($env_actual === 'production');
+
+// Estos tres secretos NO pueden autogenerarse. Si se regeneraran en cada
+// request: los datos ya cifrados quedarían indescifrables (ENCRYPTION_KEY, que
+// guarda los secretos TOTP de 2FA) y los tokens emitidos dejarían de validar de
+// forma intermitente (JWT_SECRET, CSRF_SALT), lo que se manifiesta como sesiones
+// que "se caen solas" sin ningún error. Mejor fallar fuerte y claro al arrancar.
+$_secretos_obligatorios = [
+    'ENCRYPTION_KEY' => 32,
+    'JWT_SECRET'     => 32,
+    'CSRF_SALT'      => 16,
+];
+$_secretos = [];
+$_faltantes = [];
+foreach ($_secretos_obligatorios as $_clave => $_bytes) {
+    $_valor = getenv($_clave);
+    if ($_valor === false || $_valor === '') {
+        $_faltantes[] = $_clave . ' (genérala con: php -r "echo bin2hex(random_bytes('
+            . $_bytes . '));")';
+        continue;
+    }
+    $_secretos[$_clave] = $_valor;
+}
+if ($_faltantes) {
+    die('Configuración incompleta en el archivo .env de la raíz del proyecto. '
+        . 'Falta(n): ' . implode(' | ', $_faltantes));
+}
+
+// CAPTCHA (Cloudflare Turnstile) del formulario público de reporte de invitado.
+$_turnstile_site   = getenv('TURNSTILE_SITE_KEY') ?: '';
+$_turnstile_secret = getenv('TURNSTILE_SECRET_KEY') ?: '';
+
+// En producción el CAPTCHA es obligatorio: si falta, el formulario público
+// queda abierto a bots y nada lo indica en pantalla, así que el despliegue
+// parecería correcto mientras no lo es.
+if ($_es_produccion && ($_turnstile_site === '' || $_turnstile_secret === '')) {
+    die('Configuración incompleta: en producción TURNSTILE_SITE_KEY y '
+        . 'TURNSTILE_SECRET_KEY son obligatorias porque protegen el formulario '
+        . 'público de reportes. Se obtienen en el panel de Cloudflare Turnstile.');
 }
 
 $security_config = [
     // Encryption key: 32 bytes en hexadecimal (256-bit AES)
-    'encryption_key' => $_encryption_key_env,
+    'encryption_key' => $_secretos['ENCRYPTION_KEY'],
 
     // JWT Secret para tokens de acceso (si se implementa)
-    'jwt_secret' => getenv('JWT_SECRET') ?: bin2hex(random_bytes(32)),
+    'jwt_secret' => $_secretos['JWT_SECRET'],
 
     // Salt para CSRF tokens
-    'csrf_salt' => getenv('CSRF_SALT') ?: bin2hex(random_bytes(16)),
+    'csrf_salt' => $_secretos['CSRF_SALT'],
 
-    // CAPTCHA (Cloudflare Turnstile) para el formulario público de reporte de
-    // invitado. Si quedan vacías, el widget no se muestra y la verificación
-    // se omite (no bloquea el formulario mientras no se configure).
-    'turnstile_site_key'   => getenv('TURNSTILE_SITE_KEY') ?: '',
-    'turnstile_secret_key' => getenv('TURNSTILE_SECRET_KEY') ?: '',
+    // Fuera de producción pueden quedar vacías: el widget no se muestra y la
+    // verificación se omite, para no estorbar las pruebas locales.
+    'turnstile_site_key'   => $_turnstile_site,
+    'turnstile_secret_key' => $_turnstile_secret,
 ];
 
 // === SESIÓN ===
@@ -102,7 +135,7 @@ $session_config = [
 ];
 
 // === APLICACIÓN ===
-$env_actual = getenv('ENV') ?: 'development';
+// $env_actual ya se resolvió en el bloque de seguridad.
 $app_config = [
     // En producción el debug se apaga (no mostrar errores al usuario).
     // Si DEBUG está definido en el .env, ese valor manda; si no, debug = (no es producción).
