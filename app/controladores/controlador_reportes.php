@@ -945,10 +945,14 @@ class ControladorReportes {
         LimitadorTasa::registrar($clave_rate_limit, 600);
 
         // CAPTCHA (Cloudflare Turnstile). No bloquea si no está configurado.
+        // Valida también accion/hostname para que un token no se reutilice
+        // en otro formulario o dominio (ver Validacion::verificar_turnstile).
         $turnstile_ok = Validacion::verificar_turnstile(
             $_POST['cf-turnstile-response'] ?? '',
             config('security.turnstile_secret_key'),
-            $_SERVER['REMOTE_ADDR'] ?? null
+            $_SERVER['REMOTE_ADDR'] ?? null,
+            'crear_invitado',
+            $_SERVER['HTTP_HOST'] ?? null
         );
         if (!$turnstile_ok) {
             $this->redirigir_invitado($id_institucion, 'No se pudo verificar que eres una persona. Intenta de nuevo.');

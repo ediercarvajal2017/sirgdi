@@ -630,7 +630,7 @@ $urgencias = [
         <!-- ── CAPTCHA (Cloudflare Turnstile) ── -->
         <?php if (!empty($turnstile_site_key)): ?>
             <div class="inv-submit-wrap">
-                <div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($turnstile_site_key); ?>" data-theme="auto"></div>
+                <div class="cf-turnstile" data-sitekey="<?php echo htmlspecialchars($turnstile_site_key); ?>" data-action="crear_invitado" data-theme="auto"></div>
             </div>
         <?php endif; ?>
 

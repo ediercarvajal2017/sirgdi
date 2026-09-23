@@ -192,8 +192,13 @@ class Validacion {
      * Verificar un token de Cloudflare Turnstile contra la API de Cloudflare.
      * Si $clave_secreta viene vacía (CAPTCHA no configurado aún), no bloquea:
      * devuelve true para no romper el formulario mientras no se active.
+     *
+     * Validación "canónica" (recomendada por Cloudflare): además de
+     * `success`, confirma que el `action` y el `hostname` que vio Cloudflare
+     * coinciden con lo esperado — evita que un token válido obtenido en un
+     * sitio/formulario se reutilice en otro.
      */
-    public static function verificar_turnstile($token, $clave_secreta, $ip_remota = null) {
+    public static function verificar_turnstile($token, $clave_secreta, $ip_remota = null, $accion_esperada = null, $hostname_esperado = null) {
         if ($clave_secreta === '' || $clave_secreta === null) {
             return true;
         }
@@ -214,7 +219,7 @@ class Validacion {
             CURLOPT_POST           => true,
             CURLOPT_POSTFIELDS     => http_build_query($datos),
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT        => 8,
+            CURLOPT_TIMEOUT        => 10,
         ]);
         $respuesta = curl_exec($ch);
         $fallo_red = curl_errno($ch) !== 0;
@@ -227,7 +232,19 @@ class Validacion {
         }
 
         $resultado = json_decode($respuesta, true);
-        return !empty($resultado['success']);
+        if (empty($resultado['success'])) {
+            return false;
+        }
+
+        if ($accion_esperada !== null && ($resultado['action'] ?? null) !== $accion_esperada) {
+            return false;
+        }
+
+        if ($hostname_esperado !== null && ($resultado['hostname'] ?? null) !== $hostname_esperado) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
