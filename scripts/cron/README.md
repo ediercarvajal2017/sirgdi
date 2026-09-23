@@ -22,30 +22,33 @@ tarda más que su intervalo.
 
 ## Registrar en Hostinger
 
-hPanel → **Avanzado** → **Cron Jobs** → *Crear nuevo cron job*, con el tipo
-"Comando personalizado".
+Hostinger no expone `crontab` por SSH en este plan: los cron solo se dan de
+alta desde el panel.
 
-Sustituye `RUTA_DEL_SITIO` por la ruta real del despliegue. Para el dominio
-actual es:
-
-```
-/home/u397951547/domains/jlcserviciosintegrales.com/public_html/mto
-```
+hPanel → **Avanzado** → **Cron Jobs** → *Crear nuevo cron job*, tipo
+"Comando personalizado". Los dos comandos ya llevan la ruta real del
+despliegue actual, así que se pegan tal cual.
 
 **SLA — cada hora, al minuto 5:**
 
 ```
-5 * * * * /usr/bin/php RUTA_DEL_SITIO/scripts/cron/evaluar_sla.php >/dev/null 2>&1
+/usr/bin/php /home/u397951547/domains/jlcserviciosintegrales.com/public_html/mto/scripts/cron/evaluar_sla.php >/dev/null 2>&1
 ```
 
 **Notificaciones pendientes — cada 15 minutos:**
 
 ```
-*/15 * * * * /usr/bin/php RUTA_DEL_SITIO/scripts/cron/enviar_notificaciones_pendientes.php >/dev/null 2>&1
+/usr/bin/php /home/u397951547/domains/jlcserviciosintegrales.com/public_html/mto/scripts/cron/enviar_notificaciones_pendientes.php >/dev/null 2>&1
 ```
+
+Si el panel pide la frecuencia por separado en vez de una línea de cron, usar
+"Cada hora" para el primero y "Cada 15 minutos" para el segundo.
 
 Se redirige la salida a `/dev/null` porque cada script ya escribe su propio
 registro; si no, Hostinger enviaría un correo en cada ejecución.
+
+Al cambiar de dominio o de carpeta de despliegue hay que actualizar la ruta de
+ambos comandos.
 
 ## Dónde mirar cuando algo no cuadra
 

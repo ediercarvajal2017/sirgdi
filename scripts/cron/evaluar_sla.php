@@ -60,9 +60,11 @@ $total_errores   = 0;
 
 $notificacion = new ServicioNotificacion();
 
-// Roles que reciben las alertas de SLA. Si una institución no tiene ninguno,
-// los avisos no llegarían a nadie.
-$roles_alerta = ['gestor', 'rector'];
+// Quién recibe cada alerta de SLA (ver ServicioNotificacion):
+//   - "por vencer": Gestor y Rector
+//   - "vencido":    Gestor, Rector y Admin de Institución
+$roles_por_vencer = ['gestor', 'rector'];
+$roles_vencido    = ['gestor', 'rector', 'Admin de Institución'];
 
 $instituciones = $bd->obtener_todos(
     'SELECT id_institucion, nombre FROM institucion WHERE es_activa = 1 ORDER BY id_institucion'
@@ -84,12 +86,21 @@ foreach ($instituciones as $inst) {
     }
 
     // Comprobar antes de nada que haya alguien a quien avisar.
-    $destinatarios = $notificacion->contar_destinatarios_por_roles($id_institucion, $roles_alerta);
-    if ($destinatarios === 0) {
+    $dest_vencido    = $notificacion->contar_destinatarios_por_roles($id_institucion, $roles_vencido);
+    $dest_por_vencer = $notificacion->contar_destinatarios_por_roles($id_institucion, $roles_por_vencer);
+
+    if ($dest_vencido === 0) {
         cron_log(sprintf(
-            '  AVISO: la institución %d (%s) tiene %d reportes abiertos pero ningún usuario '
-            . 'activo con rol Gestor o Rector. Las alertas de SLA no llegarán a nadie.',
+            '  AVISO: la institución %d (%s) tiene %d reportes abiertos y ningún usuario activo '
+            . 'con rol Gestor, Rector o Admin de Institución. Ninguna alerta de SLA llegará a nadie.',
             $id_institucion, $nombre_inst, count($reportes)
+        ), $log);
+    } elseif ($dest_por_vencer === 0) {
+        cron_log(sprintf(
+            '  AVISO: la institución %d (%s) no tiene Gestor ni Rector. Recibirá las alertas de '
+            . 'SLA vencido (llegan al Admin de Institución) pero no las de "por vencer", '
+            . 'que son las que permiten reaccionar a tiempo.',
+            $id_institucion, $nombre_inst
         ), $log);
     }
 

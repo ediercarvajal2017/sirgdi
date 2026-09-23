@@ -29,8 +29,8 @@ try {
     $r = $servicio->reintentar_pendientes(50);
 
     cron_log(sprintf(
-        'procesadas=%d enviadas=%d fallidas=%d agotadas=%d',
-        $r['procesadas'], $r['enviadas'], $r['fallidas'], $r['agotadas']
+        'procesadas=%d enviadas=%d fallidas=%d agotadas=%d caducadas=%d',
+        $r['procesadas'], $r['enviadas'], $r['fallidas'], $r['agotadas'], $r['caducadas']
     ), $log);
 
     // "Agotadas" significa que se alcanzó el máximo de intentos y la fila pasó

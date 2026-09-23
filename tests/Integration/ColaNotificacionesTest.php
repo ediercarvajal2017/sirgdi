@@ -107,4 +107,33 @@ final class ColaNotificacionesTest extends BaseDbTestCase
 
         $this->assertLessThanOrEqual(1000, mb_strlen($fila['razon_fallo']));
     }
+
+    public function testLosAvisosDemasiadoViejosCaducanEnVezDeEnviarse(): void
+    {
+        // Entregar un "reporte listo para validación" tres días tarde confunde
+        // más de lo que ayuda: para entonces el reporte ya se movió. Se cierra
+        // como fallido con el motivo visible, sin enviarlo.
+        $this->bd->ejecutar(
+            "UPDATE notificacion SET estado_envio = 'enviado' WHERE estado_envio = 'pendiente'"
+        );
+
+        $id = $this->crearPendiente();
+        $this->bd->ejecutar(
+            'UPDATE notificacion SET fecha_programada = DATE_SUB(NOW(), INTERVAL :h HOUR)
+             WHERE id_notificacion = :id',
+            [
+                ':h'  => ServicioNotificacion::HORAS_CADUCIDAD_AVISO + 1,
+                ':id' => $id,
+            ]
+        );
+
+        $resumen = $this->servicio->reintentar_pendientes(50);
+        $fila = $this->leer($id);
+
+        $this->assertSame(1, $resumen['caducadas']);
+        $this->assertSame(0, $resumen['enviadas']);
+        $this->assertSame('fallido', $fila['estado_envio']);
+        $this->assertStringContainsString('Caducada', $fila['razon_fallo']);
+        $this->assertSame(0, (int) $fila['intentos'], 'No se gastó ningún intento de envío.');
+    }
 }

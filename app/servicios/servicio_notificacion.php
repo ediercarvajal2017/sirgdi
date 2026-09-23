@@ -9,6 +9,14 @@ class ServicioNotificacion {
     /** Intentos de envio antes de dar una notificacion por perdida. */
     const MAX_INTENTOS_ENVIO = 5;
 
+    /**
+     * Horas tras las cuales un aviso pendiente deja de tener sentido.
+     * Un "reporte listo para validación" entregado tres días tarde confunde
+     * más de lo que ayuda: el reporte ya se movió. Se marca como caducado en
+     * vez de enviarlo.
+     */
+    const HORAS_CADUCIDAD_AVISO = 48;
+
     private $bd;
     private $smtp;
 
@@ -506,7 +514,8 @@ class ServicioNotificacion {
         $limite = max(1, min((int)$limite, 200));
 
         $pendientes = $this->bd->obtener_todos(
-            'SELECT id_notificacion, id_usuario_destinatario, asunto, cuerpo_html, intentos
+            'SELECT id_notificacion, id_usuario_destinatario, asunto, cuerpo_html, intentos,
+                    TIMESTAMPDIFF(HOUR, fecha_programada, NOW()) AS horas
              FROM notificacion
              WHERE estado_envio = :estado AND intentos < :max
              ORDER BY fecha_programada ASC
@@ -514,10 +523,29 @@ class ServicioNotificacion {
             [':estado' => 'pendiente', ':max' => $max_intentos]
         );
 
-        $resumen = ['procesadas' => 0, 'enviadas' => 0, 'fallidas' => 0, 'agotadas' => 0];
+        $resumen = ['procesadas' => 0, 'enviadas' => 0, 'fallidas' => 0, 'agotadas' => 0, 'caducadas' => 0];
 
         foreach ($pendientes as $n) {
             $resumen['procesadas']++;
+
+            // Demasiado viejo para seguir intentándolo: entregarlo ahora haría
+            // más daño que bien. Se cierra como fallido, con el motivo visible.
+            if ((int)$n['horas'] >= self::HORAS_CADUCIDAD_AVISO) {
+                $this->bd->actualizar(
+                    'notificacion',
+                    [
+                        'estado_envio' => 'fallido',
+                        'razon_fallo'  => 'Caducada: llevaba más de '
+                            . self::HORAS_CADUCIDAD_AVISO . ' horas sin poder enviarse',
+                    ],
+                    'id_notificacion = :id',
+                    [':id' => $n['id_notificacion']]
+                );
+                $this->log("CADUCADA ({$n['horas']}h): [{$n['asunto']}]");
+                $resumen['caducadas']++;
+                continue;
+            }
+
             $usuario = $this->obtener_usuario($n['id_usuario_destinatario']);
 
             if (!$usuario || empty($usuario['correo_electronico'])) {
