@@ -915,12 +915,6 @@
                     <i class="fas fa-pen-to-square"></i> Reportar Daño
                 </button>
                 <?php endif; ?>
-                <a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=login" class="btn btn-teal">
-                    <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
-                </a>
-                <a href="#features" class="btn btn-outline">
-                    <i class="fas fa-chevron-down"></i> Ver Características
-                </a>
             </div>
             <div class="hero-stats">
                 <div class="hstat">
