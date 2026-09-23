@@ -11,7 +11,11 @@
             </div>
         </div>
 
-        <nav class="header-nav-modern">
+        <button type="button" class="header-hamburger" id="headerHamburger" onclick="toggleMobileNav()" aria-label="Abrir menú" aria-expanded="false" aria-controls="headerNavModern">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <nav class="header-nav-modern" id="headerNavModern">
         <ul class="nav-menu-primary">
             <!-- HOME: Dashboard -->
             <li class="nav-item">
@@ -221,6 +225,24 @@
         align-items: center;
         gap: 20px;
         flex-shrink: 0;
+    }
+
+    /* Botón hamburguesa: solo visible en móvil (ver @media 768px) */
+    .header-hamburger {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--dark-text);
+        cursor: pointer;
+        padding: 8px 10px;
+        border-radius: 8px;
+        flex-shrink: 0;
+    }
+
+    .header-hamburger:hover {
+        background: var(--light-bg);
+        color: var(--primary-blue);
     }
 
     /* Menú desplegable del usuario (clic en el nombre) */
@@ -550,49 +572,86 @@
     @media (max-width: 768px) {
         .header-bar {
             padding: 10px 15px;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
         }
 
+        .header-hamburger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Menú colapsable: oculto por defecto, se despliega debajo del
+           header al tocar la hamburguesa (clase .nav-open, ver JS). */
         .header-nav-modern {
-            order: 3;
+            display: none;
+            order: 4;
             flex: 1 1 100%;
-            padding: 8px 0 0;
             height: auto;
-            flex-wrap: wrap;
-            gap: 10px;
+            padding: 8px 0;
+            justify-content: flex-start;
             border-top: 1px solid var(--color-border-subtle);
         }
 
+        .header-nav-modern.nav-open {
+            display: flex;
+        }
+
         .nav-menu-primary {
-            gap: 5px;
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            gap: 2px;
+        }
+
+        .nav-item {
+            height: auto;
+            width: 100%;
         }
 
         .nav-link {
-            padding: 8px 12px;
-            font-size: 11px;
+            width: 100%;
+            padding: 13px 16px;
+            font-size: 13px;
+            border-bottom: none;
+            border-left: 3px solid transparent;
         }
 
+        .nav-link:hover,
+        .nav-link.active {
+            border-bottom-color: transparent;
+            border-left-color: var(--primary-blue);
+        }
+
+        /* A diferencia del diseño anterior (solo íconos), en el menú
+           desplegado sí se ve la etiqueta de texto completa. */
         .nav-link span {
-            display: none;
-        }
-
-        .nav-link i:first-child {
-            margin: 0;
+            display: inline;
         }
 
         .nav-highlight .nav-link {
-            margin: 0 5px;
+            margin: 4px 10px;
+        }
+
+        .nav-dropdown {
+            width: 100%;
         }
 
         .dropdown-menu {
-            min-width: 150px;
+            position: static;
+            box-shadow: none;
+            border-radius: 0;
+            background: var(--light-bg);
+            min-width: 0;
+            width: 100%;
+            padding: 4px 0;
         }
 
         .dropdown-menu a {
-            padding: 10px 15px;
-            font-size: 12px;
+            padding: 11px 16px 11px 44px;
+            font-size: 12.5px;
         }
     }
 </style>
@@ -612,6 +671,15 @@
             if (!yaAbierto) parent.classList.add('open');
         });
     });
+
+    // Menú hamburguesa (móvil): muestra/oculta el panel de navegación completo
+    function toggleMobileNav() {
+        const nav = document.getElementById('headerNavModern');
+        const btn = document.getElementById('headerHamburger');
+        if (!nav) return;
+        const abierto = nav.classList.toggle('nav-open');
+        if (btn) btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+    }
 
     // Menú desplegable del usuario (clic en el nombre)
     function toggleUserMenu(e) {

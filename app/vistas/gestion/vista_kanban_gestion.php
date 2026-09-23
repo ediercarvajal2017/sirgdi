@@ -45,7 +45,7 @@
         <span class="total-reportes"><strong id="contador-visible"><?php echo count($filas); ?></strong> reportes</span>
     </div>
 
-    <div class="tabla-wrap">
+    <div class="tabla-wrap tabla-responsive-wrap">
         <table class="tabla-reportes" id="tabla-reportes">
             <thead>
                 <tr>
@@ -74,33 +74,33 @@
                             $horas = round($item['sla_info']['horas_restantes'], 1);
                         ?>
                         <tr class="fila-reporte">
-                            <td class="td-ticket">
+                            <td class="td-ticket" data-label="Ticket">
                                 <?php echo htmlspecialchars($r['numero_ticket']); ?>
                                 <?php if (!empty($r['marcado_sospechoso'])): ?>
                                     <i class="fas fa-triangle-exclamation" style="color:#E67E22; margin-left:4px;" title="El sistema marcó este reporte de invitado con señales de spam. Revisar antes de asignar."></i>
                                 <?php endif; ?>
                             </td>
-                            <td data-sort="<?php echo intval($id_estado); ?>">
+                            <td data-sort="<?php echo intval($id_estado); ?>" data-label="Estado">
                                 <span class="badge-estado <?php echo $clases_estado[$id_estado] ?? ''; ?>">
                                     <?php echo htmlspecialchars($estados_nombres[$id_estado]); ?>
                                 </span>
                             </td>
-                            <td data-sort="<?php echo intval($r['id_urgencia_calculada']); ?>">
+                            <td data-sort="<?php echo intval($r['id_urgencia_calculada']); ?>" data-label="Urgencia">
                                 <span class="badge-urg" style="background-color: <?php echo htmlspecialchars($color_urg); ?>20; color: <?php echo htmlspecialchars($color_urg); ?>;">
                                     <i class="fas fa-circle" style="font-size:8px;"></i>
                                     <?php echo intval($r['id_urgencia_calculada']) == 4 ? 'Urgente' : (intval($r['id_urgencia_calculada']) == 3 ? 'Importante' : (intval($r['id_urgencia_calculada']) == 2 ? 'Moderado' : 'No urgente')); ?>
                                 </span>
                             </td>
-                            <td class="td-center" data-sort="<?php echo intval($item['puntuacion_prioridad']); ?>"><span class="prioridad-score"><?php echo intval($item['puntuacion_prioridad']); ?></span></td>
-                            <td class="td-desc" title="<?php echo htmlspecialchars($r['descripcion_problema']); ?>">
+                            <td class="td-center" data-sort="<?php echo intval($item['puntuacion_prioridad']); ?>" data-label="Prioridad"><span class="prioridad-score"><?php echo intval($item['puntuacion_prioridad']); ?></span></td>
+                            <td class="td-desc" title="<?php echo htmlspecialchars($r['descripcion_problema']); ?>" data-label="Descripción">
                                 <?php echo htmlspecialchars(mb_strimwidth($r['descripcion_problema'], 0, 70, '…')); ?>
                             </td>
-                            <td data-sort="<?php echo $sla === 'vencido' ? -9999 : $horas; ?>">
+                            <td data-sort="<?php echo $sla === 'vencido' ? -9999 : $horas; ?>" data-label="SLA">
                                 <span class="sla-pill sla-<?php echo $sla; ?>">
                                     <?php echo $sla === 'vencido' ? 'Vencido' : $horas . 'h'; ?>
                                 </span>
                             </td>
-                            <td>
+                            <td data-label="Técnico">
                                 <?php if ($tiene_tecnico): ?>
                                     <span class="tec-ok"><i class="fas fa-user-check"></i> Asignado</span>
                                     <?php if (!$bloquear_asignar): ?>

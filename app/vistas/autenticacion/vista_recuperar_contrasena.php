@@ -184,4 +184,9 @@
         color: var(--color-danger-text);
         border: 2px solid var(--color-danger);
     }
+
+    @media (max-width: 480px) {
+        .form-modern-card { padding: 30px 22px; }
+        .form-modern-card h2 { font-size: 22px; }
+    }
 </style>

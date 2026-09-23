@@ -158,6 +158,10 @@
     .auth-links a:hover { text-decoration: underline; }
     .alert { padding: 13px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
     .alert-error   { background: var(--color-danger-bg); color: var(--color-danger-text); border: 1px solid var(--color-danger); }
+
+    @media (max-width: 480px) {
+        .form-modern-card { padding: 30px 22px; }
+    }
 </style>
 
 <script>

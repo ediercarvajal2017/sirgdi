@@ -81,7 +81,7 @@
                 <span class="total-sla"><strong id="contador-sla"><?php echo count($slas); ?></strong> SLA configurado(s)</span>
             </div>
 
-            <div class="tabla-wrap">
+            <div class="tabla-wrap tabla-responsive-wrap">
                 <table class="tabla-sla" id="tabla-sla">
                     <thead>
                         <tr>
@@ -103,21 +103,21 @@
                                 $clase_urgencia = 'urg-' . intval($sla['id_urgencia']);
                             ?>
                             <tr class="fila-sla">
-                                <td data-sort="<?php echo intval($sla['id_urgencia']); ?>">
+                                <td data-sort="<?php echo intval($sla['id_urgencia']); ?>" data-label="Prioridad">
                                     <span class="badge-urgencia <?php echo $clase_urgencia; ?>">
                                         <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($nombre_urgencia); ?>
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Categoría">
                                     <span class="sla-categoria"><i class="fas fa-folder"></i> <?php echo htmlspecialchars($nombre_categoria); ?></span>
                                 </td>
-                                <td class="td-center" data-sort="<?php echo intval($sla['tiempo_respuesta_horas']); ?>">
+                                <td class="td-center" data-sort="<?php echo intval($sla['tiempo_respuesta_horas']); ?>" data-label="Respuesta">
                                     <span class="tiempo-pill"><i class="fas fa-clock"></i> <?php echo intval($sla['tiempo_respuesta_horas']); ?> h</span>
                                 </td>
-                                <td class="td-center" data-sort="<?php echo intval($sla['tiempo_resolucion_horas']); ?>">
+                                <td class="td-center" data-sort="<?php echo intval($sla['tiempo_resolucion_horas']); ?>" data-label="Resolución">
                                     <span class="tiempo-pill"><i class="fas fa-hourglass-end"></i> <?php echo intval($sla['tiempo_resolucion_horas']); ?> h</span>
                                 </td>
-                                <td class="td-center" data-sort="<?php echo $sla['activo'] ? 1 : 0; ?>">
+                                <td class="td-center" data-sort="<?php echo $sla['activo'] ? 1 : 0; ?>" data-label="Estado">
                                     <span class="badge <?php echo $sla['activo'] ? 'badge-active' : 'badge-inactive'; ?>">
                                         <?php echo $sla['activo'] ? '<i class="fas fa-check"></i> Activo' : '<i class="fas fa-times"></i> Inactivo'; ?>
                                     </span>
@@ -252,7 +252,7 @@
     background: var(--light-bg);
     border-radius: 8px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 16px;
     transition: all 0.3s;
     box-sizing: border-box;
 }
@@ -341,7 +341,7 @@ select.input-modern {
 .total-sla { color:var(--color-text-muted); font-size:14px; }
 .total-sla strong { color:var(--dark-text); }
 
-.tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:hidden; }
+.tabla-wrap { background:var(--color-bg-elevated); border-radius:12px; box-shadow:0 4px 16px rgba(52,152,219,.08); overflow:auto; max-height:72vh; }
 .tabla-sla { width:100%; border-collapse:collapse; }
 .tabla-sla thead th { background:var(--color-bg-subtle); color:var(--dark-text); font-size:12px; text-transform:uppercase; letter-spacing:.4px; text-align:left; padding:14px 16px; border-bottom:2px solid var(--color-border-subtle); white-space:nowrap; }
 .tabla-sla th.th-sort { cursor:pointer; user-select:none; transition:background .2s; }
@@ -457,6 +457,16 @@ select.input-modern {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+    /* .form-modern-card (30px) + .sla-container (20px) sumaban 50px de
+       padding fijo por lado y desbordaban el ancho en pantallas angostas. */
+    .sla-container {
+        padding: 12px;
+    }
+
+    .form-modern-card {
+        padding: 18px;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
     }

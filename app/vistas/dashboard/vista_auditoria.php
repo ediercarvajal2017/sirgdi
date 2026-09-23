@@ -91,7 +91,7 @@ function icono_aud($accion, $mapa) {
     </div>
 
     <!-- Tabla (ordenable + buscador) -->
-    <div class="aud-tabla-wrap">
+    <div class="aud-tabla-wrap tabla-responsive-wrap">
         <table class="tabla-auditoria" id="tabla-auditoria">
             <thead>
                 <tr>
@@ -110,23 +110,23 @@ function icono_aud($accion, $mapa) {
                 <?php else: ?>
                     <?php foreach ($registros as $r): ?>
                         <tr class="fila-auditoria">
-                            <td class="aud-fecha" data-sort="<?php echo strtotime($r['fecha_hora_accion']); ?>"><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($r['fecha_hora_accion']))); ?></td>
-                            <td>
+                            <td class="aud-fecha" data-sort="<?php echo strtotime($r['fecha_hora_accion']); ?>" data-label="Fecha y hora"><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($r['fecha_hora_accion']))); ?></td>
+                            <td data-label="Usuario">
                                 <?php if ($r['actor'] === 'Sistema'): ?>
                                     <span class="aud-actor aud-sistema"><i class="fas fa-robot"></i> Sistema</span>
                                 <?php else: ?>
                                     <span class="aud-actor"><i class="fas fa-user"></i> <?php echo htmlspecialchars($r['actor']); ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td>
+                            <td data-label="Acción">
                                 <span class="aud-badge-accion">
                                     <i class="fas <?php echo icono_aud($r['accion'], $iconos_accion); ?>"></i>
                                     <?php echo htmlspecialchars($r['accion']); ?>
                                 </span>
                             </td>
-                            <td><?php echo htmlspecialchars($r['entidad']); ?><?php if ($r['id_institucion'] === null): ?> <span class="aud-global" title="Evento de plataforma, no de una institución">global</span><?php endif; ?></td>
-                            <td class="td-center aud-id" data-sort="<?php echo $r['id_entidad'] !== null ? intval($r['id_entidad']) : 0; ?>"><?php echo $r['id_entidad'] !== null ? '#' . intval($r['id_entidad']) : '—'; ?></td>
-                            <td class="aud-ip"><?php echo htmlspecialchars($r['ip_origen'] ?? '—'); ?></td>
+                            <td data-label="Entidad"><?php echo htmlspecialchars($r['entidad']); ?><?php if ($r['id_institucion'] === null): ?> <span class="aud-global" title="Evento de plataforma, no de una institución">global</span><?php endif; ?></td>
+                            <td class="td-center aud-id" data-sort="<?php echo $r['id_entidad'] !== null ? intval($r['id_entidad']) : 0; ?>" data-label="ID"><?php echo $r['id_entidad'] !== null ? '#' . intval($r['id_entidad']) : '—'; ?></td>
+                            <td class="aud-ip" data-label="IP"><?php echo htmlspecialchars($r['ip_origen'] ?? '—'); ?></td>
                             <td class="td-center">
                                 <?php $det = detalle_aud($r['datos_anteriores_json'] ?? null, $r['datos_nuevos_json'] ?? null); ?>
                                 <?php if ($det): ?>

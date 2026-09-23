@@ -673,3 +673,80 @@ textarea.form-control {
 @media (max-width: 600px) {
     .page-banner { flex-wrap: wrap; padding: 20px; }
 }
+
+/* ===== Patrón compartido: tabla de gestión -> tarjetas apiladas en móvil =====
+   Uso: envolver la tabla en <div class="tabla-responsive-wrap"><table>...
+   y agregar data-label="Nombre de columna" a cada <td> (el texto que
+   normalmente daría el <th> correspondiente). Columnas puramente de acción
+   (íconos/botones) pueden omitir data-label para no mostrar una etiqueta.
+   Breakpoint unificado del sistema: 768px (tablet hacia abajo). */
+@media (max-width: 768px) {
+    .tabla-responsive-wrap table,
+    .tabla-responsive-wrap thead,
+    .tabla-responsive-wrap tbody,
+    .tabla-responsive-wrap tr,
+    .tabla-responsive-wrap td {
+        display: block;
+        width: 100%;
+    }
+    .tabla-responsive-wrap thead {
+        position: absolute;
+        left: -9999px;
+    }
+    .tabla-responsive-wrap tbody tr {
+        margin-bottom: 12px;
+        border: 1px solid var(--color-border-subtle);
+        border-radius: 10px;
+        padding: 6px 12px;
+        background: var(--color-bg-elevated);
+    }
+    .tabla-responsive-wrap td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 0;
+        border: none !important;
+        border-bottom: 1px solid var(--color-border-subtle) !important;
+        text-align: right;
+        white-space: normal !important;
+    }
+    .tabla-responsive-wrap td:last-child {
+        border-bottom: none !important;
+    }
+    .tabla-responsive-wrap td[data-label]::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        color: var(--color-text-muted);
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .tabla-responsive-wrap td:not([data-label]) {
+        justify-content: center;
+    }
+
+    /* Filas separadoras/de sección (ej. agrupar por módulo en una matriz):
+       se muestran como encabezado de sección, no como otra tarjeta. */
+    .tabla-responsive-wrap .fila-modulo {
+        margin: 16px 0 4px !important;
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+    }
+    .tabla-responsive-wrap .fila-modulo td {
+        display: block !important;
+        border: none !important;
+        padding: 4px 0 !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: .4px;
+        color: var(--color-text-muted);
+    }
+    .tabla-responsive-wrap .fila-modulo td::before {
+        content: none !important;
+    }
+}

@@ -142,7 +142,7 @@
                 <span class="total-usuarios"><strong id="contador-usuarios"><?php echo count($usuarios); ?></strong> usuarios</span>
             </div>
 
-            <div class="tabla-wrap">
+            <div class="tabla-wrap tabla-responsive-wrap">
                 <table class="tabla-usuarios" id="tabla-usuarios">
                     <thead>
                         <tr>
@@ -161,24 +161,24 @@
                     <tbody>
                         <?php foreach ($usuarios as $usuario): ?>
                             <tr class="fila-usuario">
-                                <td class="td-nombre"><?php echo htmlspecialchars($usuario['nombre_completo']); ?></td>
-                                <td data-sort="<?php echo htmlspecialchars($usuario['numero_documento'] ?? '0'); ?>"><?php echo htmlspecialchars($usuario['numero_documento'] ?? '—'); ?></td>
-                                <td><?php echo htmlspecialchars($usuario['correo_electronico']); ?></td>
-                                <td><?php echo htmlspecialchars($usuario['cargo_descripcion'] ?? '—'); ?></td>
-                                <td>
+                                <td class="td-nombre" data-label="Nombre"><?php echo htmlspecialchars($usuario['nombre_completo']); ?></td>
+                                <td data-sort="<?php echo htmlspecialchars($usuario['numero_documento'] ?? '0'); ?>" data-label="Documento"><?php echo htmlspecialchars($usuario['numero_documento'] ?? '—'); ?></td>
+                                <td data-label="Email"><?php echo htmlspecialchars($usuario['correo_electronico']); ?></td>
+                                <td data-label="Cargo"><?php echo htmlspecialchars($usuario['cargo_descripcion'] ?? '—'); ?></td>
+                                <td data-label="Rol">
                                     <?php if (!empty($usuario['nombre_rol'])): ?>
                                         <span class="badge-rol"><i class="fas fa-shield-alt"></i> <?php echo htmlspecialchars($usuario['nombre_rol']); ?></span>
                                     <?php else: ?>
                                         <span class="tec-na">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="td-center" data-sort="<?php echo $usuario['activo'] ? 1 : 0; ?>">
+                                <td class="td-center" data-sort="<?php echo $usuario['activo'] ? 1 : 0; ?>" data-label="Estado">
                                     <span class="badge <?php echo $usuario['activo'] ? 'badge-active' : 'badge-inactive'; ?>">
                                         <?php echo $usuario['activo'] ? '<i class="fas fa-check"></i> Activo' : '<i class="fas fa-times"></i> Inactivo'; ?>
                                     </span>
                                 </td>
                                 <?php if (!empty($es_superadmin)): ?>
-                                    <td><span class="badge-institucion"><i class="fas fa-school"></i> <?php echo htmlspecialchars($usuario['institucion_nombre'] ?? '—'); ?></span></td>
+                                    <td data-label="Institución"><span class="badge-institucion"><i class="fas fa-school"></i> <?php echo htmlspecialchars($usuario['institucion_nombre'] ?? '—'); ?></span></td>
                                 <?php endif; ?>
                                 <td class="td-center td-acciones">
                                     <button type="button" class="btn-action-compact btn-edit"
@@ -758,6 +758,16 @@ select.input-modern option {
 }
 
 @media (max-width: 768px) {
+    /* .form-modern-card (30px) + .usuarios-container (20px) sumaban 50px de
+       padding fijo por lado y desbordaban el ancho en pantallas angostas. */
+    .usuarios-container {
+        padding: 12px;
+    }
+
+    .form-modern-card {
+        padding: 18px;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
     }

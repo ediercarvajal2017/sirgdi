@@ -46,7 +46,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
     <form method="POST" action="<?php echo $base; ?>/?controlador=administrador&accion=guardar_permisos" id="form-permisos">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
 
-        <div class="matriz-wrap">
+        <div class="matriz-wrap tabla-responsive-wrap">
             <table class="matriz">
                 <thead>
                     <tr>
@@ -66,7 +66,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
                     <tr class="fila-modulo"><td colspan="<?php echo count($roles) + 1; ?>"><?php echo htmlspecialchars($nombres_modulo[$modulo] ?? ucfirst($modulo)); ?></td></tr>
                     <?php foreach ($lista as $p): ?>
                     <tr>
-                        <td class="col-permiso">
+                        <td class="col-permiso" data-label="Permiso">
                             <code><?php echo htmlspecialchars($p['codigo']); ?></code>
                             <small><?php echo htmlspecialchars($p['descripcion'] ?? ''); ?></small>
                         </td>
@@ -75,7 +75,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
                             $es_sa = $id_rol === ROL_SUPERADMIN;
                             $marcado = $es_sa || !empty($matriz[$id_rol][$id_p]);
                         ?>
-                            <td class="col-rol <?php echo $es_sa ? 'col-sa' : ''; ?>">
+                            <td class="col-rol <?php echo $es_sa ? 'col-sa' : ''; ?>" data-label="<?php echo htmlspecialchars($r['nombre_rol']); ?>">
                                 <?php if ($es_sa): ?>
                                     <i class="fas fa-check celda-sa" title="Siempre"></i>
                                 <?php else: ?>
@@ -186,7 +186,13 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
 .btn-modern:disabled { background:var(--color-bg-subtle); color:var(--color-text-muted); border:1px solid var(--color-border); cursor:not-allowed; }
 
 @media (max-width:768px) {
-    .matriz .col-permiso { min-width:200px; }
     .acciones { flex-direction:column; align-items:stretch; }
+    /* En la vista de tarjetas cada checkbox queda solo en su fila (Rol: [ ]);
+       el tamaño por defecto del navegador es demasiado pequeño para tocar. */
+    .matriz td.col-rol input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+    }
 }
 </style>
