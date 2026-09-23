@@ -333,9 +333,14 @@ class ControladorSuperadmin {
             die('Institución no encontrada.');
         }
 
+        require_once APP_PATH . '/servicios/servicio_archivos_institucion.php';
+        $servicio_logos = new ServicioArchivosInstitucion();
+
         $datos = [
             'titulo' => 'Editar Institución - ' . config('app.app_name'),
             'institucion' => $institucion,
+            // null si el archivo ya no está en disco: la vista oculta la vista previa.
+            'logo_url' => $servicio_logos->obtener_url_logo($institucion['logo_ruta'] ?? null),
             'csrf_token' => Validacion::generar_csrf_token(),
             'error' => $error ?? '',
         ];

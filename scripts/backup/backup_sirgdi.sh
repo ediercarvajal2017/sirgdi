@@ -77,7 +77,7 @@ for PAR in "mantenimiento:$SITIO_A" "mto:$SITIO_B"; do
 
     RUTAS_A_EMPACAR=()
     [ -d "$RUTA/almacenamiento/archivos/evidencias" ] && RUTAS_A_EMPACAR+=("almacenamiento/archivos/evidencias")
-    [ -d "$RUTA/public/almacenamiento/logos" ] && RUTAS_A_EMPACAR+=("public/almacenamiento/logos")
+    [ -d "$RUTA/almacenamiento/archivos/logos" ] && RUTAS_A_EMPACAR+=("almacenamiento/archivos/logos")
 
     if [ ${#RUTAS_A_EMPACAR[@]} -eq 0 ]; then
         log "AVISO: $NOMBRE no tiene carpetas de evidencias/logos, se omite"

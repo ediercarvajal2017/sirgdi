@@ -103,7 +103,7 @@ almacenamiento/logs
 almacenamiento/cache
 almacenamiento/temp
 almacenamiento/archivos/evidencias
-public/almacenamiento/logos
+almacenamiento/archivos/logos
 ```
 
 En Hostinger (Administrador de archivos o SSH) deja estas carpetas en **755**

@@ -44,10 +44,11 @@ class ControladorDashboard {
         $bd = BaseDatos::obtener();
         $institucion = $bd->obtener_uno($sql, [':id_inst' => $id_institucion]);
 
-        // Construir la URL pública del logo a partir del archivo almacenado
-        if (!empty($institucion['logo_ruta'])) {
-            $institucion['logo_url'] = config('app.url_base') . '/almacenamiento/logos/' . $institucion['logo_ruta'];
-        }
+        // URL del logo. El servicio devuelve null si el archivo ya no está en
+        // disco, para que la vista no deje un ícono roto.
+        require_once APP_PATH . '/servicios/servicio_archivos_institucion.php';
+        $servicio_logos = new ServicioArchivosInstitucion();
+        $institucion['logo_url'] = $servicio_logos->obtener_url_logo($institucion['logo_ruta'] ?? null);
 
         $datos = [
             'titulo' => 'Inicio - ' . ($institucion['nombre'] ?? config('app.app_name')),

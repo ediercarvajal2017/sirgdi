@@ -43,10 +43,10 @@
 
         <div class="form-group">
             <label for="logo"><i class="fas fa-image"></i> Logo de la Institución</label>
-            <?php if (!empty($institucion['logo_ruta'])): ?>
+            <?php if (!empty($logo_url)): ?>
                 <div class="current-logo">
                     <div class="logo-current-preview">
-                        <img src="<?php echo config('app.url_base'); ?>/almacenamiento/logos/<?php echo htmlspecialchars($institucion['logo_ruta']); ?>" alt="Logo actual">
+                        <img src="<?php echo htmlspecialchars($logo_url); ?>" alt="Logo actual">
                     </div>
                     <p class="current-logo-info">
                         <i class="fas fa-check-circle"></i> Logo actual

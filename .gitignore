@@ -14,7 +14,7 @@ almacenamiento/logs/*
 almacenamiento/cache/*
 almacenamiento/temp/*
 almacenamiento/archivos/evidencias/*
-public/almacenamiento/logos/*
+almacenamiento/archivos/logos/*
 
 # Conservar las carpetas vacías en git (los .gitkeep sí se versionan)
 !almacenamiento/sesiones/.gitkeep
@@ -22,7 +22,7 @@ public/almacenamiento/logos/*
 !almacenamiento/cache/.gitkeep
 !almacenamiento/temp/.gitkeep
 !almacenamiento/archivos/evidencias/.gitkeep
-!public/almacenamiento/logos/.gitkeep
+!almacenamiento/archivos/logos/.gitkeep
 
 # --- Scripts de depuración/reparación (NO desplegar a producción) ---
 arreglar_superadmin.php
