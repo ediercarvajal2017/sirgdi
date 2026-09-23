@@ -219,6 +219,19 @@
             background-clip: text;
         }
 
+        .hero h1 .hero-fullname {
+            display: block;
+            font-size: 0.42em;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            margin-top: 10px;
+            background: none;
+            -webkit-background-clip: initial;
+            background-clip: initial;
+            -webkit-text-fill-color: rgba(255,255,255,.85);
+            color: rgba(255,255,255,.85);
+        }
+
         .hero-sub {
             font-size: 19px;
             color: rgba(255,255,255,.8);
@@ -275,6 +288,23 @@
             border-color: var(--teal);
             transform: translateY(-2px);
             box-shadow: 0 10px 28px rgba(26,188,156,.45);
+        }
+
+        /* CTA principal del hero: reportar un daño es la acción que más nos
+           interesa que tome un visitante anónimo, así que debe verse más
+           grande y llamativa que "Ingresar" y "Ver Características". */
+        .btn-report-hero {
+            padding: 19px 42px;
+            font-size: 17px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #E67E22, #E74C3C);
+            box-shadow: 0 10px 30px rgba(231,76,60,.45);
+        }
+
+        .btn-report-hero:hover {
+            background: linear-gradient(135deg, #D35400, #C0392B);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 14px 38px rgba(231,76,60,.5);
         }
 
         .btn-outline {
@@ -866,28 +896,28 @@
             <div class="hero-badge">
                 <i class="fas fa-bolt"></i> Sistema Institucional v2.0
             </div>
-            <h1>Gestión de Necesidades<br><span>Inteligente y Trazable</span></h1>
+            <h1><span><?php echo htmlspecialchars(config('app.app_name')); ?></span><span class="hero-fullname"><?php echo htmlspecialchars(config('app.app_full_name')); ?></span></h1>
             <p class="hero-sub">
                 Plataforma integral para reportar, asignar y resolver incidencias de infraestructura
                 escolar con evidencia fotográfica, SLA automático y auditoría completa.
             </p>
             <div class="hero-buttons">
-                <a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=login" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
-                </a>
                 <?php
                 $insts = $instituciones_publicas ?? [];
                 if (count($insts) === 1):
                     $inst_url = config('app.url_base') . '/?controlador=reportes&accion=crear_invitado&inst=' . intval($insts[0]['id_institucion']);
                 ?>
-                <a href="<?php echo $inst_url; ?>" class="btn btn-teal">
+                <a href="<?php echo $inst_url; ?>" class="btn btn-report-hero">
                     <i class="fas fa-pen-to-square"></i> Reportar Daño
                 </a>
                 <?php elseif (count($insts) > 1): ?>
-                <button type="button" class="btn btn-teal" onclick="abrirSelectorInst()">
+                <button type="button" class="btn btn-report-hero" onclick="abrirSelectorInst()">
                     <i class="fas fa-pen-to-square"></i> Reportar Daño
                 </button>
                 <?php endif; ?>
+                <a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=login" class="btn btn-teal">
+                    <i class="fas fa-sign-in-alt"></i> Ingresar al Sistema
+                </a>
                 <a href="#features" class="btn btn-outline">
                     <i class="fas fa-chevron-down"></i> Ver Características
                 </a>
