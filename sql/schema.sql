@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     debe_cambiar_contrasena TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'La contraseña la puso un administrador: hay que cambiarla al entrar',
     activo                  TINYINT(1)          NOT NULL DEFAULT 1,
     requiere_2fa            TINYINT(1)          NOT NULL DEFAULT 0,
-    totp_secret             VARCHAR(100)        NULL     COMMENT 'Secreto TOTP cifrado en AES. RF-01',
+    totp_secret             VARCHAR(255)        NULL     COMMENT 'Secreto TOTP cifrado en AES. RF-01',
     token_reset_pass        VARCHAR(100)        NULL,
     token_reset_expira      DATETIME            NULL,
     ultima_actividad        DATETIME            NULL     COMMENT 'Para expiración de sesión. RNF-05',

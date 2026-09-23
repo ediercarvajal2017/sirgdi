@@ -225,7 +225,21 @@ class ModeloUsuario {
     /**
      * Habilitar 2FA y generar secreto TOTP
      */
-    public function habilitar_2fa($id_usuario, $id_institucion) {
+    /**
+     * Paso 1 de la activación: genera y guarda el secreto, pero NO activa el 2FA.
+     *
+     * Antes esto hacía las dos cosas a la vez, lo que es una trampa: si el
+     * usuario abandonaba a mitad de la configuración —o se equivocaba al
+     * copiar el secreto— quedaba con requiere_2fa=1 y una app que no genera
+     * códigos válidos, es decir, fuera de su propia cuenta y sin manera de
+     * volver a entrar.
+     *
+     * Se activa solo después de que demuestre que su app funciona
+     * (ver confirmar_2fa).
+     *
+     * @return string Secreto en base32, sin cifrar, para mostrarlo una vez.
+     */
+    public function preparar_2fa($id_usuario, $id_institucion) {
         require_once LIB_PATH . '/encriptacion.php';
 
         $secreto_totp = Encriptacion::generar_secreto_totp();
@@ -236,11 +250,23 @@ class ModeloUsuario {
 
         $this->actualizar($id_usuario, $id_institucion, [
             'totp_secret' => $secreto_encriptado,
+            'requiere_2fa' => 0,
+        ]);
+
+        // Retornar secreto sin encriptar para que el usuario lo registre en su app
+        return $secreto_totp;
+    }
+
+    /**
+     * Paso 2: el usuario ya demostró que su app genera códigos válidos.
+     * A partir de aquí el segundo factor se le pedirá en cada ingreso.
+     */
+    public function confirmar_2fa($id_usuario, $id_institucion) {
+        $this->actualizar($id_usuario, $id_institucion, [
             'requiere_2fa' => 1,
         ]);
 
-        // Retornar secreto sin encriptar para que el usuario lo escanee con su app
-        return $secreto_totp;
+        return true;
     }
 
     /**

@@ -183,6 +183,9 @@
                         </li>
                         <li class="header-user-divider"></li>
                     <?php endif; ?>
+                    <li><a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=seguridad">
+                        <i class="fas fa-shield-halved"></i> Seguridad
+                    </a></li>
                     <li><a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=cambiar_contrasena">
                         <i class="fas fa-key"></i> Cambiar Contraseña
                     </a></li>

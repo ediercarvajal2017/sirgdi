@@ -138,4 +138,52 @@ final class ModeloUsuarioTest extends BaseDbTestCase
 
         $this->assertSame(0, (int) $usuario['debe_cambiar_contrasena']);
     }
+
+    public function testElSecretoDe2faSobreviveAlViajeDeIdaYVueltaALaBaseDeDatos(): void
+    {
+        // Regresión: la columna totp_secret era VARCHAR(100) y el secreto
+        // cifrado ocupa 128 caracteres. MySQL lo truncaba en silencio al
+        // guardarlo y la desencriptación fallaba siempre con "Decryption
+        // failed", así que la verificación en dos pasos no podía funcionar.
+        // El fallo estuvo oculto porque nada llamaba a habilitar_2fa().
+        require_once dirname(__DIR__, 2) . '/lib/encriptacion.php';
+
+        $id = $this->modelo->crear([
+            'id_institucion' => self::ID_INSTITUCION,
+            'nombre_completo' => 'Usuario con 2FA',
+            'numero_documento' => '778899003',
+            'correo_electronico' => 'con.dosfa@local.test',
+            'hash_contrasena' => password_hash('Temporal@2026', PASSWORD_BCRYPT),
+        ]);
+
+        $secreto = $this->modelo->preparar_2fa($id, self::ID_INSTITUCION);
+        $recuperado = $this->modelo->obtener_secreto_totp($id, self::ID_INSTITUCION);
+
+        $this->assertSame($secreto, $recuperado, 'El secreto no sobrevivió intacto.');
+
+        // Y con él se puede validar un código real, que es lo que hará la app.
+        $codigo = Encriptacion::generar_codigo_totp($recuperado);
+        $this->assertTrue(Encriptacion::validar_totp($recuperado, $codigo));
+    }
+
+    public function testPrepararDosFactoresNoLoActivaTodavia(): void
+    {
+        // Si activase de inmediato, quien abandonara a mitad de la
+        // configuración quedaría fuera de su propia cuenta sin forma de entrar.
+        $id = $this->modelo->crear([
+            'id_institucion' => self::ID_INSTITUCION,
+            'nombre_completo' => 'Usuario a medias',
+            'numero_documento' => '778899004',
+            'correo_electronico' => 'a.medias@local.test',
+            'hash_contrasena' => password_hash('Temporal@2026', PASSWORD_BCRYPT),
+        ]);
+
+        $this->modelo->preparar_2fa($id, self::ID_INSTITUCION);
+        $usuario = $this->modelo->obtener_por_id($id, self::ID_INSTITUCION);
+        $this->assertSame(0, (int) $usuario['requiere_2fa'], 'No debe activarse hasta confirmar.');
+
+        $this->modelo->confirmar_2fa($id, self::ID_INSTITUCION);
+        $usuario = $this->modelo->obtener_por_id($id, self::ID_INSTITUCION);
+        $this->assertSame(1, (int) $usuario['requiere_2fa']);
+    }
 }

@@ -241,6 +241,142 @@ class ControladorAutenticacion {
         exit;
     }
 
+    // ===== SEGURIDAD DE LA CUENTA (2FA) =====
+
+    /**
+     * GET ?controlador=autenticacion&accion=seguridad
+     *
+     * Pantalla de seguridad de la cuenta. El 2FA estaba implementado entero
+     * (RFC 6238, secreto cifrado, límite de intentos, pantalla de verificación
+     * en el login) pero no había forma de activarlo: habilitar_2fa() no tenía
+     * ni un llamador en todo el proyecto.
+     */
+    public function seguridad() {
+        $this->auth->requerir_autenticacion();
+
+        $id_usuario = $this->auth->obtener_id_usuario();
+        $id_institucion = $this->auth->obtener_id_institucion();
+        $usuario = $this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion);
+
+        $datos = [
+            'titulo' => 'Seguridad de la cuenta - ' . config('app.app_name'),
+            'csrf_token' => Validacion::generar_csrf_token(),
+            'dos_factores_activo' => !empty($usuario['requiere_2fa']),
+            'correo' => $usuario['correo_electronico'] ?? '',
+            // Secreto en curso de configuración: se guarda en sesión para no
+            // volver a generarlo en cada recarga, lo que dejaría al usuario con
+            // una app apuntando a un secreto ya reemplazado.
+            'secreto_pendiente' => $_SESSION['secreto_2fa_pendiente'] ?? null,
+            'error' => $_GET['error'] ?? null,
+            'exito' => $_GET['exito'] ?? null,
+        ];
+
+        $this->renderizar_vista('autenticacion/vista_seguridad', $datos);
+    }
+
+    /**
+     * POST: genera el secreto y muestra las instrucciones. Todavía no activa
+     * nada: el 2FA solo queda activo cuando el usuario demuestra que su app
+     * genera códigos válidos.
+     */
+    public function preparar_2fa() {
+        $this->auth->requerir_autenticacion();
+        $this->exigir_post();
+
+        $id_usuario = $this->auth->obtener_id_usuario();
+        $id_institucion = $this->auth->obtener_id_institucion();
+
+        try {
+            $secreto = $this->modelo_usuario->preparar_2fa($id_usuario, $id_institucion);
+            $_SESSION['secreto_2fa_pendiente'] = $secreto;
+            $this->redirigir_seguridad(null, null);
+        } catch (Exception $e) {
+            $this->redirigir_seguridad('No se pudo iniciar la configuración: ' . $e->getMessage(), null);
+        }
+    }
+
+    /**
+     * POST: el usuario escribe el código que muestra su app. Si coincide, se
+     * activa el segundo factor.
+     */
+    public function confirmar_2fa() {
+        $this->auth->requerir_autenticacion();
+        $this->exigir_post();
+
+        $id_usuario = $this->auth->obtener_id_usuario();
+        $id_institucion = $this->auth->obtener_id_institucion();
+        $codigo = preg_replace('/\D/', '', $_POST['codigo'] ?? '');
+
+        if (strlen($codigo) !== 6) {
+            $this->redirigir_seguridad('El código debe tener 6 dígitos.', null);
+        }
+
+        $secreto = $this->modelo_usuario->obtener_secreto_totp($id_usuario, $id_institucion);
+        if (!$secreto) {
+            $this->redirigir_seguridad('No hay ninguna configuración en curso. Vuelve a empezar.', null);
+        }
+
+        require_once LIB_PATH . '/encriptacion.php';
+        if (!Encriptacion::validar_totp($secreto, $codigo)) {
+            $this->redirigir_seguridad(
+                'El código no coincide. Revisa que la hora del teléfono esté en automático.',
+                null
+            );
+        }
+
+        $this->modelo_usuario->confirmar_2fa($id_usuario, $id_institucion);
+        unset($_SESSION['secreto_2fa_pendiente']);
+
+        ServicioAuditoria::registrar('activar_2fa', 'usuario', $id_usuario);
+        $this->redirigir_seguridad(null, 'Verificación en dos pasos activada.');
+    }
+
+    /**
+     * POST: desactivar el segundo factor.
+     *
+     * Exige la contraseña actual: si alguien se hiciera con una sesión abierta,
+     * no debería poder quitar la protección sin conocerla.
+     */
+    public function desactivar_2fa() {
+        $this->auth->requerir_autenticacion();
+        $this->exigir_post();
+
+        $id_usuario = $this->auth->obtener_id_usuario();
+        $id_institucion = $this->auth->obtener_id_institucion();
+        $contrasena = $_POST['contrasena_actual'] ?? '';
+
+        $usuario = $this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion);
+        if (!$usuario || !password_verify($contrasena, $usuario['hash_contrasena'])) {
+            $this->redirigir_seguridad('La contraseña no es correcta.', null);
+        }
+
+        $this->modelo_usuario->deshabilitar_2fa($id_usuario, $id_institucion);
+        unset($_SESSION['secreto_2fa_pendiente']);
+
+        ServicioAuditoria::registrar('desactivar_2fa', 'usuario', $id_usuario);
+        $this->redirigir_seguridad(null, 'Verificación en dos pasos desactivada.');
+    }
+
+    /** Solo POST: estas acciones cambian el estado de la cuenta. */
+    private function exigir_post() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(HTTP_BAD_REQUEST);
+            exit;
+        }
+    }
+
+    private function redirigir_seguridad($error, $exito) {
+        $url = config('app.url_base') . '/?controlador=autenticacion&accion=seguridad';
+        if ($error !== null) {
+            $url .= '&error=' . urlencode($error);
+        }
+        if ($exito !== null) {
+            $url .= '&exito=' . urlencode($exito);
+        }
+        header('Location: ' . $url);
+        exit;
+    }
+
     /**
      * Página de recuperación de contraseña (GET)
      */
