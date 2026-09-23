@@ -1,7 +1,21 @@
 <!-- Cambiar Contraseña (Authenticated) -->
 <div class="form-modern-wrapper">
     <div class="form-modern-card">
-        <h2>Cambiar Contraseña</h2>
+        <h2><?php echo !empty($obligatorio) ? 'Defina su contraseña' : 'Cambiar Contraseña'; ?></h2>
+
+        <?php if (!empty($obligatorio)): ?>
+            <div class="alert alert-warning" role="alert">
+                <i class="fas fa-shield-halved"></i>
+                Su contraseña actual la creó un administrador y se la entregaron por
+                fuera del sistema. Para continuar, elija una que solo conozca usted.
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($politica)): ?>
+            <p class="form-help" style="margin:-6px 0 18px; font-size:13px;">
+                <i class="fas fa-circle-info"></i> <?php echo htmlspecialchars($politica); ?>
+            </p>
+        <?php endif; ?>
 
         <?php if (!empty($error)): ?>
             <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></div>

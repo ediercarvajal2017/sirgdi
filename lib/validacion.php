@@ -59,6 +59,18 @@ class Validacion {
     }
 
     /**
+     * Texto único de la política de contraseñas.
+     *
+     * Antes había tres reglas distintas conviviendo: 6 caracteres al crear un
+     * usuario, 8 al restablecer por enlace, y 8 con mayúscula/minúscula/número
+     * al cambiarla uno mismo. Un administrador podía crear una cuenta con una
+     * contraseña que el propio sistema rechazaría después. Con esto, el mensaje
+     * y la regla salen del mismo sitio.
+     */
+    const POLITICA_CONTRASENA = 'La contraseña debe tener al menos 8 caracteres, '
+        . 'con una mayúscula, una minúscula y un número.';
+
+    /**
      * Validar contraseña (RNF-02)
      * Requisitos: mín 8 caracteres, mayúscula, minúscula, número
      */
@@ -84,6 +96,45 @@ class Validacion {
         }
 
         return true;
+    }
+
+    /**
+     * Genera una contraseña temporal que cumple la política.
+     *
+     * Antes se usaba bin2hex(random_bytes(5)): 10 caracteres hexadecimales, sin
+     * mayúsculas ni símbolos. Era más débil que lo que el sistema le exige
+     * después al propio usuario, y como nada obligaba a cambiarla, podía
+     * quedarse así para siempre.
+     *
+     * Se evitan los caracteres que se confunden al dictarlos por teléfono o
+     * WhatsApp (O/0, l/I/1), que es como se entregan en la práctica.
+     */
+    public static function generar_contrasena_temporal($longitud = 12) {
+        $mayusculas = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+        $minusculas = 'abcdefghijkmnpqrstuvwxyz';
+        $numeros    = '23456789';
+        $todos      = $mayusculas . $minusculas . $numeros;
+
+        $longitud = max(8, (int) $longitud);
+
+        // Garantizar un carácter de cada tipo exigido por la política.
+        $caracteres = [
+            $mayusculas[random_int(0, strlen($mayusculas) - 1)],
+            $minusculas[random_int(0, strlen($minusculas) - 1)],
+            $numeros[random_int(0, strlen($numeros) - 1)],
+        ];
+
+        for ($i = count($caracteres); $i < $longitud; $i++) {
+            $caracteres[] = $todos[random_int(0, strlen($todos) - 1)];
+        }
+
+        // Barajar para que las posiciones fijas no sean predecibles.
+        for ($i = count($caracteres) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            [$caracteres[$i], $caracteres[$j]] = [$caracteres[$j], $caracteres[$i]];
+        }
+
+        return implode('', $caracteres);
     }
 
     /**

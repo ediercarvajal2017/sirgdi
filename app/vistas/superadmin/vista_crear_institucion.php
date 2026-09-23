@@ -100,7 +100,7 @@
         <div class="form-group">
             <label for="admin_password"><i class="fas fa-key"></i> Contraseña inicial</label>
             <div class="pass-wrap">
-                <input type="text" id="admin_password" name="admin_password" class="input-modern<?php echo $errCls('admin_password'); ?>" minlength="6" maxlength="60" placeholder="Vacío = se genera automática">
+                <input type="text" id="admin_password" name="admin_password" class="input-modern<?php echo $errCls('admin_password'); ?>" minlength="8" maxlength="60" placeholder="Vacío = se genera automática" title="Mínimo 8 caracteres, con mayúscula, minúscula y número">
                 <button type="button" class="btn-gen" onclick="generarPassInst()" title="Generar contraseña"><i class="fas fa-dice"></i></button>
             </div>
             <small class="form-help">Si la dejas vacía, el sistema genera una y te la mostrará al crear.</small>

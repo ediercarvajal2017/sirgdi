@@ -101,4 +101,41 @@ final class ModeloUsuarioTest extends BaseDbTestCase
             (int) $despues['version_credenciales']
         );
     }
+
+    public function testUnUsuarioNuevoNaceObligadoACambiarLaContrasena(): void
+    {
+        // La contraseña inicial la elige un administrador y se entrega por
+        // fuera del sistema (WhatsApp, teléfono). Debe cambiarse al entrar.
+        $id = $this->modelo->crear([
+            'id_institucion' => self::ID_INSTITUCION,
+            'nombre_completo' => 'Usuario recien creado',
+            'numero_documento' => '778899001',
+            'correo_electronico' => 'nace.obligado@local.test',
+            'hash_contrasena' => password_hash('Temporal@2026', PASSWORD_BCRYPT),
+        ]);
+
+        $usuario = $this->modelo->obtener_por_id($id, self::ID_INSTITUCION);
+
+        $this->assertSame(1, (int) $usuario['debe_cambiar_contrasena']);
+    }
+
+    public function testElRestablecimientoPorEnlaceLevantaLaObligacion(): void
+    {
+        // Si el usuario eligió la contraseña desde su propio correo, ya no hay
+        // motivo para volver a pedírsela al entrar.
+        $id = $this->modelo->crear([
+            'id_institucion' => self::ID_INSTITUCION,
+            'nombre_completo' => 'Usuario que restablece',
+            'numero_documento' => '778899002',
+            'correo_electronico' => 'restablece@local.test',
+            'hash_contrasena' => password_hash('Temporal@2026', PASSWORD_BCRYPT),
+        ]);
+
+        $token = $this->modelo->generar_token_reset($id, self::ID_INSTITUCION);
+        $this->modelo->usar_token_reset($token, 'Elegida@2026');
+
+        $usuario = $this->modelo->obtener_por_id($id, self::ID_INSTITUCION);
+
+        $this->assertSame(0, (int) $usuario['debe_cambiar_contrasena']);
+    }
 }

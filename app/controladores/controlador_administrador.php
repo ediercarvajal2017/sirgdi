@@ -319,13 +319,16 @@ class ControladorAdministrador {
             if ($accion === 'crear') {
                 // Contraseña: usar la indicada por el admin, o generar una temporal
                 if ($contrasena !== '') {
-                    if (strlen($contrasena) < 6) {
+                    if (!Validacion::validar_contrasena($contrasena)) {
                         $campo_error = 'contrasena';
-                        throw new Exception('La contraseña debe tener al menos 6 caracteres.');
+                        throw new Exception(Validacion::POLITICA_CONTRASENA);
                     }
                     $contrasena_temporal = $contrasena;
                 } else {
-                    $contrasena_temporal = bin2hex(random_bytes(5)); // 10 caracteres
+                    // Temporal que cumple la política: el usuario la cambia al
+                    // entrar, pero mientras tanto no debe ser más débil que las
+                    // que se le exigen a él.
+                    $contrasena_temporal = Validacion::generar_contrasena_temporal();
                 }
 
                 $id_usuario = $this->modelo_usuario->crear([
@@ -338,12 +341,6 @@ class ControladorAdministrador {
                     'activo' => 1,
                 ]);
 
-                // Guardar credenciales para mostrarlas una vez al admin (flash)
-                $_SESSION['credenciales_nuevo_usuario'] = [
-                    'email' => $correo,
-                    'password' => $contrasena_temporal,
-                ];
-
                 // Asignar rol al usuario
                 require_once LIB_PATH . '/basedatos.php';
                 $bd = BaseDatos::obtener();
@@ -353,8 +350,28 @@ class ControladorAdministrador {
                     'id_institucion' => $id_institucion,
                 ]);
 
-                $mensaje = 'Usuario creado. Contraseña temporal: ' . $contrasena_temporal . ' (Debe cambiarla al ingresar)';
-                // TODO: Enviar email con credenciales
+                // Intentar que el propio usuario elija su contraseña desde su
+                // correo. Es preferible a dictarle una credencial por WhatsApp:
+                // el enlace caduca en una hora y es de un solo uso.
+                $correo_enviado = $this->enviar_bienvenida_usuario(
+                    $id_usuario, $id_institucion, $correo, $nombre
+                );
+
+                if ($correo_enviado) {
+                    $mensaje = 'Usuario creado. Se envió a ' . $correo
+                        . ' un enlace para que defina su contraseña.';
+                } else {
+                    // Sin correo (SMTP caído o sin configurar) queda el camino
+                    // de siempre: mostrar la credencial una sola vez al admin.
+                    // El usuario tendrá que cambiarla al entrar, eso ya se exige.
+                    $_SESSION['credenciales_nuevo_usuario'] = [
+                        'email' => $correo,
+                        'password' => $contrasena_temporal,
+                    ];
+                    $mensaje = 'Usuario creado, pero no se pudo enviar el correo. '
+                        . 'Entregue esta contraseña temporal: ' . $contrasena_temporal
+                        . ' — el sistema le exigirá cambiarla al ingresar.';
+                }
 
             } elseif ($accion === 'editar' || $accion === 'actualizar') {
                 $id_usuario = intval($_POST['id_usuario'] ?? 0);
@@ -371,11 +388,14 @@ class ControladorAdministrador {
 
                 // Si el admin escribió una nueva contraseña, actualizarla
                 if ($contrasena !== '') {
-                    if (strlen($contrasena) < 6) {
+                    if (!Validacion::validar_contrasena($contrasena)) {
                         $campo_error = 'contrasena';
-                        throw new Exception('La contraseña debe tener al menos 6 caracteres.');
+                        throw new Exception(Validacion::POLITICA_CONTRASENA);
                     }
                     $datos_actualizar['hash_contrasena'] = password_hash($contrasena, PASSWORD_BCRYPT);
+                    // La puso un administrador, no el dueño de la cuenta:
+                    // se le exige cambiarla en el siguiente ingreso.
+                    $datos_actualizar['debe_cambiar_contrasena'] = 1;
 
                     // Mostrar la nueva credencial al admin (flash de un solo uso)
                     $_SESSION['credenciales_nuevo_usuario'] = [
@@ -609,6 +629,42 @@ class ControladorAdministrador {
 
         header('Content-Type: application/json');
         echo json_encode($permisos);
+    }
+
+    /**
+     * Envía al usuario recién creado un enlace de un solo uso para que defina
+     * su propia contraseña. Reutiliza el mecanismo de recuperación, que ya
+     * está implementado y probado, en vez de inventar otro token.
+     *
+     * Devuelve false si no se pudo enviar, para que el llamador use el camino
+     * antiguo (mostrar la credencial al administrador) en lugar de dejar al
+     * usuario sin forma de entrar.
+     */
+    private function enviar_bienvenida_usuario($id_usuario, $id_institucion, $correo, $nombre) {
+        try {
+            require_once APP_PATH . '/servicios/servicio_notificacion.php';
+
+            $token = $this->modelo_usuario->generar_token_reset($id_usuario, $id_institucion);
+            $link = config('app.url_base')
+                . '/?controlador=autenticacion&accion=restablecer_contrasena&token=' . urlencode($token);
+
+            $institucion = '';
+            require_once LIB_PATH . '/basedatos.php';
+            $fila = BaseDatos::obtener()->obtener_uno(
+                'SELECT nombre FROM institucion WHERE id_institucion = :id',
+                [':id' => $id_institucion]
+            );
+            if ($fila) {
+                $institucion = $fila['nombre'];
+            }
+
+            $servicio = new ServicioNotificacion();
+            return (bool) $servicio->enviar_bienvenida($correo, $nombre, $link, $institucion);
+
+        } catch (Throwable $e) {
+            error_log('Bienvenida no enviada a ' . $correo . ': ' . $e->getMessage());
+            return false;
+        }
     }
 
     // ===== HELPERS =====

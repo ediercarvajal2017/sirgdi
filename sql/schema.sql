@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     cargo_descripcion       VARCHAR(100)        NULL,
     hash_contrasena         VARCHAR(255)        NOT NULL COMMENT 'bcrypt/Argon2, factor≥12. RNF-01',
     version_credenciales    INT UNSIGNED        NOT NULL DEFAULT 1 COMMENT 'Sube al cambiar la contraseña; invalida las sesiones abiertas',
+    debe_cambiar_contrasena TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'La contraseña la puso un administrador: hay que cambiarla al entrar',
     activo                  TINYINT(1)          NOT NULL DEFAULT 1,
     requiere_2fa            TINYINT(1)          NOT NULL DEFAULT 0,
     totp_secret             VARCHAR(100)        NULL     COMMENT 'Secreto TOTP cifrado en AES. RF-01',

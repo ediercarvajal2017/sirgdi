@@ -166,6 +166,10 @@ class ControladorAutenticacion {
             'csrf_token' => $csrf_token,
             'error' => $_GET['error'] ?? null,
             'exito' => $_GET['exito'] ?? null,
+            // Llega aquí obligado: la contraseña la puso un administrador y el
+            // resto del sistema está bloqueado hasta que la cambie.
+            'obligatorio' => !empty($_SESSION['debe_cambiar_contrasena']),
+            'politica' => Validacion::POLITICA_CONTRASENA,
         ];
 
         $this->renderizar_vista('autenticacion/vista_cambiar_contrasena', $datos);
@@ -203,7 +207,7 @@ class ControladorAutenticacion {
 
         // Validar que sea una buena contraseña
         if (!Validacion::validar_contrasena($contrasena_nueva)) {
-            $this->redirigir_cambiar_contrasena('Contraseña débil. Mín 8 caracteres, mayúscula, minúscula, número.', 'error');
+            $this->redirigir_cambiar_contrasena(Validacion::POLITICA_CONTRASENA, 'error');
             exit;
         }
 
@@ -215,6 +219,13 @@ class ControladorAutenticacion {
                 $contrasena_actual,
                 $contrasena_nueva
             );
+
+            // La cambió el propio dueño de la cuenta: se levanta la
+            // obligación de cambiarla.
+            $this->modelo_usuario->actualizar($id_usuario, $id_institucion, [
+                'debe_cambiar_contrasena' => 0,
+            ]);
+            $_SESSION['debe_cambiar_contrasena'] = false;
 
             // El cambio invalidó todas las sesiones del usuario (incluida esta).
             // Adoptamos la nueva versión para no expulsar a quien acaba de
@@ -374,8 +385,8 @@ class ControladorAutenticacion {
             exit;
         }
 
-        if (strlen($nueva_contrasena) < 8) {
-            header('Location: ' . $url_token . '&error=' . urlencode('La contraseña debe tener al menos 8 caracteres.'));
+        if (!Validacion::validar_contrasena($nueva_contrasena)) {
+            header('Location: ' . $url_token . '&error=' . urlencode(Validacion::POLITICA_CONTRASENA));
             exit;
         }
 

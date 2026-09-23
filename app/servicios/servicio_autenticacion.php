@@ -244,6 +244,10 @@ class ServicioAutenticacion {
         // restablecimiento de contraseña), esta sesión deja de ser válida.
         $_SESSION['version_credenciales'] = (int)($usuario['version_credenciales'] ?? 1);
 
+        // Contraseña puesta por un administrador: hay que cambiarla antes de
+        // poder usar el sistema.
+        $_SESSION['debe_cambiar_contrasena'] = !empty($usuario['debe_cambiar_contrasena']);
+
         // Regenerar ID de sesión (prevenir session fixation - OWASP)
         session_regenerate_id(true);
 
@@ -617,6 +621,24 @@ class ServicioAutenticacion {
         if (!empty($_SESSION['pendiente_seleccion_institucion'])) {
             header('Location: ' . config('app.url_base') . '/?controlador=autenticacion&accion=seleccionar_institucion');
             exit;
+        }
+
+        // Contraseña temporal puesta por un administrador: el sistema queda
+        // bloqueado hasta cambiarla. Antes solo había una frase pidiéndolo, así
+        // que en la práctica nadie la cambiaba y la credencial que se dictó por
+        // teléfono seguía siendo válida indefinidamente.
+        //
+        // Se excluyen las propias pantallas de cambio y el cierre de sesión,
+        // porque si no el usuario quedaría en un bucle sin salida.
+        if (!empty($_SESSION['debe_cambiar_contrasena'])) {
+            $accion = $_GET['accion'] ?? '';
+            $exentas = ['cambiar_contrasena', 'procesar_cambiar_contrasena', 'logout'];
+
+            if (!in_array($accion, $exentas, true)) {
+                header('Location: ' . config('app.url_base')
+                    . '/?controlador=autenticacion&accion=cambiar_contrasena&obligatorio=1');
+                exit;
+            }
         }
     }
 }

@@ -107,4 +107,33 @@ final class ValidacionTest extends TestCase
     {
         $this->assertFalse(Validacion::validar_enum('otro', ['Registrado', 'Cerrado']));
     }
+
+    public function testLaContrasenaTemporalGeneradaSiempreCumpleLaPolitica(): void
+    {
+        // Antes se usaba bin2hex(random_bytes(5)): 10 caracteres hexadecimales,
+        // sin mayúsculas. Era más débil que lo que el sistema exige al usuario.
+        for ($i = 0; $i < 50; $i++) {
+            $generada = Validacion::generar_contrasena_temporal();
+            $this->assertTrue(
+                Validacion::validar_contrasena($generada),
+                'No cumple la política: ' . $generada
+            );
+        }
+    }
+
+    public function testLaContrasenaTemporalEvitaCaracteresQueSeConfundenAlDictarla(): void
+    {
+        // Se entregan por teléfono o WhatsApp: O/0 y l/I/1 se confunden.
+        for ($i = 0; $i < 50; $i++) {
+            $generada = Validacion::generar_contrasena_temporal();
+            $this->assertDoesNotMatchRegularExpression('/[Ol0I1]/', $generada);
+        }
+    }
+
+    public function testLaContrasenaTemporalRespetaLaLongitudMinima(): void
+    {
+        // Aunque se pida menos de 8, nunca baja del mínimo de la política.
+        $this->assertGreaterThanOrEqual(8, strlen(Validacion::generar_contrasena_temporal(4)));
+        $this->assertSame(16, strlen(Validacion::generar_contrasena_temporal(16)));
+    }
 }

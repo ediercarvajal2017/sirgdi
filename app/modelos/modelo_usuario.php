@@ -76,6 +76,14 @@ class ModeloUsuario {
             $datos_usuario['requiere_2fa'] = 0;
         }
 
+        // Toda cuenta nace con una contraseña que eligió otra persona (el
+        // administrador que la creó) y que se entrega por WhatsApp o teléfono.
+        // Debe cambiarse en el primer ingreso. Va aquí y no en cada controlador
+        // para que ninguna vía de alta futura se olvide.
+        if (!isset($datos_usuario['debe_cambiar_contrasena'])) {
+            $datos_usuario['debe_cambiar_contrasena'] = 1;
+        }
+
         // Timestamps
         $datos_usuario['fecha_creacion'] = date('Y-m-d H:i:s');
         $datos_usuario['ultima_actividad'] = date('Y-m-d H:i:s');
@@ -204,11 +212,13 @@ class ModeloUsuario {
             ['cost' => 12]
         );
 
-        // Actualizar y limpiar token
+        // Actualizar y limpiar token. La contraseña la eligió el propio dueño
+        // de la cuenta desde su correo, así que no queda pendiente de cambio.
         return $this->actualizar($usuario['id_usuario'], $usuario['id_institucion'], [
             'hash_contrasena' => $contrasena_hash,
             'token_reset_pass' => null,
             'token_reset_expira' => null,
+            'debe_cambiar_contrasena' => 0,
         ]);
     }
 

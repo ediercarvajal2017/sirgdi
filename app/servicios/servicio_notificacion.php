@@ -311,6 +311,43 @@ class ServicioNotificacion {
     }
 
     /**
+     * Alta de usuario: enlace para que elija su propia contraseña.
+     *
+     * Cierra el `// TODO: Enviar email con credenciales` que llevaba abierto
+     * desde el principio. Hasta ahora la contraseña se mostraba una sola vez en
+     * pantalla al administrador, que la hacía llegar por WhatsApp o por
+     * teléfono: un canal que no controla nadie y que deja la credencial escrita
+     * en la conversación de ambos.
+     *
+     * Se envía un enlace de un solo uso, como en la recuperación de contraseña,
+     * en lugar de la contraseña en claro.
+     */
+    public function enviar_bienvenida($email, $nombre, $link_activacion, $institucion = '') {
+        $app = config('app.app_name');
+        $asunto = "Acceso a {$app}" . ($institucion !== '' ? " — {$institucion}" : '');
+
+        $datos = ['Usuario' => htmlspecialchars($email)];
+        if ($institucion !== '') {
+            $datos['Institución'] = htmlspecialchars($institucion);
+        }
+
+        $cuerpo = $this->plantilla(
+            'Bienvenido a ' . htmlspecialchars($app),
+            $datos,
+            'Se creó una cuenta a su nombre. Para entrar, elija su contraseña desde '
+            . 'el siguiente enlace. Por seguridad caduca en una hora; si expira, '
+            . 'puede pedir uno nuevo desde "¿Olvidó su contraseña?" en la pantalla '
+            . 'de acceso.'
+            . $this->boton_enlace($link_activacion, 'Elegir mi contraseña')
+        );
+
+        // registrar_bd = false: en el momento del alta el usuario aún no tiene
+        // por qué aparecer en la campana de nadie, y el cuerpo lleva un enlace
+        // con token que no conviene guardar en la tabla.
+        return $this->enviar_email($email, $nombre, $asunto, $cuerpo, null, null, 'bienvenida', false);
+    }
+
+    /**
      * Notificaciones sin leer de un usuario, para la campana.
      *
      * Deliberadamente NO filtra por estado_envio. La versión anterior

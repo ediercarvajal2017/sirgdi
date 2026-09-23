@@ -113,9 +113,9 @@ class ControladorSuperadmin {
                 $campo_error = 'admin_email';
                 throw new Exception('El email del administrador no es válido');
             }
-            if ($admin_password !== '' && strlen($admin_password) < 6) {
+            if ($admin_password !== '' && !Validacion::validar_contrasena($admin_password)) {
                 $campo_error = 'admin_password';
-                throw new Exception('La contraseña del administrador debe tener al menos 6 caracteres');
+                throw new Exception(Validacion::POLITICA_CONTRASENA);
             }
 
             // Unicidad GLOBAL: el correo y el documento no pueden existir en NINGUNA institución

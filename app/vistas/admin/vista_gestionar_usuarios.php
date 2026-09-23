@@ -105,7 +105,7 @@
                 <div class="form-group" id="grupo-contrasena">
                     <label for="contrasena"><i class="fas fa-key"></i> <span id="label-contrasena">Contraseña inicial:</span></label>
                     <div class="pass-wrap">
-                        <input type="text" name="contrasena" id="contrasena" minlength="6" maxlength="60" placeholder="Vacío = se genera automática" class="input-modern<?php echo $errCls('contrasena'); ?>">
+                        <input type="text" name="contrasena" id="contrasena" minlength="8" maxlength="60" placeholder="Vacío = se genera automática" title="Mínimo 8 caracteres, con mayúscula, minúscula y número" class="input-modern<?php echo $errCls('contrasena'); ?>">
                         <button type="button" class="btn-gen" onclick="generarContrasena()" title="Generar contraseña"><i class="fas fa-dice"></i></button>
                     </div>
                     <small class="hint" id="hint-contrasena">Si la dejas vacía, el sistema genera una y te la mostrará al guardar.</small>
