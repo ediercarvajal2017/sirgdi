@@ -185,6 +185,21 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
 .btn-modern:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 18px rgba(52,152,219,.35); }
 .btn-modern:disabled { background:var(--color-bg-subtle); color:var(--color-text-muted); border:1px solid var(--color-border); cursor:not-allowed; }
 
+/* Tablet vertical / teléfono horizontal (769-1024px): aquí ya no aplica la
+   vista de tarjetas, pero la matriz completa pide ~944px (columna de permiso
+   260px + 6 roles de 96px) y no cabe: la última columna de rol quedaba fuera
+   y había que descubrir un scroll horizontal. Se compactan las columnas y se
+   permite partir los nombres largos de rol ("SUPERADMINISTRADOR"), con lo que
+   la matriz cabe completa y se ven todos los roles. */
+@media (min-width:769px) and (max-width:1024px) {
+    .matriz .col-permiso { min-width:170px; padding:10px; }
+    .matriz .col-rol { min-width:84px; padding:8px 4px; }
+    .matriz thead th { padding:10px 4px; font-size:10px; letter-spacing:0; }
+    .matriz thead th span { overflow-wrap:anywhere; }
+    .matriz .col-permiso code { font-size:12px; }
+    .matriz .col-permiso small { font-size:11px; }
+}
+
 @media (max-width:768px) {
     .acciones { flex-direction:column; align-items:stretch; }
     /* En la vista de tarjetas cada checkbox queda solo en su fila (Rol: [ ]);
