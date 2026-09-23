@@ -157,6 +157,8 @@
             </div>
         </div>
     </div>
+
+    <div class="header-nav-scrim" id="headerNavScrim" onclick="cerrarMobileNav()" aria-hidden="true"></div>
 </header>
 
 <style>
@@ -165,9 +167,19 @@
 
     /* Header Modern */
     .header-modern {
+        position: relative; /* ancla del panel de navegación móvil */
         background: var(--color-bg-elevated);
         box-shadow: 0 2px 12px rgba(52, 152, 219, 0.1);
         border-bottom: 3px solid var(--primary-blue);
+    }
+
+    /* Fondo oscuro detrás del menú móvil abierto (solo móvil, ver @media) */
+    .header-nav-scrim {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 25, 40, .45);
+        z-index: 1100;
     }
 
     /* Header Bar - una sola fila: marca | nav (centro) | usuario */
@@ -474,9 +486,16 @@
         z-index: 1000;
     }
 
-    .nav-dropdown:hover .dropdown-menu,
     .nav-dropdown.open .dropdown-menu {
         display: block;
+    }
+
+    /* Abrir por hover solo donde hay un puntero real (mouse). En táctil el
+       :hover se queda "pegado" tras un tap y el submenú aparece solo. */
+    @media (hover: hover) and (pointer: fine) {
+        .nav-dropdown:hover .dropdown-menu {
+            display: block;
+        }
     }
 
     .dropdown-menu li {
@@ -571,7 +590,7 @@
 
     @media (max-width: 768px) {
         .header-bar {
-            padding: 10px 15px;
+            padding: 10px 14px;
             flex-wrap: nowrap;
             justify-content: space-between;
             gap: 10px;
@@ -581,42 +600,79 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--color-border-subtle);
+            background: var(--light-bg);
         }
 
-        /* Menú colapsable: oculto por defecto, se despliega debajo del
-           header al tocar la hamburguesa (clase .nav-open, ver JS). */
+        .header-modern.nav-abierto .header-hamburger {
+            background: var(--primary-blue);
+            color: #fff;
+            border-color: var(--primary-blue);
+        }
+
+        /* La barra queda por encima del fondo oscuro para que el botón de
+           cerrar (✕) siga visible y se pueda tocar. */
+        .header-modern.nav-abierto .header-bar {
+            position: relative;
+            z-index: 1200;
+        }
+
+        /* Panel de navegación: se ancla DEBAJO del header y ocupa todo el
+           ancho. Va posicionado en absoluto a propósito — cuando dependía
+           del flex de .header-bar quedaba comprimido y se salía de la
+           pantalla en teléfonos. */
         .header-nav-modern {
             display: none;
-            order: 4;
-            flex: 1 1 100%;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            width: 100%;
             height: auto;
-            padding: 8px 0;
-            justify-content: flex-start;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            padding: 6px 0 10px;
+            background: var(--color-bg-elevated);
             border-top: 1px solid var(--color-border-subtle);
+            box-shadow: 0 14px 28px rgba(0, 0, 0, .22);
+            z-index: 1200;
         }
 
-        .header-nav-modern.nav-open {
-            display: flex;
+        .header-modern.nav-abierto .header-nav-modern {
+            display: block;
+        }
+
+        .header-modern.nav-abierto .header-nav-scrim {
+            display: block;
         }
 
         .nav-menu-primary {
-            flex-direction: column;
-            align-items: stretch;
+            display: block;
             width: 100%;
-            gap: 2px;
+            height: auto;
         }
 
         .nav-item {
+            display: block;
             height: auto;
             width: 100%;
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .nav-item:last-child {
+            border-bottom: none;
         }
 
         .nav-link {
             width: 100%;
-            padding: 13px 16px;
-            font-size: 13px;
+            min-height: 52px;
+            padding: 14px 18px;
+            font-size: 14px;
             border-bottom: none;
-            border-left: 3px solid transparent;
+            border-left: 4px solid transparent;
+            justify-content: flex-start;
         }
 
         .nav-link:hover,
@@ -631,14 +687,32 @@
             display: inline;
         }
 
+        .nav-link i:first-child {
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Chevron de los submenús: a la derecha y gira al abrir */
+        .nav-dropdown > .nav-link .fa-chevron-down {
+            margin-left: auto;
+            transition: transform .2s;
+        }
+
+        .nav-dropdown.open > .nav-link .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
         .nav-highlight .nav-link {
-            margin: 4px 10px;
+            margin: 0;
+            border-radius: 0;
         }
 
         .nav-dropdown {
             width: 100%;
         }
 
+        /* Submenú en línea, indentado bajo su sección */
         .dropdown-menu {
             position: static;
             box-shadow: none;
@@ -646,12 +720,13 @@
             background: var(--light-bg);
             min-width: 0;
             width: 100%;
-            padding: 4px 0;
+            padding: 2px 0;
         }
 
         .dropdown-menu a {
-            padding: 11px 16px 11px 44px;
-            font-size: 12.5px;
+            min-height: 48px;
+            padding: 13px 18px 13px 44px;
+            font-size: 13.5px;
         }
     }
 </style>
@@ -672,14 +747,40 @@
         });
     });
 
-    // Menú hamburguesa (móvil): muestra/oculta el panel de navegación completo
-    function toggleMobileNav() {
-        const nav = document.getElementById('headerNavModern');
+    // Menú hamburguesa (móvil): despliega el panel de navegación completo.
+    // El estado vive en .header-modern para que el panel y el fondo oscuro
+    // se muestren juntos desde CSS.
+    function aplicarEstadoMobileNav(abierto) {
+        const header = document.querySelector('.header-modern');
         const btn = document.getElementById('headerHamburger');
-        if (!nav) return;
-        const abierto = nav.classList.toggle('nav-open');
-        if (btn) btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        if (!header) return;
+        header.classList.toggle('nav-abierto', abierto);
+        if (btn) {
+            btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            btn.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
+            const icono = btn.querySelector('i');
+            if (icono) {
+                icono.classList.toggle('fa-bars', !abierto);
+                icono.classList.toggle('fa-xmark', abierto);
+            }
+        }
+        if (!abierto) {
+            document.querySelectorAll('.nav-dropdown.open').forEach(d => d.classList.remove('open'));
+        }
     }
+
+    function toggleMobileNav() {
+        const header = document.querySelector('.header-modern');
+        aplicarEstadoMobileNav(!(header && header.classList.contains('nav-abierto')));
+    }
+
+    function cerrarMobileNav() {
+        aplicarEstadoMobileNav(false);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarMobileNav();
+    });
 
     // Menú desplegable del usuario (clic en el nombre)
     function toggleUserMenu(e) {

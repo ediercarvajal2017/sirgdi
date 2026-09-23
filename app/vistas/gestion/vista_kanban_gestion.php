@@ -92,7 +92,7 @@
                                 </span>
                             </td>
                             <td class="td-center" data-sort="<?php echo intval($item['puntuacion_prioridad']); ?>" data-label="Prioridad"><span class="prioridad-score"><?php echo intval($item['puntuacion_prioridad']); ?></span></td>
-                            <td class="td-desc" title="<?php echo htmlspecialchars($r['descripcion_problema']); ?>" data-label="Descripción">
+                            <td class="td-desc td-largo" title="<?php echo htmlspecialchars($r['descripcion_problema']); ?>" data-label="Descripción">
                                 <?php echo htmlspecialchars(mb_strimwidth($r['descripcion_problema'], 0, 70, '…')); ?>
                             </td>
                             <td data-sort="<?php echo $sla === 'vencido' ? -9999 : $horas; ?>" data-label="SLA">

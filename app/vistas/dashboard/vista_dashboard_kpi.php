@@ -270,6 +270,18 @@
         color: var(--color-text);
     }
 
+    /* Con datos largos, estas tablas empujaban el scroll horizontal de toda
+       la página (no tenían contenedor con overflow). Así el scroll queda
+       contenido en la tabla. */
+    @media (max-width: 768px) {
+        .mini-table,
+        .critical-table {
+            display: block;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+    }
+
     .mini-table th {
         background: var(--color-bg-subtle);
         padding: 10px;

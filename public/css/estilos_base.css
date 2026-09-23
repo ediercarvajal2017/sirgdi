@@ -724,8 +724,46 @@ textarea.form-control {
         text-align: left;
         flex-shrink: 0;
     }
+    /* Celdas de texto largo (descripciones): la etiqueta va arriba y el texto
+       ocupa todo el ancho. Si se dejan lado a lado, el texto queda espichado
+       en una columna de dos palabras por línea. */
+    .tabla-responsive-wrap td.td-largo {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        gap: 4px;
+    }
+
+    /* Fila de botones de acción (celda sin etiqueta) */
     .tabla-responsive-wrap td:not([data-label]) {
         justify-content: center;
+        gap: 10px;
+        padding-top: 12px;
+    }
+
+    /* Área táctil mínima para los botones de acción dentro de las tarjetas */
+    .tabla-responsive-wrap td .btn-icono,
+    .tabla-responsive-wrap td .btn-action-compact,
+    .tabla-responsive-wrap td .btn-tabla {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Barra de herramientas de las tablas (buscador + filtro): en pantallas
+       angostas se apilan en vez de competir por el ancho. */
+    .tabla-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tabla-toolbar .buscador {
+        max-width: none;
+        width: 100%;
+    }
+
+    .tabla-toolbar .filtro-estado-wrap,
+    .tabla-toolbar .filtro-estado-wrap select {
+        width: 100%;
     }
 
     /* Filas separadoras/de sección (ej. agrupar por módulo en una matriz):

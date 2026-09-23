@@ -66,7 +66,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
                     <tr class="fila-modulo"><td colspan="<?php echo count($roles) + 1; ?>"><?php echo htmlspecialchars($nombres_modulo[$modulo] ?? ucfirst($modulo)); ?></td></tr>
                     <?php foreach ($lista as $p): ?>
                     <tr>
-                        <td class="col-permiso" data-label="Permiso">
+                        <td class="col-permiso td-largo" data-label="Permiso">
                             <code><?php echo htmlspecialchars($p['codigo']); ?></code>
                             <small><?php echo htmlspecialchars($p['descripcion'] ?? ''); ?></small>
                         </td>
