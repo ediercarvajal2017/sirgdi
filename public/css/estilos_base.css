@@ -783,25 +783,4 @@ textarea.form-control {
         width: 100%;
     }
 
-    /* Filas separadoras/de sección (ej. agrupar por módulo en una matriz):
-       se muestran como encabezado de sección, no como otra tarjeta. */
-    .tabla-responsive-wrap .fila-modulo {
-        margin: 16px 0 4px !important;
-        border: none !important;
-        background: none !important;
-        padding: 0 !important;
-    }
-    .tabla-responsive-wrap .fila-modulo td {
-        display: block !important;
-        border: none !important;
-        padding: 4px 0 !important;
-        font-weight: 800;
-        text-transform: uppercase;
-        font-size: 12px;
-        letter-spacing: .4px;
-        color: var(--color-text-muted);
-    }
-    .tabla-responsive-wrap .fila-modulo td::before {
-        content: none !important;
-    }
 }

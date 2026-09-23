@@ -46,7 +46,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
     <form method="POST" action="<?php echo $base; ?>/?controlador=administrador&accion=guardar_permisos" id="form-permisos">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
 
-        <div class="matriz-wrap tabla-responsive-wrap">
+        <div class="matriz-wrap">
             <table class="matriz">
                 <thead>
                     <tr>
@@ -66,7 +66,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
                     <tr class="fila-modulo"><td colspan="<?php echo count($roles) + 1; ?>"><?php echo htmlspecialchars($nombres_modulo[$modulo] ?? ucfirst($modulo)); ?></td></tr>
                     <?php foreach ($lista as $p): ?>
                     <tr>
-                        <td class="col-permiso td-largo" data-label="Permiso">
+                        <td class="col-permiso">
                             <code><?php echo htmlspecialchars($p['codigo']); ?></code>
                             <small><?php echo htmlspecialchars($p['descripcion'] ?? ''); ?></small>
                         </td>
@@ -75,7 +75,7 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
                             $es_sa = $id_rol === ROL_SUPERADMIN;
                             $marcado = $es_sa || !empty($matriz[$id_rol][$id_p]);
                         ?>
-                            <td class="col-rol <?php echo $es_sa ? 'col-sa' : ''; ?>" data-label="<?php echo htmlspecialchars($r['nombre_rol']); ?>">
+                            <td class="col-rol <?php echo $es_sa ? 'col-sa' : ''; ?>">
                                 <?php if ($es_sa): ?>
                                     <i class="fas fa-check celda-sa" title="Siempre"></i>
                                 <?php else: ?>
@@ -185,13 +185,12 @@ $total_editables = count(array_filter($roles, fn($r) => (int)$r['id_rol'] !== RO
 .btn-modern:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 6px 18px rgba(52,152,219,.35); }
 .btn-modern:disabled { background:var(--color-bg-subtle); color:var(--color-text-muted); border:1px solid var(--color-border); cursor:not-allowed; }
 
-/* Tablet vertical / teléfono horizontal (769-1024px): aquí ya no aplica la
-   vista de tarjetas, pero la matriz completa pide ~944px (columna de permiso
-   260px + 6 roles de 96px) y no cabe: la última columna de rol quedaba fuera
-   y había que descubrir un scroll horizontal. Se compactan las columnas y se
-   permite partir los nombres largos de rol ("SUPERADMINISTRADOR"), con lo que
-   la matriz cabe completa y se ven todos los roles. */
-@media (min-width:769px) and (max-width:1024px) {
+/* Pantallas medianas y pequeñas (<=1024px): la matriz completa pide ~944px
+   (columna de permiso 260px + 6 roles de 96px). Se compactan las columnas y
+   se permite partir los nombres largos de rol ("SUPERADMINISTRADOR", que
+   antes fijaba el ancho mínimo), con lo que baja a ~674px: cabe entera en
+   tablet y en el teléfono exige mucho menos desplazamiento lateral. */
+@media (max-width:1024px) {
     .matriz .col-permiso { min-width:170px; padding:10px; }
     .matriz .col-rol { min-width:84px; padding:8px 4px; }
     .matriz thead th { padding:10px 4px; font-size:10px; letter-spacing:0; }
