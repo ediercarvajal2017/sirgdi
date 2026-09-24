@@ -10,22 +10,55 @@
         <form method="GET" action="<?php echo config('app.url_base'); ?>/?controlador=gestion&accion=listar" class="filter-form">
             <div class="form-group-filter">
                 <label for="estado"><i class="fas fa-check-circle"></i> Estado</label>
+                <?php
+                // Los valores venían escritos a mano y dos estaban mal: "En
+                // Proceso" apuntaba al 2 (Asignado, que quedó vestigial y está
+                // siempre vacío) y "Cerrado" al 6 (Devuelto). Filtrar por
+                // cualquiera de los dos devolvía la lista equivocada.
+                //
+                // Ahora salen de las constantes, y están los ocho estados: los
+                // cuatro que faltaban dejaban reportes sin forma de filtrarlos.
+                $estados_filtro = [
+                    ESTADO_REGISTRADO    => 'Registrado',
+                    ESTADO_EN_PROCESO    => 'En Proceso',
+                    ESTADO_SOLUCIONADO   => 'Solucionado',
+                    ESTADO_EN_VALIDACION => 'En Validación',
+                    ESTADO_DEVUELTO      => 'Devuelto',
+                    ESTADO_CERRADO       => 'Cerrado',
+                    ESTADO_ANULADO       => 'Anulado',
+                ];
+                $estado_elegido = $_GET['estado'] ?? '';
+                ?>
                 <select name="estado" id="estado" class="input-modern input-select">
                     <option value="">-- Todos --</option>
-                    <option value="1" <?php echo ((isset($_GET['estado']) && $_GET['estado'] == 1) ? 'selected' : ''); ?>>Registrado</option>
-                    <option value="2" <?php echo ((isset($_GET['estado']) && $_GET['estado'] == 2) ? 'selected' : ''); ?>>En Proceso</option>
-                    <option value="4" <?php echo ((isset($_GET['estado']) && $_GET['estado'] == 4) ? 'selected' : ''); ?>>Solucionado</option>
-                    <option value="6" <?php echo ((isset($_GET['estado']) && $_GET['estado'] == 6) ? 'selected' : ''); ?>>Cerrado</option>
+                    <?php foreach ($estados_filtro as $id_e => $nombre_e): ?>
+                        <option value="<?php echo $id_e; ?>" <?php echo ((string) $estado_elegido === (string) $id_e) ? 'selected' : ''; ?>>
+                            <?php echo $nombre_e; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="form-group-filter">
                 <label for="urgencia"><i class="fas fa-exclamation-triangle"></i> Nivel de Prioridad de la Incidencia</label>
+                <?php
+                // Faltaba "No urgente": los reportes de urgencia 1 no se podían
+                // aislar, y son la mayoría.
+                $urgencias_filtro = [
+                    URGENCIA_URGENTE    => 'Urgente',
+                    URGENCIA_IMPORTANTE => 'Importante',
+                    URGENCIA_MODERADO   => 'Moderado',
+                    URGENCIA_NO_URGENTE => 'No urgente',
+                ];
+                $urgencia_elegida = $_GET['urgencia'] ?? '';
+                ?>
                 <select name="urgencia" id="urgencia" class="input-modern input-select">
                     <option value="">-- Todas --</option>
-                    <option value="4" <?php echo ((isset($_GET['urgencia']) && $_GET['urgencia'] == 4) ? 'selected' : ''); ?>>Urgente</option>
-                    <option value="3" <?php echo ((isset($_GET['urgencia']) && $_GET['urgencia'] == 3) ? 'selected' : ''); ?>>Importante</option>
-                    <option value="2" <?php echo ((isset($_GET['urgencia']) && $_GET['urgencia'] == 2) ? 'selected' : ''); ?>>Moderado</option>
+                    <?php foreach ($urgencias_filtro as $id_u => $nombre_u): ?>
+                        <option value="<?php echo $id_u; ?>" <?php echo ((string) $urgencia_elegida === (string) $id_u) ? 'selected' : ''; ?>>
+                            <?php echo $nombre_u; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 

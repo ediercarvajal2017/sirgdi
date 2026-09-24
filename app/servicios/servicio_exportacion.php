@@ -72,12 +72,22 @@ class ServicioExportacion {
      * Exportar estadísticas de SLA
      */
     public function exportar_estadisticas_sla() {
+        // El estado 6 es Devuelto, no Cerrado. Este informe contaba los
+        // devueltos como cerrados, así que en producción decía "0 cerrados"
+        // con cinco reportes cerrados, y dejaba fuera de "activos" todo lo que
+        // estuviera en Solucionado, En Validación o Devuelto.
+        //
+        // Se usan las constantes en vez de números sueltos justamente para que
+        // esto no vuelva a pasar.
         $sql = 'SELECT
                     COUNT(*) as total_reportes,
-                    SUM(CASE WHEN id_estado = 6 THEN 1 ELSE 0 END) as cerrados,
-                    SUM(CASE WHEN id_estado IN (1,2,3) THEN 1 ELSE 0 END) as activos,
-                    ROUND(AVG(DATEDIFF(CASE WHEN id_estado = 6 THEN fecha_actualizacion ELSE NOW() END, fecha_hora_registro)), 2) as promedio_dias,
-                    SUM(CASE WHEN id_urgencia_calculada = 4 THEN 1 ELSE 0 END) as urgentes
+                    SUM(CASE WHEN id_estado = ' . ESTADO_CERRADO . ' THEN 1 ELSE 0 END) as cerrados,
+                    SUM(CASE WHEN id_estado = ' . ESTADO_ANULADO . ' THEN 1 ELSE 0 END) as anulados,
+                    SUM(CASE WHEN id_estado NOT IN (' . ESTADO_CERRADO . ', ' . ESTADO_ANULADO . ') THEN 1 ELSE 0 END) as activos,
+                    ROUND(AVG(DATEDIFF(
+                        COALESCE(fecha_hora_cierre, NOW()), fecha_hora_registro
+                    )), 2) as promedio_dias,
+                    SUM(CASE WHEN id_urgencia_calculada = ' . URGENCIA_URGENTE . ' THEN 1 ELSE 0 END) as urgentes
                 FROM reporte
                 WHERE id_institucion = :id_institucion';
 

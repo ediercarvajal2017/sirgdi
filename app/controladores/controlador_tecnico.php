@@ -72,6 +72,17 @@ class ControladorTecnico {
                 'fecha_hora_inicio' => date('Y-m-d H:i:s'),
             ]);
             $intervension = $this->modelo_intervension->obtener_por_id($id_informe, $id_institucion);
+
+            // Este es el momento real en que alguien se pone con el reporte, y
+            // no el de la asignación. La columna existía en el esquema sin que
+            // nadie la escribiera, y es la que alimenta el hito "Intervención
+            // técnica iniciada" de la línea de tiempo pública.
+            if (empty($reporte['fecha_hora_inicio_tecnico'])) {
+                $this->modelo_reporte->actualizar($id_reporte, $id_institucion, [
+                    'fecha_hora_inicio_tecnico' => date('Y-m-d H:i:s'),
+                ]);
+            }
+
             ServicioAuditoria::registrar('iniciar_intervencion', 'reporte', $id_reporte, null,
                 ['ticket' => $reporte['numero_ticket'], 'id_informe' => (int)$id_informe]);
         }

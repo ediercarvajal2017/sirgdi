@@ -117,46 +117,54 @@ class ModeloReporte {
      * Listar reportes de una institución (con filtros opcionales)
      */
     public function listar_por_institucion($id_institucion, $filtros = [], $limite = 50, $offset = 0) {
-        $sql = 'SELECT * FROM reporte WHERE id_institucion = :id_institucion';
+        // El JOIN con categoria no es decorativo: la vista del listado pinta
+        // nombre_categoria y, al no venir nunca, caía al id y mostraba un
+        // número crudo en la columna "Categoría".
+        $sql = 'SELECT r.*, c.nombre AS nombre_categoria
+                  FROM reporte r
+                  LEFT JOIN categoria c
+                    ON c.id_categoria = r.id_categoria
+                   AND c.id_institucion = r.id_institucion
+                 WHERE r.id_institucion = :id_institucion';
         $parametros = [':id_institucion' => $id_institucion];
 
         // Filtro por estado
         if (!empty($filtros['id_estado'])) {
-            $sql .= ' AND id_estado = :id_estado';
+            $sql .= ' AND r.id_estado = :id_estado';
             $parametros[':id_estado'] = $filtros['id_estado'];
         }
 
         // Filtro por categoría
         if (!empty($filtros['id_categoria'])) {
-            $sql .= ' AND id_categoria = :id_categoria';
+            $sql .= ' AND r.id_categoria = :id_categoria';
             $parametros[':id_categoria'] = $filtros['id_categoria'];
         }
 
         // Filtro por urgencia
         if (!empty($filtros['id_urgencia'])) {
-            $sql .= ' AND id_urgencia_calculada = :id_urgencia';
+            $sql .= ' AND r.id_urgencia_calculada = :id_urgencia';
             $parametros[':id_urgencia'] = $filtros['id_urgencia'];
         }
 
         // Filtro por reportante
         if (!empty($filtros['id_reportante'])) {
-            $sql .= ' AND id_reportante = :id_reportante';
+            $sql .= ' AND r.id_reportante = :id_reportante';
             $parametros[':id_reportante'] = $filtros['id_reportante'];
         }
 
         // Filtro por rango de fechas
         if (!empty($filtros['fecha_desde'])) {
-            $sql .= ' AND fecha_hora_registro >= :fecha_desde';
+            $sql .= ' AND r.fecha_hora_registro >= :fecha_desde';
             $parametros[':fecha_desde'] = $filtros['fecha_desde'] . ' 00:00:00';
         }
 
         if (!empty($filtros['fecha_hasta'])) {
-            $sql .= ' AND fecha_hora_registro <= :fecha_hasta';
+            $sql .= ' AND r.fecha_hora_registro <= :fecha_hasta';
             $parametros[':fecha_hasta'] = $filtros['fecha_hasta'] . ' 23:59:59';
         }
 
         // Ordenamiento y paginación
-        $sql .= ' ORDER BY fecha_hora_registro DESC LIMIT :limite OFFSET :offset';
+        $sql .= ' ORDER BY r.fecha_hora_registro DESC LIMIT :limite OFFSET :offset';
         $parametros[':limite'] = $limite;
         $parametros[':offset'] = $offset;
 
@@ -272,10 +280,40 @@ class ModeloReporte {
             }
         }
 
-        // Actualizar estado
-        $this->actualizar($id_reporte, $id_institucion, [
-            'id_estado' => $id_estado_nuevo,
-        ]);
+        // Actualizar estado y, con él, las marcas de tiempo del ciclo de vida.
+        //
+        // Las cuatro columnas existen en el esquema desde el principio y no las
+        // escribía nadie. Dos consecuencias medibles: la línea de tiempo que ve
+        // el ciudadano decía "Pendiente — Cierre formal" hasta en los reportes
+        // ya cerrados, y el indicador de días de resolución se calculaba sobre
+        // fecha_actualizacion, que lleva ON UPDATE CURRENT_TIMESTAMP y por
+        // tanto se mueve con cualquier edición posterior al cierre.
+        //
+        // Se escriben aquí porque todos los flujos —asignar, intervenir,
+        // validar, cerrar, cambio manual— pasan por este método.
+        $campos = ['id_estado' => $id_estado_nuevo];
+        $ahora  = date('Y-m-d H:i:s');
+
+        // fecha_hora_inicio_tecnico NO se escribe aquí a propósito. Asignar un
+        // reporte ya lo pasa a En Proceso sin esperar al técnico (ver el
+        // comentario en ControladorGestion::procesar_asignar), así que ponerla
+        // en esta transición la dejaría siempre igual a la de asignación y la
+        // línea de tiempo mostraría dos hitos con la misma hora. Se escribe
+        // cuando el técnico abre de verdad la hoja de trabajo.
+
+        if ($id_estado_nuevo === ESTADO_SOLUCIONADO) {
+            // Esta sí se sobrescribe: si la solución se devolvió y se rehízo,
+            // la que cuenta para el tiempo de resolución es la última.
+            $campos['fecha_hora_solucionado'] = $ahora;
+        }
+
+        if ($id_estado_nuevo === ESTADO_CERRADO || $id_estado_nuevo === ESTADO_ANULADO) {
+            // Anulado también termina el reporte. Sin esta marca no habría
+            // forma de saber cuándo dejó de estar abierto.
+            $campos['fecha_hora_cierre'] = $ahora;
+        }
+
+        $this->actualizar($id_reporte, $id_institucion, $campos);
 
         // Registrar transición en BD (auditoría)
         $this->registrar_transicion_estado(
@@ -309,11 +347,16 @@ class ModeloReporte {
     }
 
     /**
-     * Asignar técnico a un reporte
+     * Asignar técnico a un reporte.
+     *
+     * Guarda también quién asignó. La columna id_gestor_asignador existía sin
+     * que nadie la escribiera, así que el registro de auditoría era el único
+     * sitio donde constaba, y desde el reporte no se podía saber.
      */
-    public function asignar_tecnico($id_reporte, $id_institucion, $id_tecnico) {
+    public function asignar_tecnico($id_reporte, $id_institucion, $id_tecnico, $id_gestor = null) {
         return $this->actualizar($id_reporte, $id_institucion, [
-            'id_tecnico_asignado' => $id_tecnico,
+            'id_tecnico_asignado'   => $id_tecnico,
+            'id_gestor_asignador'   => $id_gestor ?? ($_SESSION['id_usuario'] ?? null),
             'fecha_hora_asignacion' => date('Y-m-d H:i:s'),
         ]);
     }

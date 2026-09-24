@@ -932,10 +932,18 @@ $hay_evidencia_tecnico = count($evidencias_por_etapa['antes']) + count($evidenci
             </li>
             <?php endif; ?>
             <?php if (!empty($reporte['fecha_hora_cierre'])): ?>
+            <?php // Anulado usa la misma marca de cierre, pero no es lo mismo que
+                  // cerrar un reporte atendido: decirle "cerrado formalmente" a
+                  // quien vio su reporte descartado sería engañoso.
+                  $fue_anulado = (int) ($reporte['id_estado'] ?? 0) === ESTADO_ANULADO; ?>
             <li class="tl-item">
                 <div class="tl-dot tl-dot-done"></div>
                 <div class="tl-meta"><?php echo date('d/m/Y · H:i', strtotime($reporte['fecha_hora_cierre'])); ?> hrs</div>
-                <div class="tl-text"><i class="fas fa-lock" style="color:#0E6655; margin-right:5px;"></i> Reporte cerrado formalmente</div>
+                <?php if ($fue_anulado): ?>
+                    <div class="tl-text"><i class="fas fa-ban" style="color:#922B21; margin-right:5px;"></i> Reporte anulado por la institución</div>
+                <?php else: ?>
+                    <div class="tl-text"><i class="fas fa-lock" style="color:#0E6655; margin-right:5px;"></i> Reporte cerrado formalmente</div>
+                <?php endif; ?>
             </li>
             <?php else: ?>
             <li class="tl-item">

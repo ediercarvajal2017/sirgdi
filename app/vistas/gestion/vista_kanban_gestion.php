@@ -117,6 +117,18 @@
                                 <?php endif; ?>
                             </td>
                             <td class="td-center td-acciones">
+                                <?php
+                                // Un reporte que quedó en En Validación —el gestor
+                                // aprobó la solución y cerró el navegador a mitad del
+                                // paso siguiente— solo mostraba el cambio manual de
+                                // estado, sin ninguna señal de que había un trámite a
+                                // medias. Aquí se le ofrece terminarlo.
+                                ?>
+                                <?php if ($r['id_estado'] === ESTADO_EN_VALIDACION && in_array('validar_cerrar', $_SESSION['permisos'] ?? [])): ?>
+                                    <a href="<?php echo config('app.url_base'); ?>/?controlador=cierre&accion=cerrar_reporte&id=<?php echo $r['id_reporte']; ?>" class="btn-tabla btn-validar" title="Este reporte quedó a medio cerrar">
+                                        <i class="fas fa-flag-checkered"></i> Terminar cierre
+                                    </a>
+                                <?php endif; ?>
                                 <?php if ($r['id_estado'] === ESTADO_SOLUCIONADO && in_array('validar_cerrar', $_SESSION['permisos'] ?? [])): ?>
                                     <a href="<?php echo config('app.url_base'); ?>/?controlador=cierre&accion=validar_solucion&id=<?php echo $r['id_reporte']; ?>" class="btn-tabla btn-validar" title="Revisar y validar la solución">
                                         <i class="fas fa-clipboard-check"></i> Validar

@@ -42,7 +42,10 @@ class ControladorGestion {
             $filtros['id_estado'] = intval($_GET['estado']);
         }
         if (isset($_GET['urgencia']) && $_GET['urgencia'] !== '') {
-            $filtros['id_urgencia_calculada'] = intval($_GET['urgencia']);
+            // La clave es id_urgencia, que es la que lee el modelo. Antes se
+            // escribía id_urgencia_calculada —el nombre de la columna, no el
+            // del filtro—, así que el desplegable no hacía absolutamente nada.
+            $filtros['id_urgencia'] = intval($_GET['urgencia']);
         }
 
         // Paginación
@@ -163,7 +166,9 @@ class ControladorGestion {
             }
 
             // Asignar
-            $this->modelo_reporte->asignar_tecnico($id_reporte, $id_institucion, $id_tecnico);
+            $this->modelo_reporte->asignar_tecnico(
+                $id_reporte, $id_institucion, $id_tecnico, $this->auth->obtener_id_usuario()
+            );
 
             // Cambiar estado a "En Proceso" directamente: por diseño se salta
             // ESTADO_ASIGNADO (queda vestigial, ver lib/constantes.php) en vez de
@@ -279,6 +284,16 @@ class ControladorGestion {
             ESTADO_CERRADO => 'Cerrado',
         ];
 
+        // "Anulado" existía en el esquema, en la tabla de transiciones y como
+        // permiso concedido a Gestor, Rector y Admin, pero no aparecía en
+        // ninguna pantalla: no había forma de llegar a él. Con el formulario
+        // público abierto hace falta, porque la única alternativa para un
+        // reporte de spam era borrarlo de forma permanente —perdiendo la
+        // evidencia de que llegó— o dejarlo en el tablero para siempre.
+        if ($this->autorizacion->verificar_permiso(PERMISO_ANULAR_REPORTE)) {
+            $estados[ESTADO_ANULADO] = 'Anulado';
+        }
+
         $datos = [
             'titulo' => 'Cambiar Estado - ' . config('app.app_name'),
             'reporte' => $reporte,
@@ -316,6 +331,17 @@ class ControladorGestion {
                 throw new Exception('Reporte no encontrado.');
             }
 
+            // Anular es irreversible —el estado 8 es terminal— y borra el
+            // reporte del trabajo pendiente, así que se comprueba el permiso
+            // específico y se exige decir por qué. Sin justificación, dentro de
+            // seis meses nadie sabrá si fue spam o un descuido.
+            if ($id_estado_nuevo === ESTADO_ANULADO) {
+                $this->autorizacion->requerir_permiso(PERMISO_ANULAR_REPORTE);
+                if (mb_strlen($justificacion) < 10) {
+                    throw new Exception('Para anular un reporte hay que explicar el motivo (mínimo 10 caracteres).');
+                }
+            }
+
             // Cambiar estado
             $this->modelo_reporte->cambiar_estado(
                 $id_reporte,
@@ -337,6 +363,26 @@ class ControladorGestion {
             // Si pasa a "Devuelto", pausar SLA (RN-10)
             if ($id_estado_nuevo == ESTADO_DEVUELTO) {
                 $this->modelo_reporte->pausar_sla($id_reporte, $id_institucion);
+            }
+
+            // Cerrar por esta vía no avisaba a nadie: el ciudadano no llegaba a
+            // enterarse de que su reporte se había cerrado. El cierre formal
+            // (ControladorCierre) sí lo hacía, así que el aviso dependía de por
+            // qué pantalla hubiera pasado el gestor.
+            //
+            // Al anular no se escribe a quien reportó, a propósito: un reporte
+            // se anula justamente cuando no debe tramitarse, y lo habitual es
+            // que sea spam con un correo inventado. El motivo queda en la
+            // auditoría y el estado se ve en la página de seguimiento.
+            if ($id_estado_nuevo == ESTADO_CERRADO) {
+                require_once APP_PATH . '/servicios/servicio_notificacion.php';
+                $servicio_notificacion = new ServicioNotificacion();
+                $servicio_notificacion->notificar_reporte_cerrado(
+                    $id_reporte,
+                    $id_institucion,
+                    $reporte['numero_ticket'],
+                    $reporte['correo_reportante'] ?? null
+                );
             }
 
             // Redirigir

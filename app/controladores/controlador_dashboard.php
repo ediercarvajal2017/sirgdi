@@ -175,10 +175,16 @@ class ControladorDashboard {
      * Promedio de días de resolución
      */
     private function obtener_promedio_dias_resolucion($id_institucion) {
-        $sql = 'SELECT ROUND(AVG(DATEDIFF(fecha_actualizacion, fecha_hora_registro)), 1) as promedio
+        // Se mide contra fecha_hora_cierre, no contra fecha_actualizacion.
+        // Esa segunda columna lleva ON UPDATE CURRENT_TIMESTAMP: cualquier
+        // edición posterior al cierre —reclasificar, corregir una categoría—
+        // la mueve, y el promedio crece solo. Los reportes sin fecha de cierre
+        // quedan fuera del promedio en lugar de entrar con un número
+        // inventado; AVG ignora los NULL.
+        $sql = 'SELECT ROUND(AVG(DATEDIFF(fecha_hora_cierre, fecha_hora_registro)), 1) as promedio
                 FROM reporte
                 WHERE id_institucion = :id_inst
-                AND id_estado = 7';
+                  AND id_estado = ' . ESTADO_CERRADO;
 
         require_once LIB_PATH . '/basedatos.php';
         $bd = BaseDatos::obtener();
