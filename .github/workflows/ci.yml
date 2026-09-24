@@ -69,4 +69,20 @@ jobs:
           JWT_SECRET: 0123456789abcdef0123456789abcdef
           CSRF_SALT: 0123456789abcdef
           ENV: development
-        run: php vendor/bin/phpunit --no-coverage
+        run: php vendor/bin/phpunit --no-coverage --log-junit junit.xml
+
+      # Sin esto, un fallo de pruebas solo deja "exit code 2" y hay que abrir el
+      # log completo para saber que se rompió. Aquí salen los nombres y los
+      # mensajes como anotaciones, visibles en el propio pull request.
+      - name: Detallar las pruebas que fallaron
+        if: failure()
+        run: |
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET, sys, os
+          if not os.path.exists('junit.xml'):
+              print('::error::No se generó junit.xml'); sys.exit(0)
+          for caso in ET.parse('junit.xml').getroot().iter('testcase'):
+              for mal in list(caso.findall('failure')) + list(caso.findall('error')):
+                  texto = ' | '.join((mal.get('message') or (mal.text or '')).split(chr(10)))[:600]
+                  print('::error title=%s::%s' % (caso.get('name'), texto))
+          EOF

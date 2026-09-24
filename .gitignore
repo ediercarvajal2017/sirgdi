@@ -58,3 +58,4 @@ Thumbs.db
 # Credenciales demo y config local (no publicar)
 usurios.md
 .claude/settings.local.json
+junit.xml
