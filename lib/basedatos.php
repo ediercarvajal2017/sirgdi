@@ -135,7 +135,12 @@ class BaseDatos {
             return $this->pdo->lastInsertId();
         } catch (PDOException $e) {
             $this->registrar_error("Insert error en tabla $tabla: " . $e->getMessage());
-            throw new Exception('Error insertando registro.');
+
+            // El mensaje que sube es genérico —nunca se le enseña un SQLSTATE
+            // a un usuario— pero la excepción original viaja como "previous"
+            // para que quien llama pueda distinguir, por ejemplo, un choque de
+            // clave única de un fallo de conexión.
+            throw new Exception('Error insertando registro.', 0, $e);
         }
     }
 

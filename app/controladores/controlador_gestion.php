@@ -104,8 +104,10 @@ class ControladorGestion {
             }
         }
 
-        // Estadísticas
-        $stats = $this->servicio_prioridad->obtener_estadisticas_prioridad($id_institucion);
+        // Estadísticas: se derivan de lo ya calculado, sin repetir el recorrido.
+        $stats = $this->servicio_prioridad->obtener_estadisticas_prioridad(
+            $id_institucion, $reportes_por_prioridad
+        );
 
         // Colores de urgencia (mapeo id_urgencia => color hex)
         $colores_urgencia = [

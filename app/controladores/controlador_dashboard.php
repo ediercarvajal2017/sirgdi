@@ -228,24 +228,25 @@ class ControladorDashboard {
             'fecha_hasta' => $_GET['fecha_hasta'] ?? null,
         ];
 
-        switch ($tipo) {
-            case 'encuestas':
-                $contenido = $servicio_exportacion->exportar_encuestas_csv();
-                $nombre = 'encuestas_' . date('Y-m-d') . '.csv';
-                break;
+        // Los reportes salen por flujo: es la exportación que crece sin techo,
+        // y así el navegador empieza a recibir el archivo de inmediato en vez
+        // de esperar a que esté entero. Termina la petición, no vuelve.
+        if ($tipo !== 'encuestas' && $tipo !== 'auditoria') {
+            $servicio_exportacion->descargar_reportes_csv(
+                $filtros, 'reportes_' . date('Y-m-d') . '.csv'
+            );
+        }
 
-            case 'auditoria':
-                $contenido = $servicio_exportacion->exportar_auditoria_csv(
-                    $filtros['fecha_desde'],
-                    $filtros['fecha_hasta'],
-                    $this->autorizacion->es_superadmin()
-                );
-                $nombre = 'auditoria_' . date('Y-m-d') . '.csv';
-                break;
-
-            default: // reportes
-                $contenido = $servicio_exportacion->exportar_reportes_csv($filtros);
-                $nombre = 'reportes_' . date('Y-m-d') . '.csv';
+        if ($tipo === 'encuestas') {
+            $contenido = $servicio_exportacion->exportar_encuestas_csv();
+            $nombre = 'encuestas_' . date('Y-m-d') . '.csv';
+        } else {
+            $contenido = $servicio_exportacion->exportar_auditoria_csv(
+                $filtros['fecha_desde'],
+                $filtros['fecha_hasta'],
+                $this->autorizacion->es_superadmin()
+            );
+            $nombre = 'auditoria_' . date('Y-m-d') . '.csv';
         }
 
         ServicioExportacion::descargar_csv($contenido, $nombre);

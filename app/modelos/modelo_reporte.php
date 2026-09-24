@@ -5,6 +5,9 @@
 // RN-11: UUID para seguimiento público (sin auth)
 
 class ModeloReporte {
+
+    /** Vueltas máximas para conseguir un número de ticket libre. */
+    const MAX_INTENTOS_TICKET = 5;
     private $bd;
 
     public function __construct() {
@@ -213,9 +216,8 @@ class ModeloReporte {
             throw new Exception("Debe proporcionar ubicación (área o referencia).");
         }
 
-        // Generar número de ticket único (RN-07)
-        $numero_ticket = $this->generar_numero_ticket($datos['id_institucion']);
-        $datos['numero_ticket'] = $numero_ticket;
+        // El número de ticket se genera dentro del bucle de abajo, porque
+        // puede chocar con otro envío simultáneo y hay que volver a pedirlo.
 
         // Generar UUID para seguimiento público (RN-11)
         $datos['token_seguimiento_publico'] = $this->generar_uuid();
@@ -239,7 +241,61 @@ class ModeloReporte {
             $datos['id_urgencia_calculada'] = $datos['id_urgencia_declarada'];
         }
 
-        return $this->bd->insertar('reporte', $datos);
+        return $this->insertar_con_ticket_unico($datos);
+    }
+
+    /**
+     * Inserta el reporte reintentando si el número de ticket ya se lo llevó otro.
+     *
+     * generar_numero_ticket() hace MAX(...) + 1, que no es atómico: entre que
+     * este proceso lee el máximo y escribe la fila, otro envío puede haber
+     * leído el mismo máximo. Con el formulario público abierto, dos ciudadanos
+     * enviando en el mismo segundo no es hipotético.
+     *
+     * La fila lleva índice único (id_institucion, numero_ticket), así que la
+     * base rechaza al segundo. Antes esa excepción subía tal cual y el
+     * ciudadano recibía "Error insertando registro." tras haber escrito todo
+     * el formulario. Ahora se pide el siguiente número y se vuelve a intentar.
+     *
+     * Reintentar es suficiente y no necesita bloquear una tabla entera: la
+     * colisión requiere que dos envíos caigan en la misma rendija de
+     * milisegundos, y a la segunda vuelta el máximo ya incluye la fila del
+     * otro.
+     */
+    private function insertar_con_ticket_unico($datos) {
+        $intentos = 0;
+
+        while (true) {
+            $datos['numero_ticket'] = $this->generar_numero_ticket($datos['id_institucion']);
+
+            try {
+                return $this->bd->insertar('reporte', $datos);
+            } catch (Exception $e) {
+                $intentos++;
+
+                if ($intentos >= self::MAX_INTENTOS_TICKET || !$this->es_choque_de_ticket($e)) {
+                    throw $e;
+                }
+
+                // Espera mínima y creciente para no volver a chocar de frente
+                // con el mismo competidor.
+                usleep($intentos * 10000);
+            }
+        }
+    }
+
+    /** ¿El fallo fue el índice único del ticket, o cualquier otra cosa? */
+    private function es_choque_de_ticket(Exception $e) {
+        $original = $e->getPrevious();
+        if (!$original instanceof PDOException) {
+            return false;
+        }
+
+        // 23000 es la violación de restricción de integridad; el nombre del
+        // índice distingue el choque de ticket de, por ejemplo, una clave
+        // foránea que no existe, que reintentar no arreglaría nunca.
+        return ($original->getCode() === '23000')
+            && stripos($original->getMessage(), 'uk_rpt_ticket') !== false;
     }
 
     /**
@@ -430,7 +486,10 @@ class ModeloReporte {
      * Formato: SIR-{año}{número secuencial}
      * Ej: SIR-202600001
      */
-    private function generar_numero_ticket($id_institucion) {
+    // protected y no private: la prueba de la carrera necesita sustituirla
+    // por una versión que devuelva a propósito un numero ya ocupado. Sin
+    // eso, una prueba de un solo hilo no puede provocar la colisión.
+    protected function generar_numero_ticket($id_institucion) {
         $anio = date('Y');
         $sql = 'SELECT MAX(CAST(SUBSTRING(numero_ticket, 9) AS UNSIGNED)) as ultimo_numero
                 FROM reporte

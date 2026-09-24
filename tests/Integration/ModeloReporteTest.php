@@ -13,6 +13,52 @@ final class ModeloReporteTest extends BaseDbTestCase
         $this->modelo = new ModeloReporte();
     }
 
+    public function testSiOtroEnvioSeLlevaElNumeroDeTicketSeUsaElSiguiente(): void
+    {
+        // generar_numero_ticket() hace MAX(...) + 1, que no es atÃ³mico: entre
+        // leer el mÃ¡ximo y escribir la fila, otro envÃ­o puede haberse llevado
+        // ese nÃºmero. Con el formulario pÃºblico abierto, dos ciudadanos
+        // enviando en el mismo segundo no es hipotÃ©tico.
+        //
+        // Una prueba de un solo hilo no puede intercalar dos inserciones, asÃ­
+        // que se sustituye el generador por uno que devuelve la primera vez un
+        // nÃºmero que ya estÃ¡ ocupado: exactamente lo que ve el segundo
+        // ciudadano cuando pierde la carrera.
+        $ocupado = $this->modelo->obtener_por_id(
+            $this->modelo->crear($this->datosReporteValido()), self::ID_INSTITUCION
+        )['numero_ticket'];
+
+        $modelo = new class($ocupado) extends ModeloReporte {
+            private $choque;
+            private $veces = 0;
+            public function __construct($choque) { parent::__construct(); $this->choque = $choque; }
+            protected function generar_numero_ticket($id_institucion) {
+                // La primera vez devuelve el que ya existe; despuÃ©s, el normal.
+                return (++$this->veces === 1) ? $this->choque : parent::generar_numero_ticket($id_institucion);
+            }
+        };
+
+        // Antes esto lanzaba "Error insertando registro." y el ciudadano
+        // perdÃ­a todo lo que habÃ­a escrito.
+        $id = $modelo->crear($this->datosReporteValido());
+        $reporte = $modelo->obtener_por_id($id, self::ID_INSTITUCION);
+
+        $this->assertNotFalse($reporte);
+        $this->assertNotSame($ocupado, $reporte['numero_ticket'],
+            'DebÃ­a haber pedido el siguiente nÃºmero libre.');
+        $this->assertMatchesRegularExpression('/^SIR-\d{4}\d{5}$/', $reporte['numero_ticket']);
+    }
+
+    public function testSiElChoqueNoEsDelTicketNoSeReintenta(): void
+    {
+        // Reintentar solo tiene sentido para el Ã­ndice Ãºnico del ticket. Una
+        // clave forÃ¡nea inexistente no se arregla insistiendo, y quedarse en
+        // el bucle esconderÃ­a el error real.
+        $this->expectException(Exception::class);
+
+        $this->modelo->crear($this->datosReporteValido(['id_sede' => 999999]));
+    }
+
     public function testCrearGeneraNumeroDeTicketConElFormatoEsperado(): void
     {
         $id = $this->modelo->crear($this->datosReporteValido());

@@ -211,6 +211,15 @@ class ServicioPrioridad {
         require_once APP_PATH . '/modelos/modelo_sla.php';
         $modelo_sla = new ModeloSLA();
 
+        // Los SLA se cargan una vez, no uno por reporte.
+        //
+        // Antes este bucle preguntaba a la base el SLA de cada reporte —una o
+        // dos consultas cada uno— y el tablero recorría la lista dos veces,
+        // así que una sola carga de pantalla costaba 2 + 4N consultas. Medido
+        // en producción: 42 consultas con 10 reportes, y 4.002 al llegar al
+        // tope de 1.000. Ahora son tres, pase lo que pase.
+        $mapa_sla = $modelo_sla->mapa_por_institucion($id_institucion);
+
         // Calcular puntuación para cada reporte
         $reportes_con_puntuacion = [];
         foreach ($reportes as $reporte) {
@@ -218,7 +227,7 @@ class ServicioPrioridad {
                 continue;
             }
 
-            $sla_info = $modelo_sla->calcular_vencimiento($reporte);
+            $sla_info = $modelo_sla->calcular_vencimiento($reporte, $mapa_sla);
             $puntuacion = $this->calcular_puntuacion_prioridad($reporte, $sla_info);
 
             $reportes_con_puntuacion[] = [
@@ -261,30 +270,42 @@ class ServicioPrioridad {
     /**
      * Obtener estadísticas de priorización (para dashboard)
      */
-    public function obtener_estadisticas_prioridad($id_institucion) {
-        $reportes = $this->modelo_reporte->listar_por_institucion($id_institucion, [], 1000, 0);
+    /**
+     * @param array|null $items Resultado de listar_por_prioridad(). Si se pasa,
+     *                          las cifras salen de ahí sin volver a consultar:
+     *                          el tablero ya tiene esos datos en la mano y
+     *                          repetir el recorrido entero duplicaba el coste
+     *                          de la pantalla.
+     */
+    public function obtener_estadisticas_prioridad($id_institucion, $items = null) {
+        if ($items === null) {
+            $items = $this->listar_por_prioridad($id_institucion);
+        }
 
         $stats = [
-            'total_reportes' => count($reportes),
+            'total_reportes' => count($items),
             'reportes_urgentes' => 0,
             'reportes_sla_vencido' => 0,
             'reportes_sla_por_vencer' => 0,
             'reportes_por_asignar' => 0,
         ];
 
-        require_once APP_PATH . '/modelos/modelo_sla.php';
-        $modelo_sla = new ModeloSLA();
+        foreach ($items as $item) {
+            $reporte  = $item['reporte'];
+            $sla_info = $item['sla_info'];
 
-        foreach ($reportes as $reporte) {
             if ($reporte['id_urgencia_calculada'] == URGENCIA_URGENTE) {
                 $stats['reportes_urgentes']++;
             }
 
-            if (!isset($reporte['id_tecnico']) || !$reporte['id_tecnico']) {
+            // La columna se llama id_tecnico_asignado. Se leía id_tecnico, que
+            // no existe, así que la comprobación era siempre cierta y el
+            // tablero daba como "por asignar" todos los reportes: en
+            // producción mostraba 10 cuando solo 2 estaban sin técnico.
+            if (empty($reporte['id_tecnico_asignado'])) {
                 $stats['reportes_por_asignar']++;
             }
 
-            $sla_info = $modelo_sla->calcular_vencimiento($reporte);
             if ($sla_info['estado_sla'] === 'vencido') {
                 $stats['reportes_sla_vencido']++;
             } elseif ($sla_info['estado_sla'] === 'cerca') {

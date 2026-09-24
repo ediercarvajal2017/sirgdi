@@ -93,13 +93,62 @@ class ModeloSLA {
      * Toma en cuenta pausa (RN-10)
      * Retorna: ["fecha_vencimiento" => "2026-06-19 10:30:00", "horas_restantes" => 5.5, "estado_sla" => "en_tiempo|cerca|vencido"]
      */
-    public function calcular_vencimiento($reporte) {
-        // Obtener configuración SLA
-        $sla = $this->obtener_por_categoria($reporte['id_categoria'], $reporte['id_institucion']);
+    /**
+     * Carga de una sola vez todos los SLA activos de una institución.
+     *
+     * Existe para que quien tenga que calcular el vencimiento de muchos
+     * reportes no pregunte a la base una vez por reporte. Una institución
+     * tiene un puñado de SLA; los reportes pueden ser miles.
+     *
+     * Devuelve el mismo criterio de búsqueda que usan obtener_por_categoria()
+     * y obtener_por_urgencia(), resuelto en memoria.
+     */
+    public function mapa_por_institucion($id_institucion) {
+        $filas = $this->bd->obtener_todos(
+            'SELECT * FROM sla WHERE id_institucion = :inst AND activo = 1
+              ORDER BY id_sla ASC',
+            [':inst' => $id_institucion]
+        );
 
-        if (!$sla) {
-            // Fallback a urgencia
-            $sla = $this->obtener_por_urgencia($reporte['id_urgencia_calculada'], $reporte['id_institucion']);
+        $mapa = ['categoria' => [], 'urgencia' => []];
+        foreach ($filas as $sla) {
+            if ($sla['id_categoria'] !== null) {
+                // El primero gana, igual que hacía obtener_uno().
+                $clave = (int) $sla['id_categoria'];
+                if (!isset($mapa['categoria'][$clave])) {
+                    $mapa['categoria'][$clave] = $sla;
+                }
+            } else {
+                $clave = (int) $sla['id_urgencia'];
+                if (!isset($mapa['urgencia'][$clave])) {
+                    $mapa['urgencia'][$clave] = $sla;
+                }
+            }
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * @param array|null $mapa Resultado de mapa_por_institucion(). Si se pasa,
+     *                         el SLA se resuelve en memoria y no se toca la
+     *                         base de datos: es lo que evita el N+1 del
+     *                         tablero, que hacía una o dos consultas por
+     *                         reporte y dos recorridos completos por pantalla.
+     */
+    public function calcular_vencimiento($reporte, $mapa = null) {
+        if ($mapa !== null) {
+            $sla = $mapa['categoria'][(int) $reporte['id_categoria']]
+                ?? $mapa['urgencia'][(int) $reporte['id_urgencia_calculada']]
+                ?? null;
+        } else {
+            // Obtener configuración SLA
+            $sla = $this->obtener_por_categoria($reporte['id_categoria'], $reporte['id_institucion']);
+
+            if (!$sla) {
+                // Fallback a urgencia
+                $sla = $this->obtener_por_urgencia($reporte['id_urgencia_calculada'], $reporte['id_institucion']);
+            }
         }
 
         if (!$sla) {
@@ -167,10 +216,13 @@ class ModeloSLA {
         $modelo_reporte = new ModeloReporte();
         $reportes_activos = $modelo_reporte->listar_por_institucion($id_institucion, [], 1000, 0);
 
+        // Una carga de los SLA para todo el bucle, no una por reporte.
+        $mapa = $this->mapa_por_institucion($id_institucion);
+
         $reportes_por_vencer = [];
         foreach ($reportes_activos as $reporte) {
             if (in_array($reporte['id_estado'], [ESTADO_REGISTRADO, ESTADO_EN_PROCESO, ESTADO_DEVUELTO])) {
-                $sla_info = $this->calcular_vencimiento($reporte);
+                $sla_info = $this->calcular_vencimiento($reporte, $mapa);
                 if ($sla_info['estado_sla'] === 'cerca' || $sla_info['estado_sla'] === 'vencido') {
                     $reportes_por_vencer[] = array_merge($reporte, $sla_info);
                 }
@@ -187,10 +239,12 @@ class ModeloSLA {
         $modelo_reporte = new ModeloReporte();
         $reportes_activos = $modelo_reporte->listar_por_institucion($id_institucion, [], 1000, 0);
 
+        $mapa = $this->mapa_por_institucion($id_institucion);
+
         $reportes_vencidos = [];
         foreach ($reportes_activos as $reporte) {
             if (in_array($reporte['id_estado'], [ESTADO_REGISTRADO, ESTADO_EN_PROCESO, ESTADO_DEVUELTO])) {
-                $sla_info = $this->calcular_vencimiento($reporte);
+                $sla_info = $this->calcular_vencimiento($reporte, $mapa);
                 if ($sla_info['estado_sla'] === 'vencido') {
                     $reportes_vencidos[] = array_merge($reporte, $sla_info);
                 }
