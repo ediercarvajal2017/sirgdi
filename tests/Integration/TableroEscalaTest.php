@@ -33,15 +33,22 @@ final class TableroEscalaTest extends BaseDbTestCase
 
     private function sembrar(int $cuantos): void
     {
+        // nombre_reportante es NOT NULL y sin valor por defecto. Faltaba, y en
+        // una base sin modo estricto MySQL lo rellenaba en silencio con una
+        // cadena vacia; en la integración continua, que sí es estricta, la
+        // inserción fallaba. El bootstrap de pruebas activa ahora el modo
+        // estricto para que esto se vea aquí y no al publicar.
         $sql = 'INSERT INTO reporte (id_institucion, numero_ticket, token_seguimiento_publico,
-                    id_sede, referencia_ubicacion_libre, id_categoria, id_urgencia_declarada,
-                    id_urgencia_calculada, descripcion_problema, id_estado, fecha_hora_registro)
-                VALUES (?, ?, UUID(), ?, ?, ?, ?, ?, ?, ?, NOW() - INTERVAL ? HOUR)';
+                    nombre_reportante, id_sede, referencia_ubicacion_libre, id_categoria,
+                    id_urgencia_declarada, id_urgencia_calculada, descripcion_problema,
+                    id_estado, fecha_hora_registro)
+                VALUES (?, ?, UUID(), ?, ?, ?, ?, ?, ?, ?, ?, NOW() - INTERVAL ? HOUR)';
 
         for ($i = 0; $i < $cuantos; $i++) {
             $this->bd->ejecutar($sql, [
                 self::ID_INSTITUCION,
                 'ESC-' . uniqid('', true),
+                'Siembra de prueba',
                 self::ID_SEDE,
                 'siembra de prueba',
                 self::ID_CATEGORIA,

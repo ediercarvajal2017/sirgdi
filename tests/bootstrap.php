@@ -24,3 +24,22 @@ require_once LIB_PATH . '/validacion.php';
 require_once LIB_PATH . '/errores.php';
 require_once LIB_PATH . '/mensajes.php';
 require_once __DIR__ . '/Integration/BaseDbTestCase.php';
+
+// Las pruebas corren en modo estricto, aunque la base local y la de producción
+// no lo estén.
+//
+// Sin esto, insertar NULL o nada en una columna NOT NULL se convierte en
+// silencio en una cadena vacía y la prueba pasa; la integración continua usa
+// MariaDB con STRICT_TRANS_TABLES y falla. Eso ya pasó una vez: una prueba
+// verde en el equipo del desarrollador y roja al publicar.
+//
+// Más importante que la molestia: en producción ese mismo descuido guarda un
+// reporte con el nombre del reportante vacío en vez de avisar.
+try {
+    BaseDatos::obtener()->ejecutar(
+        "SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION'"
+    );
+} catch (Throwable $e) {
+    fwrite(STDERR, "Aviso: no se pudo activar el modo estricto: " . $e->getMessage() . "
+");
+}
