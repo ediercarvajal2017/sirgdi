@@ -4,8 +4,9 @@ name: Pruebas
 # se publica en producción automáticamente, así que un fallo aquí es lo único
 # que avisa antes de que el cliente lo vea.
 on:
+  # Cualquier rama, no solo main: main se publica en producción en cuanto se
+  # envía, así que esperar a main para enterarse de un fallo llega tarde.
   push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -49,7 +50,7 @@ jobs:
           mysql -h 127.0.0.1 -u root -proot sirgdi < sql/seeds.sql
 
       - name: Análisis estático
-        run: vendor/bin/phpstan analyse --no-progress
+        run: vendor/bin/phpstan analyse --no-progress --error-format=github --memory-limit=512M
 
       - name: Pruebas
         env:
