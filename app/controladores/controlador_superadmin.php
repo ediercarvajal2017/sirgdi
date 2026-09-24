@@ -37,6 +37,7 @@ class ControladorSuperadmin {
             'titulo' => 'Administración Global - ' . config('app.app_name'),
             'instituciones' => $instituciones,
             'cred_admin' => $cred_admin,
+            'preparacion' => $this->evaluar_preparacion($bd),
         ];
 
         $this->renderizar_vista('superadmin/vista_superadmin_inicio', $datos);
@@ -982,6 +983,78 @@ class ControladorSuperadmin {
 
         header('Location: ' . config('app.url_base') . '/?controlador=superadmin&accion=inicio');
         exit;
+    }
+
+    /**
+     * Estado de puesta en marcha de cada institución.
+     *
+     * Dar de alta un cliente exige varias piezas que hoy se configuran a mano y
+     * sin guía: si falta una, el sistema no falla, simplemente no sirve. Un
+     * ejemplo real detectado en producción: dos instituciones no tenían ningún
+     * Gestor ni Rector, así que sus alertas de SLA se generaban y se
+     * descartaban sin destinatario, y nadie lo notaba.
+     *
+     * Se resuelve en una sola consulta agregada, no una por institución: con
+     * diez o más clientes, un bucle de consultas aquí se nota.
+     *
+     * @return array [id_institucion => ['listo' => bool, 'faltan' => [...]]]
+     */
+    private function evaluar_preparacion($bd) {
+        // Se cuenta por id_rol y no por nombre: los nombres llevan acentos y
+        // una base con la codificación mal importada haría que la comparación
+        // fallara en silencio (pasa de verdad: en la base de desarrollo
+        // 'Admin de Institución' está guardado con los bytes corruptos).
+        $filas = $bd->obtener_todos(
+            "SELECT i.id_institucion,
+                    (SELECT COUNT(*) FROM sede s
+                      WHERE s.id_institucion = i.id_institucion AND s.activa = 1) AS sedes,
+                    (SELECT COUNT(*) FROM categoria c
+                      WHERE c.id_institucion = i.id_institucion) AS categorias,
+                    (SELECT COUNT(*) FROM sla sl
+                      WHERE sl.id_institucion = i.id_institucion AND sl.activo = 1) AS slas,
+                    (SELECT COUNT(DISTINCT u.id_usuario)
+                       FROM usuario u
+                       JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                      WHERE u.id_institucion = i.id_institucion AND u.activo = 1
+                        AND ur.id_rol = " . ROL_ADMIN . ") AS admins,
+                    (SELECT COUNT(DISTINCT u.id_usuario)
+                       FROM usuario u
+                       JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                      WHERE u.id_institucion = i.id_institucion AND u.activo = 1
+                        AND ur.id_rol IN (" . ROL_GESTOR . ", " . ROL_RECTOR . ")) AS gestores,
+                    (SELECT COUNT(DISTINCT u.id_usuario)
+                       FROM usuario u
+                       JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                      WHERE u.id_institucion = i.id_institucion AND u.activo = 1
+                        AND ur.id_rol = " . ROL_TECNICO . ") AS tecnicos
+               FROM institucion i"
+        );
+
+        // Cada requisito dice qué falta y adónde ir a resolverlo.
+        $requisitos = [
+            'sedes'      => ['Sin sedes', 'No se puede ubicar un daño sin al menos una sede.', 'gestionar_sedes'],
+            'categorias' => ['Sin categorías', 'El formulario de reporte no tiene qué ofrecer.', null],
+            'slas'       => ['Sin SLA', 'Los tiempos de atención usan el valor por defecto de 48 h.', null],
+            'admins'     => ['Sin Admin de Institución', 'Nadie puede gestionar usuarios ni configuración.', null],
+            'gestores'   => ['Sin Gestor ni Rector', 'Nadie recibe los avisos de SLA ni asigna técnicos.', null],
+            'tecnicos'   => ['Sin técnicos', 'No hay a quién asignarle los reportes.', null],
+        ];
+
+        $resultado = [];
+        foreach ($filas as $f) {
+            $faltan = [];
+            foreach ($requisitos as $clave => $info) {
+                if ((int) $f[$clave] === 0) {
+                    $faltan[] = ['titulo' => $info[0], 'motivo' => $info[1], 'accion' => $info[2]];
+                }
+            }
+            $resultado[(int) $f['id_institucion']] = [
+                'listo'  => empty($faltan),
+                'faltan' => $faltan,
+            ];
+        }
+
+        return $resultado;
     }
 
     private function renderizar_vista($vista, $datos = []) {

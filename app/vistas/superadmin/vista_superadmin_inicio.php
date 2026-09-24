@@ -64,12 +64,30 @@
     <?php else: ?>
         <div class="institutions-list">
             <?php foreach ($instituciones as $institucion): ?>
+                <?php
+                $prep = $preparacion[(int) $institucion['id_institucion']] ?? ['listo' => true, 'faltan' => []];
+                ?>
                 <div class="institution-row">
                     <div class="institution-info">
                         <span class="institution-name"><?php echo htmlspecialchars($institucion['nombre']); ?></span>
                         <span class="badge <?php echo $institucion['es_activa'] ? 'badge-active' : 'badge-inactive'; ?>">
                             <?php echo $institucion['es_activa'] ? 'Activa' : 'Inactiva'; ?>
                         </span>
+                        <?php if ($prep['listo']): ?>
+                            <span class="badge-preparacion badge-preparacion--listo">
+                                <i class="fas fa-circle-check"></i> Lista para operar
+                            </span>
+                        <?php else: ?>
+                            <button type="button" class="badge-preparacion badge-preparacion--falta"
+                                    onclick="alternarFaltantes(<?php echo (int) $institucion['id_institucion']; ?>)"
+                                    aria-expanded="false"
+                                    aria-controls="faltan-<?php echo (int) $institucion['id_institucion']; ?>">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                Falta<?php echo count($prep['faltan']) === 1 ? '' : 'n'; ?>
+                                <?php echo count($prep['faltan']); ?>
+                                <?php echo count($prep['faltan']) === 1 ? 'cosa' : 'cosas'; ?>
+                            </button>
+                        <?php endif; ?>
                     </div>
                     <div class="institution-actions">
                         <a href="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=gestionar_sedes&id=<?php echo $institucion['id_institucion']; ?>" class="btn-action-compact btn-sedes" title="Gestionar sedes">
@@ -87,12 +105,35 @@
                         </form>
                     </div>
                 </div>
+
+                <?php if (!$prep['listo']): ?>
+                    <ul class="lista-faltantes" id="faltan-<?php echo (int) $institucion['id_institucion']; ?>" hidden>
+                        <?php foreach ($prep['faltan'] as $f): ?>
+                            <li>
+                                <strong><?php echo htmlspecialchars($f['titulo']); ?>.</strong>
+                                <?php echo htmlspecialchars($f['motivo']); ?>
+                                <?php if (!empty($f['accion'])): ?>
+                                    <a href="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=<?php echo htmlspecialchars($f['accion']); ?>&id=<?php echo (int) $institucion['id_institucion']; ?>">Resolver</a>
+                                <?php endif; ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </div>
 
 <script>
+function alternarFaltantes(id) {
+    var panel = document.getElementById('faltan-' + id);
+    if (!panel) return;
+    var abierto = !panel.hasAttribute('hidden');
+    if (abierto) { panel.setAttribute('hidden', ''); } else { panel.removeAttribute('hidden'); }
+    var boton = document.querySelector('[aria-controls="faltan-' + id + '"]');
+    if (boton) boton.setAttribute('aria-expanded', abierto ? 'false' : 'true');
+}
+
 function copiarCredAdmin() {
     var email = document.getElementById('cred-email').textContent.trim();
     var pass = document.getElementById('cred-pass').textContent.trim();
@@ -383,4 +424,59 @@ function copiarCredAdmin() {
             font-size: 12px;
         }
     }
+</style>
+
+<style>
+/* Estado de puesta en marcha por institución */
+.badge-preparacion {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-family: inherit;
+    border: none;
+    white-space: nowrap;
+}
+
+.badge-preparacion--listo {
+    background: var(--color-success-bg, #e8f8f0);
+    color: var(--color-success, #1e8e5a);
+}
+
+.badge-preparacion--falta {
+    background: var(--color-warning-bg, #fdf3e2);
+    color: var(--color-warning-text, #8a5a00);
+    cursor: pointer;
+    min-height: 30px;
+}
+
+.lista-faltantes {
+    list-style: none;
+    margin: -6px 0 14px;
+    padding: 12px 16px;
+    background: var(--color-warning-bg, #fdf3e2);
+    border-radius: 10px;
+    border-left: 4px solid var(--color-warning, #e0a800);
+}
+
+.lista-faltantes li {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--color-text);
+    padding: 4px 0;
+}
+
+.lista-faltantes a {
+    color: var(--color-primary);
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+    .badge-preparacion { font-size: 11px; }
+    .lista-faltantes { margin-top: 0; }
+}
 </style>

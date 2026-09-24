@@ -100,4 +100,36 @@ final class CampanaNotificacionesTest extends BaseDbTestCase
 
         $this->assertSame('Reciente', $no_leidas[0]['asunto']);
     }
+
+    public function testLosDestinatariosSeBuscanPorIdDeRolYNoPorNombre(): void
+    {
+        // Comparar por nombre era frágil: los nombres llevan acentos y una base
+        // con la codificación mal importada hacía que la comparación dejara de
+        // coincidir y las notificaciones se dejaran de enviar sin ningún error.
+        // Ocurre de verdad: en la base de desarrollo 'Admin de Institución' y
+        // 'Técnico' están guardados con los bytes corruptos.
+        //
+        // Si esto vuelve a compararse por nombre, este conteo dará 0 en esa base.
+        $this->bd->ejecutar(
+            'INSERT INTO usuario_rol (id_usuario, id_rol, id_institucion)
+             SELECT :u, :r, :i FROM DUAL
+              WHERE NOT EXISTS (SELECT 1 FROM usuario_rol
+                                 WHERE id_usuario = :u2 AND id_rol = :r2)',
+            [
+                ':u' => self::ID_USUARIO, ':r' => ROL_GESTOR, ':i' => self::ID_INSTITUCION,
+                ':u2' => self::ID_USUARIO, ':r2' => ROL_GESTOR,
+            ]
+        );
+
+        $n = $this->servicio->contar_destinatarios_por_roles(self::ID_INSTITUCION, ['gestor']);
+
+        $this->assertGreaterThan(0, $n, 'No encontró al Gestor: ¿se volvió a comparar por nombre?');
+    }
+
+    public function testUnRolDesconocidoNoDevuelveDestinatarios(): void
+    {
+        $n = $this->servicio->contar_destinatarios_por_roles(self::ID_INSTITUCION, ['rol_que_no_existe']);
+
+        $this->assertSame(0, $n);
+    }
 }

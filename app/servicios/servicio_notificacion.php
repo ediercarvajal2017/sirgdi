@@ -252,17 +252,17 @@ class ServicioNotificacion {
      * y se descartan sin que nadie lo note.
      */
     public function contar_destinatarios_por_roles($id_institucion, array $roles) {
-        if (empty($roles)) return 0;
+        $ids_rol = $this->ids_de_roles($roles);
+        if (empty($ids_rol)) return 0;
 
-        $marcadores = implode(',', array_fill(0, count($roles), '?'));
+        $marcadores = implode(',', array_fill(0, count($ids_rol), '?'));
         $sql = "SELECT COUNT(DISTINCT u.id_usuario) AS n
                 FROM usuario u
                 JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
-                JOIN rol r          ON r.id_rol = ur.id_rol
                 WHERE u.id_institucion = ? AND u.activo = 1
-                  AND r.nombre_rol IN ({$marcadores})";
+                  AND ur.id_rol IN ({$marcadores})";
 
-        $fila = $this->bd->ejecutar($sql, array_merge([$id_institucion], $roles))
+        $fila = $this->bd->ejecutar($sql, array_merge([$id_institucion], $ids_rol))
                          ->fetch(PDO::FETCH_ASSOC);
 
         return (int)($fila['n'] ?? 0);
@@ -454,21 +454,59 @@ class ServicioNotificacion {
 
     // ─── Internos ────────────────────────────────────────────────────────────
 
+    /**
+     * Traduce nombres de rol a identificadores.
+     *
+     * Comparar por nombre es frágil: los nombres llevan acentos y basta con una
+     * base importada con la codificación equivocada para que la comparación deje
+     * de coincidir y las notificaciones se dejen de enviar sin ningún error.
+     * Ocurre de verdad: en la base de desarrollo 'Admin de Institución' y
+     * 'Técnico' están guardados con los bytes corruptos.
+     *
+     * Se aceptan los nombres que ya usaban los llamadores para no tener que
+     * cambiarlos todos de golpe.
+     */
+    private function ids_de_roles(array $roles) {
+        $mapa = [
+            'reportante'            => ROL_REPORTANTE,
+            'tecnico'               => ROL_TECNICO,
+            'técnico'               => ROL_TECNICO,
+            'gestor'                => ROL_GESTOR,
+            'rector'                => ROL_RECTOR,
+            'admin'                 => ROL_ADMIN,
+            'admin de institucion'  => ROL_ADMIN,
+            'admin de institución'  => ROL_ADMIN,
+            'superadministrador'    => ROL_SUPERADMIN,
+        ];
+
+        $ids = [];
+        foreach ($roles as $rol) {
+            $clave = mb_strtolower(trim((string) $rol));
+            if (isset($mapa[$clave])) {
+                $ids[] = $mapa[$clave];
+            } else {
+                $this->log("Rol desconocido al enviar notificación: '{$rol}'");
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
     /** Busca todos los usuarios con alguno de los roles dados y les envía el email */
     private function enviar_a_roles($id_institucion, $id_reporte, $asunto, $cuerpo, array $roles) {
-        if (empty($roles)) return;
+        $ids_rol = $this->ids_de_roles($roles);
+        if (empty($ids_rol)) return;
 
-        $placeholders = implode(',', array_fill(0, count($roles), '?'));
+        $placeholders = implode(',', array_fill(0, count($ids_rol), '?'));
         $sql = "SELECT u.id_usuario, u.correo_electronico, u.nombre_completo
                 FROM usuario u
                 JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
-                JOIN rol r          ON r.id_rol = ur.id_rol
                 WHERE u.id_institucion = ?
                   AND u.activo = 1
-                  AND r.nombre_rol IN ({$placeholders})
+                  AND ur.id_rol IN ({$placeholders})
                 GROUP BY u.id_usuario";
 
-        $params   = array_merge([$id_institucion], $roles);
+        $params   = array_merge([$id_institucion], $ids_rol);
         $usuarios = $this->bd->ejecutar($sql, $params)->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($usuarios as $u) {
