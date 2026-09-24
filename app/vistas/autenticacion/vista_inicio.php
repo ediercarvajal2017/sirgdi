@@ -1181,9 +1181,8 @@
                 <p class="footer-copy">&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars(config('app.app_full_name')); ?>. Todos los derechos reservados.</p>
             </div>
             <div class="footer-links">
-                <a href="#">Privacidad</a>
-                <a href="#">Términos</a>
-                <a href="#">Contacto</a>
+                <a href="<?php echo config('app.url_base'); ?>/?controlador=legal&accion=privacidad">Privacidad</a>
+                <a href="mailto:<?php echo htmlspecialchars(config('app.correo_soporte')); ?>">Contacto</a>
             </div>
         </div>
     </footer>

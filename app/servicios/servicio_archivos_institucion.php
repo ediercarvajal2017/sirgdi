@@ -54,11 +54,13 @@ class ServicioArchivosInstitucion {
      * @param array $archivo $_FILES['logo']
      * @param int $id_institucion ID de la institución
      * @param string $logo_actual Nombre del logo actual (para reemplazar)
-     * @return string Nombre del archivo guardado, o null si falla
+     * @return string|null Nombre del archivo guardado, o null si falla
      */
     public function procesar_logo($archivo, $id_institucion, $logo_actual = null) {
         // Validar que el archivo exista
-        if (!isset($archivo) || !isset($archivo['tmp_name']) || $archivo['error'] !== UPLOAD_ERR_OK) {
+        // $archivo es un parámetro obligatorio, así que isset() sobre él nunca
+        // es falso; lo que hay que comprobar es su contenido.
+        if (!is_array($archivo) || !isset($archivo['tmp_name']) || ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             return null;
         }
 
@@ -241,7 +243,7 @@ class ServicioArchivosInstitucion {
             'error' => null
         ];
 
-        if (!isset($archivo) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
+        if (!is_array($archivo) || ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             // No hay archivo es válido (opcional)
             return $resultado;
         }

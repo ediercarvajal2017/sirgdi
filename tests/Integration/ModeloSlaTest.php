@@ -32,8 +32,18 @@ final class ModeloSlaTest extends BaseDbTestCase
 
     public function testUsaElFallbackDe48HorasCuandoNoHaySlaConfigurado(): void
     {
-        // id_categoria 99999 no tiene SLA configurado, y tampoco hay SLA por
-        // urgencia para esa institución (verificado antes de escribir esta prueba).
+        // La categoría 99999 no tiene SLA, pero puede haberlo por urgencia: los
+        // datos semilla del repositorio traen uno de 72 horas para Moderado.
+        // Se desactivan aquí dentro, en la transacción de la prueba, para que
+        // el fallback se ejercite de verdad.
+        //
+        // Antes esta prueba daba por hecho que no existía ninguno, lo cual era
+        // cierto en la base de este equipo y falso en una recién instalada.
+        $this->bd->ejecutar(
+            'UPDATE sla SET activo = 0 WHERE id_institucion = ? AND id_urgencia = ?',
+            [self::ID_INSTITUCION, URGENCIA_MODERADO]
+        );
+
         $reporte = $this->reporteFalso('0.1', null, 99999);
 
         $resultado = $this->modelo->calcular_vencimiento($reporte);

@@ -6,13 +6,27 @@ final class ModeloUsuarioTest extends BaseDbTestCase
 {
     private ModeloUsuario $modelo;
 
-    // Fixture fija del seed local (ver ModeloReporteTest y BaseDbTestCase).
     private const CORREO_SEED = 'prueba@local.test';
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->modelo = new ModeloUsuario();
+
+        // La prueba se crea su propio usuario en vez de dar por hecho que ya
+        // existe. Antes dependía de uno que solo estaba en la base de este
+        // equipo: en una instalación recién clonada, o en integración
+        // continua, estas pruebas fallaban aunque el código estuviera bien.
+        //
+        // Va dentro de la transacción de BaseDbTestCase, así que se revierte.
+        if ($this->modelo->obtener_por_email(self::CORREO_SEED, self::ID_INSTITUCION) === false) {
+            $this->modelo->crear([
+                'id_institucion'     => self::ID_INSTITUCION,
+                'nombre_completo'    => 'Usuario de pruebas',
+                'correo_electronico' => self::CORREO_SEED,
+                'hash_contrasena'    => password_hash('Prueba2026*', PASSWORD_BCRYPT),
+            ]);
+        }
     }
 
     public function testObtenerPorIdRespetaAislamientoMultitenant(): void

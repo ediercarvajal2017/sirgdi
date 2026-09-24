@@ -186,6 +186,9 @@
                         </li>
                         <li class="header-user-divider"></li>
                     <?php endif; ?>
+                    <li><a href="<?php echo config('app.url_base'); ?>/?controlador=ayuda&accion=inicio">
+                        <i class="fas fa-circle-question"></i> Ayuda
+                    </a></li>
                     <li><a href="<?php echo config('app.url_base'); ?>/?controlador=autenticacion&accion=seguridad">
                         <i class="fas fa-shield-halved"></i> Seguridad
                     </a></li>

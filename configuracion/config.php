@@ -22,6 +22,12 @@ function _cargar_env($archivo) {
                 $valor = substr($valor, 1, -1);
             }
         }
+        // El entorno real manda sobre el archivo. Antes era al revés: .env
+        // pisaba cualquier variable ya definida, así que en integración
+        // continua o en un contenedor no había forma de apuntar a otra base
+        // de datos sin editar el archivo.
+        if (getenv($clave) !== false) continue;
+
         putenv("$clave=$valor");
         $_ENV[$clave] = $valor;
     }
@@ -150,6 +156,14 @@ $app_config = [
     'version' => '2.0.0',
     'environment' => $env_actual, // development, staging, production
     'url_base' => getenv('APP_URL') ?: 'http://localhost/reporte_danos/public',
+
+    // A quién escribe un usuario que se atasca. Se resuelve en el mismo orden
+    // que usan las alertas de los cron, para no tener dos correos de soporte
+    // distintos conviviendo sin que nadie sepa cuál está vigente.
+    'correo_soporte' => getenv('SOPORTE_EMAIL')
+        ?: (getenv('ALERTA_EMAIL')
+        ?: (getenv('BACKUP_ALERTA_EMAIL')
+        ?: (getenv('SMTP_FROM_EMAIL') ?: 'soporte@jlcserviciosintegrales.com'))),
 ];
 
 // === DIRECTORIO DE ALMACENAMIENTO ===

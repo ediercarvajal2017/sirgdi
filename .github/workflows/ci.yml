@@ -1,0 +1,66 @@
+name: Pruebas
+
+# Se ejecuta en cada envío a main y en cada pull request. main es la rama que
+# se publica en producción automáticamente, así que un fallo aquí es lo único
+# que avisa antes de que el cliente lo vea.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: sirgdi
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, openssl, fileinfo
+          coverage: none
+
+      - name: Instalar dependencias
+        run: composer install --prefer-dist --no-progress
+
+      # Esto también comprueba que el proyecto se puede instalar desde cero.
+      # El seed llevaba desde junio insertando una columna renombrada, así que
+      # una instalación limpia fallaba y nadie se había dado cuenta.
+      - name: Cargar esquema y datos semilla
+        run: |
+          mysql -h 127.0.0.1 -u root -proot sirgdi < sql/schema.sql
+          mysql -h 127.0.0.1 -u root -proot sirgdi < sql/seeds.sql
+
+      - name: Análisis estático
+        run: vendor/bin/phpstan analyse --no-progress
+
+      - name: Pruebas
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: sirgdi
+          DB_USER: root
+          DB_PASS: root
+          # Secretos de usar y tirar: el arranque falla a propósito si faltan.
+          ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef
+          JWT_SECRET: 0123456789abcdef0123456789abcdef
+          CSRF_SALT: 0123456789abcdef
+          ENV: development
+        run: vendor/bin/phpunit --no-coverage

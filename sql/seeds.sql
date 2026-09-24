@@ -131,8 +131,11 @@ WHERE
 -- BLOQUE 2: INSTITUCIÓN DEMO
 -- ============================================================
 
-INSERT INTO institucion (id_institucion, nombre, logo_url, es_activa)
-VALUES (1, 'Institución Educativa Demo', NULL, 1);
+-- logo_url se renombró a logo_ruta en junio de 2026 y este seed se quedó con
+-- el nombre viejo: cargarlo en una base limpia fallaba, así que nadie podía
+-- levantar el proyecto desde el repositorio.
+INSERT INTO institucion (id_institucion, nombre, tipo, codigo_dane, logo_ruta, es_activa)
+VALUES (1, 'Institución Educativa Demo', 'educativa', '', NULL, 1);
 
 -- Configuración de la institución demo (TABLA NO EXISTE EN SCHEMA)
 -- COMENTADO: Esta tabla no está en schema.sql

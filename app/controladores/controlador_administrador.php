@@ -461,7 +461,7 @@ class ControladorAdministrador {
             }
 
             ServicioAuditoria::registrar('usuario_' . $accion, 'usuario', $id_usuario ?? null,
-                ($accion === 'eliminar' && !empty($usuario)) ? ['nombre' => $usuario['nombre_completo'], 'email' => $usuario['correo_electronico']] : null,
+                ($accion === 'eliminar' && is_array($usuario)) ? ['nombre' => $usuario['nombre_completo'], 'email' => $usuario['correo_electronico']] : null,
                 $accion === 'eliminar' ? null : ['nombre' => $_POST['nombre'] ?? null, 'email' => $_POST['correo_electronico'] ?? null, 'id_rol' => $_POST['id_rol'] ?? null]);
             header('Location: ' . config('app.url_base') . '/?controlador=administrador&accion=gestionar_usuarios&exito=1');
             exit;

@@ -326,6 +326,8 @@ CREATE TABLE IF NOT EXISTS reporte (
     correo_reportante               VARCHAR(150)        NULL,
     telefono_reportante             VARCHAR(20)         NULL,
     es_anonimo                      TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'RF-09, RN-09',
+    acepto_tratamiento_datos        TINYINT(1)          NOT NULL DEFAULT 0 COMMENT 'Ley 1581: autorizacion del titular',
+    fecha_aceptacion_datos          DATETIME            NULL COMMENT 'Momento en que se otorgo la autorizacion',
     -- Ubicación (RN-02: sede NOT NULL; id_area nullable cuando se usa referencia_ubicacion_libre)
     id_sede                         BIGINT UNSIGNED     NOT NULL,
     id_area                         BIGINT UNSIGNED     NULL,
@@ -515,6 +517,7 @@ CREATE TABLE IF NOT EXISTS notificacion (
     estado_envio                ENUM('pendiente','enviado','fallido') NOT NULL DEFAULT 'pendiente',
     fecha_programada            DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
     fecha_enviada               DATETIME            NULL,
+    fecha_leida                     DATETIME            NULL DEFAULT NULL COMMENT 'Campana in-app: cuando el usuario lo vio',
     razon_fallo                 TEXT                NULL,
     intentos                    TINYINT UNSIGNED    NOT NULL DEFAULT 0,
     fecha_creacion              DATETIME            NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -522,7 +525,8 @@ CREATE TABLE IF NOT EXISTS notificacion (
     CONSTRAINT fk_noti_inst  FOREIGN KEY (id_institucion)          REFERENCES institucion(id_institucion),
     CONSTRAINT fk_noti_rpt   FOREIGN KEY (id_reporte)              REFERENCES reporte(id_reporte),
     CONSTRAINT fk_noti_usr   FOREIGN KEY (id_usuario_destinatario) REFERENCES usuario(id_usuario),
-    INDEX idx_noti_cola (id_institucion, estado_envio, fecha_programada) COMMENT 'Procesamiento de cola'
+    INDEX idx_noti_cola (id_institucion, estado_envio, fecha_programada) COMMENT 'Procesamiento de cola',
+    INDEX idx_noti_usuario_leida (id_usuario_destinatario, fecha_leida, fecha_creacion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Cola de envío y registro histórico de correos. RF-23, RF-24';
 

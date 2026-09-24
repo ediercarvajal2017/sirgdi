@@ -989,6 +989,19 @@ class ControladorReportes {
             exit;
         }
 
+        // Ley 1581 de 2012: sin autorización no se pueden tratar los datos, así
+        // que tampoco se puede guardar el reporte. Se comprueba en el servidor
+        // y no solo con la casilla: una validación que vive únicamente en el
+        // navegador no sirve como prueba de nada.
+        $acepto_datos = !empty($_POST['acepto_datos']);
+        if (!$acepto_datos) {
+            $this->redirigir_invitado(
+                $id_institucion,
+                'Para enviar el reporte necesitamos su autorización para tratar sus datos personales.'
+            );
+            exit;
+        }
+
         try {
             $sede = $this->modelo_sede->obtener_por_id($id_sede, $id_institucion);
             if (!$sede) {
@@ -1016,6 +1029,10 @@ class ControladorReportes {
                 'telefono_reportante'       => $telefono ?: null,
                 'es_anonimo'                => 0,
                 'marcado_sospechoso'        => $marcado_sospechoso,
+                // Constancia de la autorización: va en la fila del reporte para
+                // que dure exactamente lo que duren los datos que justifica.
+                'acepto_tratamiento_datos'  => 1,
+                'fecha_aceptacion_datos'    => date('Y-m-d H:i:s'),
             ];
 
             $id_reporte = $this->modelo_reporte->crear($datos_reporte);
@@ -1092,6 +1109,7 @@ class ControladorReportes {
             'nombres', 'apellidos', 'correo', 'telefono',
             'id_sede', 'area', 'id_categoria', 'id_subcategoria',
             'id_urgencia_declarada', 'descripcion_problema',
+            'acepto_datos',
         ];
 
         $valores = [];

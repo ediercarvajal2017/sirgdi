@@ -95,6 +95,22 @@ final class CicloVidaReporteTest extends BaseDbTestCase
         );
     }
 
+    public function testAnularGuardaElMotivoEnElPropioReporte(): void
+    {
+        // justificacion_anulacion tampoco la escribía nadie: el motivo vivía
+        // solo en transicion_estado, y para saber por qué se descartó un
+        // reporte había que ir a buscarlo a otra tabla.
+        $id = $this->modelo->crear($this->datosReporteValido());
+        $this->modelo->cambiar_estado(
+            $id, self::ID_INSTITUCION, ESTADO_ANULADO,
+            'Spam: enlaces a un sitio de apuestas.', self::ID_USUARIO
+        );
+
+        $reporte = $this->modelo->obtener_por_id($id, self::ID_INSTITUCION);
+
+        $this->assertSame('Spam: enlaces a un sitio de apuestas.', $reporte['justificacion_anulacion']);
+    }
+
     public function testAsignarGuardaQuienAsigno(): void
     {
         // id_gestor_asignador existía sin que nadie la escribiera: quién había

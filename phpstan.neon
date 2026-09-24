@@ -1,5 +1,10 @@
 parameters:
-    level: 2
+    # Subir de nivel se hace de uno en uno y dejando el análisis en verde.
+    # Al pasar de 2 a 3 salieron dos firmas mal documentadas: eliminar()
+    # declaraba devolver bool y devuelve una lista de archivos, y
+    # procesar_logo() declaraba string aunque su propia descripción decía
+    # "o null si falla". El nivel 4 deja 13 avisos; queda para otra vuelta.
+    level: 3
 
     bootstrapFiles:
         - phpstan-bootstrap.php

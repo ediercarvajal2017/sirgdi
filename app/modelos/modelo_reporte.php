@@ -313,6 +313,13 @@ class ModeloReporte {
             $campos['fecha_hora_cierre'] = $ahora;
         }
 
+        if ($id_estado_nuevo === ESTADO_ANULADO && $justificacion !== '') {
+            // justificacion_anulacion es otra columna que nadie escribía. El
+            // motivo quedaba solo en transicion_estado, así que para saber por
+            // qué se descartó un reporte había que ir a buscarlo a otra tabla.
+            $campos['justificacion_anulacion'] = mb_substr($justificacion, 0, 1000);
+        }
+
         $this->actualizar($id_reporte, $id_institucion, $campos);
 
         // Registrar transición en BD (auditoría)

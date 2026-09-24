@@ -128,7 +128,7 @@ class ModeloInstitucion {
     /**
      * Eliminar institución (hard delete - usar con cuidado)
      * @param int $id_institucion
-     * @return bool
+     * @return array Rutas de los archivos que quedaron huérfanos y hay que borrar del disco
      */
     public function eliminar($id_institucion) {
         // Recolectar archivos de evidencia para borrarlos del disco tras el commit

@@ -203,6 +203,35 @@ $urgencias = [
         .urg-pill.urg-4 { background: rgba(231,76,60,.1);  color: var(--color-danger); border-color: rgba(231,76,60,.3); }
         /* Píldora seleccionada: el fondo lleva texto blanco, así que usa
            versiones más oscuras del color de urgencia (contraste AA). */
+        .inv-consentimiento {
+            margin: 26px 0 4px;
+            padding: 16px 18px;
+            background: var(--color-bg-subtle, rgba(127,143,166,.08));
+            border: 1px solid var(--color-border-subtle, rgba(127,143,166,.25));
+            border-radius: 12px;
+        }
+        .inv-consent-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 14.5px;
+            line-height: 1.6;
+        }
+        .inv-consent-label input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            margin-top: 1px;
+            accent-color: var(--color-primary, #1b6ec2);
+            cursor: pointer;
+        }
+        .inv-consent-label a { color: var(--color-primary, #1b6ec2); font-weight: 600; }
+        .inv-consentimiento.falta {
+            border-color: #C0392B;
+            box-shadow: 0 0 0 3px rgba(192, 57, 43, .12);
+        }
+
         .inv-alert-info {
             background: rgba(27, 110, 194, .10);
             border-left-color: #1b6ec2;
@@ -660,6 +689,26 @@ $urgencias = [
             </div>
         </div>
 
+        <!-- ── Autorización de tratamiento de datos (Ley 1581 de 2012) ── -->
+        <?php
+        // La autorización tiene que ser previa, expresa e informada. Por eso la
+        // casilla va desmarcada —marcarla por defecto no es consentir—, y el
+        // enlace se abre en otra pestaña para que leerlo no le borre a nadie el
+        // formulario que lleva escrito.
+        ?>
+        <div class="inv-consentimiento">
+            <label class="inv-consent-label" for="acepto_datos">
+                <input type="checkbox" id="acepto_datos" name="acepto_datos" value="1"
+                       <?php echo !empty($valores['acepto_datos']) ? 'checked' : ''; ?>>
+                <span>
+                    Autorizo a <strong><?php echo htmlspecialchars($institucion['nombre']); ?></strong>
+                    a tratar mis datos personales para atender este reporte, según
+                    <a href="<?php echo $base; ?>/?controlador=legal&accion=privacidad&inst=<?php echo intval($id_institucion); ?>"
+                       target="_blank" rel="noopener">qué se hace con mis datos</a>.
+                </span>
+            </label>
+        </div>
+
         <!-- ── CAPTCHA (Cloudflare Turnstile) ── -->
         <?php if (!empty($turnstile_site_key)): ?>
             <div class="inv-submit-wrap">
@@ -1082,6 +1131,15 @@ document.getElementById('form-invitado').addEventListener('submit', function(e) 
         document.getElementById('descripcion_problema').focus(); return;
     }
 
+    const consent = document.getElementById('acepto_datos');
+    if (consent && !consent.checked) {
+        e.preventDefault();
+        mostrarToast('Para enviar el reporte necesitamos su autorización para tratar sus datos.');
+        consent.closest('.inv-consentimiento').classList.add('falta');
+        consent.focus();
+        return;
+    }
+
     // Suma de los adjuntos. Sin esto, un envío que supera post_max_size llega
     // al servidor, PHP lo descarta entero y la persona pierde todo lo escrito:
     // es el único error del que no podemos recuperarla, así que se evita aquí.
@@ -1111,3 +1169,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 </body>
 </html>
+<script>
+document.getElementById('acepto_datos')?.addEventListener('change', function () {
+    if (this.checked) this.closest('.inv-consentimiento').classList.remove('falta');
+});
+</script>
