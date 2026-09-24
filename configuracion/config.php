@@ -76,25 +76,49 @@ $_es_produccion = ($env_actual === 'production');
 // guarda los secretos TOTP de 2FA) y los tokens emitidos dejarían de validar de
 // forma intermitente (JWT_SECRET, CSRF_SALT), lo que se manifiesta como sesiones
 // que "se caen solas" sin ningún error. Mejor fallar fuerte y claro al arrancar.
+// Se comprueba también el formato, no solo que la variable exista.
+//
+// ENCRYPTION_KEY tiene que ser 64 caracteres hexadecimales, porque
+// Encriptacion la pasa por hex2bin() y exige 32 bytes. Antes bastaba con que
+// no estuviera vacía: una clave de 32 caracteres arrancaba sin queja y
+// reventaba con "Encryption key must be 32 bytes" la primera vez que alguien
+// usaba el 2FA. Fallar al arrancar es mucho mejor que fallar ahí.
 $_secretos_obligatorios = [
-    'ENCRYPTION_KEY' => 32,
-    'JWT_SECRET'     => 32,
-    'CSRF_SALT'      => 16,
+    'ENCRYPTION_KEY' => [
+        'bytes'   => 32,
+        'valida'  => function ($v) { return (bool) preg_match('/^[0-9a-fA-F]{64}$/', $v); },
+        'exige'   => '64 caracteres hexadecimales (32 bytes)',
+    ],
+    'JWT_SECRET' => [
+        'bytes'   => 32,
+        'valida'  => function ($v) { return strlen($v) >= 32; },
+        'exige'   => 'al menos 32 caracteres',
+    ],
+    'CSRF_SALT' => [
+        'bytes'   => 16,
+        'valida'  => function ($v) { return strlen($v) >= 16; },
+        'exige'   => 'al menos 16 caracteres',
+    ],
 ];
 $_secretos = [];
 $_faltantes = [];
-foreach ($_secretos_obligatorios as $_clave => $_bytes) {
+foreach ($_secretos_obligatorios as $_clave => $_regla) {
     $_valor = getenv($_clave);
+    $_como = 'genérala con: php -r "echo bin2hex(random_bytes(' . $_regla['bytes'] . '));"';
+
     if ($_valor === false || $_valor === '') {
-        $_faltantes[] = $_clave . ' (genérala con: php -r "echo bin2hex(random_bytes('
-            . $_bytes . '));")';
+        $_faltantes[] = $_clave . ' falta (' . $_como . ')';
+        continue;
+    }
+    if (!$_regla['valida']($_valor)) {
+        $_faltantes[] = $_clave . ' no sirve: exige ' . $_regla['exige'] . ' (' . $_como . ')';
         continue;
     }
     $_secretos[$_clave] = $_valor;
 }
 if ($_faltantes) {
     die('Configuración incompleta en el archivo .env de la raíz del proyecto. '
-        . 'Falta(n): ' . implode(' | ', $_faltantes));
+        . implode(' | ', $_faltantes));
 }
 
 // CAPTCHA (Cloudflare Turnstile) del formulario público de reporte de invitado.

@@ -62,8 +62,10 @@ jobs:
           DB_NAME: sirgdi
           DB_USER: root
           DB_PASS: root
-          # Secretos de usar y tirar: el arranque falla a propósito si faltan.
-          ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef
+          # Secretos de usar y tirar: el arranque falla a propósito si faltan
+          # o no tienen el formato correcto. ENCRYPTION_KEY son 64 caracteres
+          # hexadecimales porque el cifrado la pasa por hex2bin y exige 32 bytes.
+          ENCRYPTION_KEY: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
           JWT_SECRET: 0123456789abcdef0123456789abcdef
           CSRF_SALT: 0123456789abcdef
           ENV: development
