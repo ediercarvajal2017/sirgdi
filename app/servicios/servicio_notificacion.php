@@ -47,6 +47,63 @@ class ServicioNotificacion {
     }
 
     /**
+     * Acuse de recibo para quien reporta sin tener cuenta.
+     *
+     * Sin esto, el enlace de seguimiento solo existía en la pestaña que el
+     * ciudadano tenía abierta: al cerrarla perdía el acceso a su reporte para
+     * siempre, porque no hay ninguna pantalla donde buscarlo por número de
+     * ticket. El correo es el único sitio donde ese enlace sobrevive.
+     *
+     * Solo se envía si dejó correo, que es opcional en el formulario.
+     */
+    public function notificar_confirmacion_reportante(
+        $id_reporte, $id_institucion, $numero_ticket, $email_reportante,
+        $nombre_reportante, $token_seguimiento
+    ) {
+        if (empty($email_reportante) || empty($token_seguimiento)) {
+            return;
+        }
+
+        $enlace = config('app.url_base')
+                . '/?controlador=reportes&accion=seguimiento&token=' . urlencode($token_seguimiento);
+
+        $asunto = "Recibimos su reporte #{$numero_ticket}";
+        $cuerpo = $this->plantilla('Reporte recibido', [
+            'Número de ticket' => htmlspecialchars($numero_ticket),
+        ],
+            'Su reporte quedó registrado y ya está en la lista de la institución.
+            Guarde este correo: el enlace de abajo es la forma de consultar en qué va,
+            y funciona sin necesidad de crear una cuenta.
+            <p style="text-align:center;margin:24px 0;">
+              <a href="' . htmlspecialchars($enlace) . '"
+                 style="background:#1a56db;color:#fff;padding:13px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;">
+                 Ver el estado de mi reporte
+              </a>
+            </p>
+            <p style="font-size:13px;color:#6b7280;">
+              Si el botón no funciona, copie esta dirección en su navegador:<br>
+              <span style="word-break:break-all;">' . htmlspecialchars($enlace) . '</span>
+            </p>');
+
+        // Sale solo por SMTP, sin fila en la tabla notificacion, porque esa
+        // tabla exige un id_usuario_destinatario y el ciudadano no tiene
+        // cuenta. Consecuencia que conviene tener presente: este correo no
+        // entra en la cola de reintentos, así que si el SMTP falla justo en
+        // ese momento no se vuelve a intentar. Queda anotado en el log de
+        // envíos, que es lo que revisa el cron diario de salud.
+        //
+        // La red de seguridad mientras tanto es que, tras enviar, al ciudadano
+        // se le redirige ya a su pantalla de seguimiento: el enlace le queda en
+        // el historial del navegador aunque el correo no llegue.
+        $this->enviar_email(
+            $email_reportante,
+            $nombre_reportante ?: 'Reportante',
+            $asunto, $cuerpo,
+            $id_institucion, $id_reporte, 'confirmacion_reportante'
+        );
+    }
+
+    /**
      * RF-12: Técnico asignado.
      * Avisa al técnico (con todo lo que necesita para actuar) y al reportante
      * (para que sepa que su ticket ya está en manos de alguien).

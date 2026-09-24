@@ -44,6 +44,24 @@ RedirectMatch 403 ^/+(app|lib|configuracion|sql|pruebas|tests|vendor|scripts|alm
     Options -Indexes
 </IfModule>
 
+# ============================================================
+# Páginas de error del servidor
+# ============================================================
+# Cubre lo que nunca llega al front controller: el 403 del RedirectMatch de
+# arriba y los errores que Apache emite antes de arrancar PHP. Sin esto el
+# usuario ve la página gris por defecto del servidor.
+#
+# La ruta es absoluta desde la raíz del documento, que es la única forma que
+# admite ErrorDocument. En producción la raíz es esta misma carpeta, así que
+# resuelve bien. En el XAMPP local el proyecto cuelga de /reporte_danos/ y la
+# ruta no coincide: allí se sigue viendo la página de Apache, lo cual no afecta
+# a ningún usuario real.
+ErrorDocument 400 /public/error.php
+ErrorDocument 403 /public/error.php
+ErrorDocument 404 /public/error.php
+ErrorDocument 413 /public/error.php
+ErrorDocument 500 /public/error.php
+
 # HSTS y el resto de cabeceras de seguridad se definen en public/.htaccess,
 # que es donde terminan todas las peticiones tras el rewrite de arriba.
 # No duplicarlas aquí: se heredan.

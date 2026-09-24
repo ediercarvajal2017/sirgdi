@@ -50,12 +50,10 @@ class ControladorTecnico {
 
         $reporte = $id_reporte ? $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion) : null;
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
         if ($reporte['id_tecnico_asignado'] != $id_usuario) {
-            http_response_code(HTTP_FORBIDDEN);
-            die('No eres el técnico asignado a este reporte.');
+            responder_prohibido('Intento de abrir un reporte asignado a otro técnico');
         }
 
         // Se captura antes de mutar el estado: la vista lo usa para seguir avisando
@@ -114,8 +112,7 @@ class ControladorTecnico {
     /** Guarda el informe técnico (parcial o completo). Se puede llamar tantas veces como haga falta. */
     public function guardar_informe() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
         $this->auth->requerir_autenticacion();
         $this->autorizacion->requerir_permiso(PERMISO_TECNICO);
@@ -157,8 +154,7 @@ class ControladorTecnico {
     /** Registra una nota de avance del técnico (visible también para el reportante). */
     public function agregar_avance() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
         $this->auth->requerir_autenticacion();
         $this->autorizacion->requerir_permiso(PERMISO_TECNICO);
@@ -255,8 +251,7 @@ class ControladorTecnico {
     }
     private function procesar_cargar_evidencia() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -269,8 +264,7 @@ class ControladorTecnico {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_intervension || !in_array($etapa, ['antes', 'durante', 'despues']) || empty($_FILES['foto'])) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Datos incompletos.');
+            responder_peticion_invalida('Faltan campos obligatorios. Vuelve atrás y complétalos.');
         }
 
         try {
@@ -327,8 +321,7 @@ class ControladorTecnico {
      */
     public function marcar_solucionado() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -412,23 +405,20 @@ class ControladorTecnico {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_evidencia) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de evidencia requerido.');
+            responder_peticion_invalida('El enlace no dice qué archivo descargar.');
         }
 
         // RN-01: la institución siempre viene de la sesión, nunca de la URL.
         $evidencia = $this->modelo_evidencia->obtener_por_id($id_evidencia, $id_institucion);
         if (!$evidencia) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Evidencia no encontrada.');
+            responder_no_encontrado('Esa evidencia ya no está disponible.');
         }
 
         // Validar acceso al reporte asociado (mismo criterio que ControladorReportes::detalle()):
         // solo el reportante, el técnico asignado, o quien tenga permiso para ver todos los reportes.
         $reporte = $this->modelo_reporte->obtener_por_id($evidencia['id_reporte'], $id_institucion);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte asociado no encontrado.');
+            responder_no_encontrado('El reporte al que pertenece este archivo ya no existe.');
         }
 
         $id_usuario = $this->auth->obtener_id_usuario();
@@ -437,14 +427,12 @@ class ControladorTecnico {
             || $this->autorizacion->verificar_permiso(PERMISO_VER_TODOS_REPORTES);
 
         if (!$tiene_acceso) {
-            http_response_code(HTTP_FORBIDDEN);
-            die('No tienes acceso a este archivo.');
+            responder_prohibido('Intento de descargar evidencia de otra institución');
         }
 
         $ruta = $evidencia['url_archivo'] ?? '';
         if (!$ruta || !file_exists($ruta)) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Archivo no encontrado en servidor.');
+            responder_no_encontrado('El archivo ya no está en el servidor. Puede que se haya eliminado al cerrar el reporte.');
         }
 
         // Mostrar inline (para <img>) o forzar descarga si ?descargar=1
@@ -466,7 +454,7 @@ class ControladorTecnico {
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();

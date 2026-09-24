@@ -238,7 +238,7 @@ class ControladorSuperadmin {
         $id_institucion = intval($_GET['id'] ?? 0);
 
         if (!$id_institucion) {
-            die('ID de institución requerido.');
+            responder_peticion_invalida('El enlace no dice qué institución abrir. Vuelve al listado de instituciones.');
         }
 
         $this->auth->requerir_autenticacion();
@@ -331,7 +331,7 @@ class ControladorSuperadmin {
         $institucion = $modelo->obtener_por_id($id_institucion);
 
         if (!$institucion) {
-            die('Institución no encontrada.');
+            responder_no_encontrado('Esa institución no existe.');
         }
 
         require_once APP_PATH . '/servicios/servicio_archivos_institucion.php';
@@ -361,7 +361,7 @@ class ControladorSuperadmin {
 
         $id_institucion = intval($_GET['id'] ?? 0);
         if (!$id_institucion) {
-            die('ID de institución requerido.');
+            responder_peticion_invalida('El enlace no dice qué institución abrir. Vuelve al listado de instituciones.');
         }
 
         require_once LIB_PATH . '/basedatos.php';
@@ -373,7 +373,7 @@ class ControladorSuperadmin {
 
         $institucion = $modelo_institucion->obtener_por_id($id_institucion);
         if (!$institucion) {
-            die('Institución no encontrada.');
+            responder_no_encontrado('Esa institución no existe.');
         }
 
         $sedes = $modelo_sede->listar_por_institucion($id_institucion);
@@ -400,7 +400,7 @@ class ControladorSuperadmin {
         $id_institucion = intval($_GET['inst'] ?? 0);
 
         if (!$id_sede || !$id_institucion) {
-            die('ID de sede e institución requeridos.');
+            responder_peticion_invalida('El enlace no dice qué sede abrir. Vuelve al listado de sedes.');
         }
 
         require_once APP_PATH . '/modelos/modelo_institucion.php';
@@ -411,12 +411,12 @@ class ControladorSuperadmin {
 
         $institucion = $modelo_institucion->obtener_por_id($id_institucion);
         if (!$institucion) {
-            die('Institución no encontrada.');
+            responder_no_encontrado('Esa institución no existe.');
         }
 
         $sede = $modelo_sede->obtener_por_id($id_sede, $id_institucion);
         if (!$sede) {
-            die('Sede no encontrada.');
+            responder_no_encontrado('Esa sede no existe.');
         }
 
         $datos = [
@@ -434,7 +434,7 @@ class ControladorSuperadmin {
      */
     public function procesar_sede() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -510,7 +510,7 @@ class ControladorSuperadmin {
      */
     public function eliminar_sede() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -564,7 +564,7 @@ class ControladorSuperadmin {
      */
     public function eliminar_institucion() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -1058,11 +1058,15 @@ class ControladorSuperadmin {
     }
 
     private function renderizar_vista($vista, $datos = []) {
+        // Recoge el &error= / &exito= con que llega la redirección de la acción
+        // anterior; sin esto la plantilla de abajo no encuentra nada que mostrar.
+        mensajes_de_la_url();
+
         extract($datos);
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();

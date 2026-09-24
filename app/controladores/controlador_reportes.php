@@ -73,12 +73,10 @@ class ControladorReportes {
             exit;
         }
 
-        // Detectar cuando PHP descartó el POST por superar post_max_size
-        // (en ese caso $_POST queda vacío aunque el formulario venía lleno)
-        if (!empty($_SERVER['CONTENT_LENGTH']) && empty($_POST)) {
-            $this->redirigir_crear('Las imágenes adjuntas son demasiado grandes. Usa menos fotos o reduce su tamaño (máx. 5 MB por foto, máx. 5 fotos).', 'error');
-            exit;
-        }
+        // El caso de post_max_size se atiende en el front controller, antes de
+        // validar el CSRF: cuando PHP descarta el cuerpo también se lleva el
+        // token, así que la comprobación que había aquí nunca llegaba a
+        // ejecutarse. Ver public/index.php.
 
         // Requerir autenticación
         $this->auth->requerir_autenticacion();
@@ -287,7 +285,7 @@ class ControladorReportes {
      */
     public function procesar_editar() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -353,7 +351,7 @@ class ControladorReportes {
      */
     public function eliminar() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -398,16 +396,14 @@ class ControladorReportes {
         $token = $_GET['token'] ?? null;
 
         if (!$token || !Validacion::validar_uuid($token)) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Token de seguimiento inválido.');
+            responder_no_encontrado('Ese enlace de seguimiento no es válido. Revisa que lo hayas copiado completo desde el correo.');
         }
 
         // Obtener reporte por token (sin autenticación)
         $reporte = $this->modelo_reporte->obtener_por_token_seguimiento($token);
 
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         // Obtener información relacionada
@@ -454,14 +450,12 @@ class ControladorReportes {
     public function descargar_evidencia_publica() {
         $token = $_GET['token'] ?? '';
         if (!$token || !Validacion::validar_uuid($token)) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Token inválido.');
+            responder_no_encontrado('Ese enlace de seguimiento no es válido. Revisa que lo hayas copiado completo desde el correo.');
         }
 
         $reporte = $this->modelo_reporte->obtener_por_token_seguimiento($token);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         $id_evidencia = intval($_GET['id'] ?? 0);
@@ -469,14 +463,12 @@ class ControladorReportes {
         $evidencia = (new ModeloEvidencia())->obtener_por_id($id_evidencia, $reporte['id_institucion']);
 
         if (!$evidencia || (int)$evidencia['id_reporte'] !== (int)$reporte['id_reporte']) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Evidencia no encontrada.');
+            responder_no_encontrado('Esa evidencia ya no está disponible.');
         }
 
         $ruta = $evidencia['url_archivo'] ?? '';
         if (!$ruta || !file_exists($ruta)) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Archivo no encontrado en servidor.');
+            responder_no_encontrado('El archivo ya no está en el servidor. Puede que se haya eliminado al cerrar el reporte.');
         }
 
         $disposition = isset($_GET['descargar']) ? 'attachment' : 'inline';
@@ -497,14 +489,12 @@ class ControladorReportes {
      */
     public function responder_encuesta() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $token = $_POST['token'] ?? '';
         if (!$token || !Validacion::validar_uuid($token)) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Token inválido.');
+            responder_no_encontrado('Ese enlace de seguimiento no es válido. Revisa que lo hayas copiado completo desde el correo.');
         }
 
         $destino = config('app.url_base') . '/?controlador=reportes&accion=seguimiento&token=' . urlencode($token) . '#encuesta';
@@ -520,8 +510,7 @@ class ControladorReportes {
 
         $reporte = $this->modelo_reporte->obtener_por_token_seguimiento($token);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         require_once APP_PATH . '/modelos/modelo_encuesta.php';
@@ -616,23 +605,20 @@ class ControladorReportes {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte requerido.');
+            responder_peticion_invalida('El enlace no dice qué reporte abrir. Vuelve al listado y entra desde ahí.');
         }
 
         // Obtener reporte (con filtro multitenant)
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
 
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         // Validar acceso (solo el reportante o usuarios con permiso)
         $id_usuario = $this->auth->obtener_id_usuario();
         if ($reporte['id_reportante'] != $id_usuario && !$this->autorizacion->verificar_permiso(PERMISO_VER_TODOS_REPORTES)) {
-            http_response_code(HTTP_FORBIDDEN);
-            die(ERROR_ACCESO_DENEGADO);
+            responder_prohibido();
         }
 
         // Cargar evidencias fotográficas y el informe de intervención
@@ -791,7 +777,7 @@ class ControladorReportes {
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();
@@ -855,7 +841,7 @@ class ControladorReportes {
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         require $archivo_vista;
@@ -880,8 +866,7 @@ class ControladorReportes {
     public function crear_invitado() {
         $id_institucion = intval($_GET['inst'] ?? 0);
         if (!$id_institucion) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('URL inválida. Solicite el enlace correcto al administrador del sistema.');
+            responder_peticion_invalida('Este enlace está incompleto. Pide el enlace correcto de reportes a tu institución.');
         }
 
         require_once APP_PATH . '/modelos/modelo_institucion.php';
@@ -889,13 +874,19 @@ class ControladorReportes {
         $institucion = $modelo_inst->obtener_por_id($id_institucion);
 
         if (!$institucion || !$institucion['es_activa']) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Institución no encontrada o inactiva.');
+            responder_no_encontrado('Esta institución no está recibiendo reportes en este momento.');
         }
 
         $csrf_token = Validacion::generar_csrf_token();
         $sedes = $this->modelo_sede->listar_activas($id_institucion);
         $categorias = $this->modelo_categoria->listar_por_institucion($id_institucion);
+
+        // Recuperar lo que la persona ya había escrito, si vuelve aquí por un
+        // error de validación. Se consume una sola vez: si después abre el
+        // formulario de nuevo, debe salir en blanco.
+        $valores = $_SESSION['formulario_invitado'] ?? [];
+        $habia_adjuntos = !empty($_SESSION['formulario_invitado_adjuntos']);
+        unset($_SESSION['formulario_invitado'], $_SESSION['formulario_invitado_adjuntos']);
 
         $datos = [
             'titulo' => 'Reportar Daño — ' . $institucion['nombre'],
@@ -906,6 +897,10 @@ class ControladorReportes {
             'id_institucion' => $id_institucion,
             'error' => $_GET['error'] ?? null,
             'turnstile_site_key' => config('security.turnstile_site_key'),
+            'valores' => is_array($valores) ? $valores : [],
+            'habia_adjuntos' => $habia_adjuntos,
+            'limite_total_bytes' => $this->limite_total_subida(),
+            'limite_archivo_bytes' => $this->limite_por_archivo(),
         ];
 
         $this->renderizar_vista_publica('reportes/vista_crear_reporte_invitado', $datos);
@@ -916,14 +911,12 @@ class ControladorReportes {
      */
     public function procesar_crear_invitado() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $id_institucion = intval($_POST['id_institucion'] ?? 0);
         if (!$id_institucion) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Institución requerida.');
+            responder_peticion_invalida('El formulario no indica a qué institución pertenece el reporte. Solicita el enlace correcto a tu institución.');
         }
 
         // Honeypot anti-bot: campo oculto por CSS que ningún humano completa.
@@ -1042,6 +1035,22 @@ class ControladorReportes {
                 (bool) $marcado_sospechoso
             );
 
+            // Acuse de recibo para el ciudadano, con su enlace de seguimiento.
+            // Es lo único que le queda si cierra la pestaña: no existe ninguna
+            // pantalla para buscar un reporte por número de ticket.
+            $this->servicio_notificacion->notificar_confirmacion_reportante(
+                $id_reporte,
+                $id_institucion,
+                $reporte['numero_ticket'],
+                $correo,
+                trim($nombres . ' ' . $apellidos),
+                $reporte['token_seguimiento_publico']
+            );
+
+            // El reporte entró: el borrador ya no debe reaparecer si la
+            // persona vuelve a abrir el formulario.
+            unset($_SESSION['formulario_invitado'], $_SESSION['formulario_invitado_adjuntos']);
+
             header('Location: ' . config('app.url_base')
                 . '/?controlador=reportes&accion=seguimiento&token='
                 . urlencode($reporte['token_seguimiento_publico'])
@@ -1055,11 +1064,84 @@ class ControladorReportes {
     }
 
     private function redirigir_invitado($id_institucion, $msg = '') {
+        $this->recordar_formulario_invitado();
+
         $url = config('app.url_base')
             . '/?controlador=reportes&accion=crear_invitado&inst=' . intval($id_institucion);
         if ($msg) {
             $url .= '&error=' . urlencode($msg);
         }
         header('Location: ' . $url);
+    }
+
+    /**
+     * Guarda lo que venía en el formulario para devolverlo tras un error.
+     *
+     * Va en sesión y no en la URL a propósito. Por la URL cabría poco: la
+     * descripción admite 2000 caracteres y los servidores cortan las
+     * direcciones bastante antes. Y además dejaría el nombre, el correo y el
+     * teléfono de un ciudadano escritos en el historial del navegador, en el
+     * Referer y en los registros de acceso del servidor.
+     *
+     * Los archivos adjuntos no se pueden devolver: ningún navegador permite
+     * rellenar un campo de tipo file por seguridad. Por eso se recuerda solo
+     * si los había, para poder avisar de que hay que volver a adjuntarlos.
+     */
+    private function recordar_formulario_invitado() {
+        $campos = [
+            'nombres', 'apellidos', 'correo', 'telefono',
+            'id_sede', 'area', 'id_categoria', 'id_subcategoria',
+            'id_urgencia_declarada', 'descripcion_problema',
+        ];
+
+        $valores = [];
+        foreach ($campos as $campo) {
+            if (isset($_POST[$campo]) && is_scalar($_POST[$campo])) {
+                // Se recorta al máximo que acepta el campo más largo: guardar
+                // más solo abultaría la sesión, porque el servidor lo va a
+                // rechazar igual.
+                $valores[$campo] = mb_substr((string) $_POST[$campo], 0, 2000);
+            }
+        }
+
+        if (empty($valores)) {
+            return; // Nada que recordar (p. ej. el cuerpo se descartó entero).
+        }
+
+        $_SESSION['formulario_invitado'] = $valores;
+        $_SESSION['formulario_invitado_adjuntos'] =
+            !empty($_FILES['fotos']['name'][0]) || !empty($_FILES['video']['name']);
+    }
+
+    /** Convierte un valor de php.ini ("30M", "512K") a bytes. */
+    private function ini_a_bytes($valor) {
+        $valor = trim((string) $valor);
+        if ($valor === '') return 0;
+
+        $numero = (int) $valor;
+        switch (strtolower(substr($valor, -1))) {
+            case 'g': return $numero * 1024 * 1024 * 1024;
+            case 'm': return $numero * 1024 * 1024;
+            case 'k': return $numero * 1024;
+            default:  return $numero;
+        }
+    }
+
+    /**
+     * Presupuesto total del envío, con margen para los campos de texto y las
+     * cabeceras multipart. Se lee de la configuración real del servidor y no
+     * de una constante: si el hosting la cambia, el formulario se entera.
+     */
+    private function limite_total_subida() {
+        $post = $this->ini_a_bytes(ini_get('post_max_size'));
+        if ($post <= 0) $post = 20 * 1024 * 1024;
+        return max(1024 * 1024, (int) ($post * 0.92));
+    }
+
+    /** Lo máximo que puede pesar un archivo suelto. */
+    private function limite_por_archivo() {
+        $subida = $this->ini_a_bytes(ini_get('upload_max_filesize'));
+        if ($subida <= 0) $subida = 20 * 1024 * 1024;
+        return (int) min($subida, $this->limite_total_subida());
     }
 }

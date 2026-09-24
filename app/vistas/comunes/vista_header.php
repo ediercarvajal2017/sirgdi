@@ -95,7 +95,10 @@
                                 <i class="fas fa-hourglass-end"></i> Configurar SLA
                             </a></li>
                         <?php endif; ?>
-                        <?php if (in_array('gestionar_usuarios', $perm)): ?>
+                        <?php // El controlador exige gestionar_roles, no gestionar_usuarios.
+                              // El Rector tiene el primero y no el segundo, así que la opción
+                              // le quedaba escondida aunque sí podía entrar. ?>
+                        <?php if (in_array('gestionar_roles', $perm)): ?>
                             <li><a href="<?php echo config('app.url_base'); ?>/?controlador=administrador&accion=gestionar_roles">
                                 <i class="fas fa-lock"></i> Gestionar Roles y Permisos
                             </a></li>

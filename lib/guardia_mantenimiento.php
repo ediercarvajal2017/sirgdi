@@ -20,6 +20,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once LIB_PATH . '/errores.php';
 require_once LIB_PATH . '/basedatos.php';
 require_once APP_PATH . '/servicios/servicio_autenticacion.php';
 require_once APP_PATH . '/servicios/servicio_autorizacion.php';
@@ -27,15 +28,13 @@ require_once APP_PATH . '/servicios/servicio_autorizacion.php';
 $__guardia_auth = new ServicioAutenticacion();
 
 if (!$__guardia_auth->validar_sesion_vigente()) {
-    http_response_code(HTTP_FORBIDDEN);
-    die('Acceso denegado. Inicia sesión como Superadministrador para ejecutar este script.');
+    responder_prohibido('Script de mantenimiento sin sesión iniciada');
 }
 
 $__guardia_autorizacion = new ServicioAutorizacion();
 
 if (!$__guardia_autorizacion->es_superadmin()) {
-    http_response_code(HTTP_FORBIDDEN);
-    die('Acceso denegado. Este script requiere privilegios de Superadministrador.');
+    responder_prohibido('Script de mantenimiento sin rol de Superadministrador');
 }
 
 unset($__guardia_auth, $__guardia_autorizacion);

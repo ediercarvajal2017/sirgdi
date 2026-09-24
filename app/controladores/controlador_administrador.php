@@ -54,7 +54,11 @@ class ControladorAdministrador {
 
     private function gestionar_sla_form() {
         $this->auth->requerir_autenticacion();
-        $this->autorizacion->requerir_permiso(PERMISO_CONFIGURAR_INSTITUCION);
+        // Se exige gestionar_sla, que es el permiso que existe para esto y el
+        // que mira el menú. Antes se pedía configurar_institucion: el Gestor
+        // tiene el primero pero no el segundo, así que veia la opción
+        // "Configurar SLA" en su menú y al pulsarla recibía un 403.
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_SLA);
 
         $id_institucion = $this->auth->obtener_id_institucion();
         $slas = $this->modelo_sla->listar_por_institucion($id_institucion);
@@ -88,7 +92,7 @@ class ControladorAdministrador {
 
     private function procesar_sla() {
         $this->auth->requerir_autenticacion();
-        $this->autorizacion->requerir_permiso(PERMISO_CONFIGURAR_INSTITUCION);
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_SLA);
 
         $id_institucion = $this->auth->obtener_id_institucion();
         $accion = $_POST['accion'] ?? 'crear';
@@ -614,8 +618,7 @@ class ControladorAdministrador {
         $id_rol = intval($_GET['id_rol'] ?? 0);
 
         if (!$id_rol) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de rol requerido.');
+            responder_peticion_invalida('El enlace no dice qué rol abrir. Vuelve a la lista de roles.');
         }
 
         $sql = 'SELECT DISTINCT p.id_permiso, p.codigo
@@ -670,11 +673,15 @@ class ControladorAdministrador {
     // ===== HELPERS =====
 
     private function renderizar_vista($vista, $datos = []) {
+        // Recoge el &error= / &exito= con que llega la redirección de la acción
+        // anterior; sin esto la plantilla de abajo no encuentra nada que mostrar.
+        mensajes_de_la_url();
+
         extract($datos);
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();

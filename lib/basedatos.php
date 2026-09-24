@@ -40,7 +40,21 @@ class BaseDatos {
             $this->pdo->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
         } catch (PDOException $e) {
             $this->registrar_error('Database connection failed: ' . $e->getMessage());
-            die('Error de conexión a la base de datos. Por favor, intente más tarde.');
+
+            // En consola (cron, scripts de mantenimiento) no sirve una página
+            // HTML: lo que se lee es la salida del proceso.
+            if (PHP_SAPI === 'cli') {
+                fwrite(STDERR, "Error de conexión a la base de datos: " . $e->getMessage() . "\n");
+                exit(1);
+            }
+
+            require_once LIB_PATH . '/errores.php';
+            responder_error(
+                503,
+                'El sistema no está disponible',
+                'No pudimos conectar con la base de datos. Suele ser temporal: espera un par de minutos y vuelve a intentarlo.',
+                'PDO: ' . $e->getMessage()
+            );
         }
     }
 

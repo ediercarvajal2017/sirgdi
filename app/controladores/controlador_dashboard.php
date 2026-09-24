@@ -339,7 +339,7 @@ class ControladorDashboard {
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         // Iniciar plantilla base

@@ -1,8 +1,18 @@
 <?php
 /* Vista pública — Crear Reporte sin cuenta de usuario
- * Variables inyectadas: $institucion, $id_institucion, $sedes, $categorias, $csrf_token, $error
+ * Variables inyectadas: $institucion, $id_institucion, $sedes, $categorias,
+ * $csrf_token, $error, $valores, $habia_adjuntos, $limite_total_bytes,
+ * $limite_archivo_bytes
  */
 $base = config('app.url_base');
+
+// $valores trae lo que la persona ya había escrito cuando vuelve aquí por un
+// error de validación. Se normaliza para que la vista siga funcionando si
+// alguien la renderiza sin pasarlo.
+$valores = (isset($valores) && is_array($valores)) ? $valores : [];
+$habia_adjuntos = !empty($habia_adjuntos);
+$limite_total_bytes = (int) ($limite_total_bytes ?? 20 * 1024 * 1024);
+$limite_archivo_bytes = (int) ($limite_archivo_bytes ?? 5 * 1024 * 1024);
 $urgencias = [
     1 => ['label' => 'No urgente',  'color' => '#27AE60', 'icon' => 'fa-circle-info'],
     2 => ['label' => 'Moderado',    'color' => '#F39C12', 'icon' => 'fa-triangle-exclamation'],
@@ -193,6 +203,12 @@ $urgencias = [
         .urg-pill.urg-4 { background: rgba(231,76,60,.1);  color: var(--color-danger); border-color: rgba(231,76,60,.3); }
         /* Píldora seleccionada: el fondo lleva texto blanco, así que usa
            versiones más oscuras del color de urgencia (contraste AA). */
+        .inv-alert-info {
+            background: rgba(27, 110, 194, .10);
+            border-left-color: #1b6ec2;
+            color: var(--color-text, #16202c);
+        }
+
         .urg-pill.selected.urg-1 { background: #1E8449; color: #fff; border-color: #1E8449; box-shadow: 0 4px 12px rgba(39,174,96,.3); }
         .urg-pill.selected.urg-2 { background: #B9600E; color: #fff; border-color: #B9600E; box-shadow: 0 4px 12px rgba(230,126,34,.3); }
         .urg-pill.selected.urg-3 { background: #AB4500; color: #fff; border-color: #AB4500; box-shadow: 0 4px 12px rgba(211,84,0,.3); }
@@ -305,8 +321,19 @@ $urgencias = [
         </div>
     <?php endif; ?>
 
+    <?php if ($habia_adjuntos): ?>
+        <!-- Ningún navegador permite rellenar un campo de archivo desde el
+             servidor, así que las fotos hay que volver a elegirlas. Decirlo es
+             mejor que dejar que la persona envíe el reporte sin ellas creyendo
+             que seguían puestas. -->
+        <div class="inv-alert inv-alert-info">
+            <i class="fas fa-images"></i>
+            <span>Conservamos lo que habías escrito, pero las fotos y el video tienes que volver a adjuntarlos.</span>
+        </div>
+    <?php endif; ?>
+
     <form method="POST"
-          action="<?php echo $base; ?>/?controlador=reportes&accion=procesar_crear_invitado"
+          action="<?php echo $base; ?>/?controlador=reportes&accion=procesar_crear_invitado&inst=<?php echo intval($id_institucion); ?>"
           enctype="multipart/form-data"
           id="form-invitado">
 
@@ -340,7 +367,7 @@ $urgencias = [
                             name="nombres"
                             class="inv-input"
                             placeholder="Ej: Carlos Andrés"
-                            value="<?php echo htmlspecialchars($_GET['nombres'] ?? ''); ?>"
+                            value="<?php echo htmlspecialchars($valores['nombres'] ?? ''); ?>"
                             required
                             autocomplete="given-name"
                             maxlength="75">
@@ -355,7 +382,7 @@ $urgencias = [
                             name="apellidos"
                             class="inv-input"
                             placeholder="Ej: Gómez Martínez"
-                            value="<?php echo htmlspecialchars($_GET['apellidos'] ?? ''); ?>"
+                            value="<?php echo htmlspecialchars($valores['apellidos'] ?? ''); ?>"
                             required
                             autocomplete="family-name"
                             maxlength="75">
@@ -370,7 +397,7 @@ $urgencias = [
                             name="correo"
                             class="inv-input"
                             placeholder="correo@ejemplo.com (opcional)"
-                            value="<?php echo htmlspecialchars($_GET['correo'] ?? ''); ?>"
+                            value="<?php echo htmlspecialchars($valores['correo'] ?? ''); ?>"
                             autocomplete="email"
                             maxlength="150">
                         <span class="inv-hint">Para recibir notificaciones del estado de su reporte.</span>
@@ -385,7 +412,7 @@ $urgencias = [
                             name="telefono"
                             class="inv-input"
                             placeholder="300 000 0000 (opcional)"
-                            value="<?php echo htmlspecialchars($_GET['telefono'] ?? ''); ?>"
+                            value="<?php echo htmlspecialchars($valores['telefono'] ?? ''); ?>"
                             autocomplete="tel"
                             maxlength="20">
                     </div>
@@ -411,7 +438,8 @@ $urgencias = [
                         <select id="id_sede" name="id_sede" class="inv-select" required>
                             <option value="">-- Seleccione la sede --</option>
                             <?php foreach ($sedes as $sede): ?>
-                                <option value="<?php echo intval($sede['id_sede']); ?>">
+                                <option value="<?php echo intval($sede['id_sede']); ?>"
+                                    <?php echo (string) ($valores['id_sede'] ?? '') === (string) $sede['id_sede'] ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($sede['nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -427,6 +455,7 @@ $urgencias = [
                             name="area"
                             class="inv-input"
                             placeholder="Ej: Aula 203, Baño 1er piso, Cancha"
+                            value="<?php echo htmlspecialchars($valores['area'] ?? ''); ?>"
                             required
                             maxlength="255">
                     </div>
@@ -452,7 +481,8 @@ $urgencias = [
                         <select id="id_categoria" name="id_categoria" class="inv-select" required onchange="cargarSubcats()">
                             <option value="">-- Seleccione la categoría --</option>
                             <?php foreach ($categorias as $cat): ?>
-                                <option value="<?php echo intval($cat['id_categoria']); ?>">
+                                <option value="<?php echo intval($cat['id_categoria']); ?>"
+                                    <?php echo (string) ($valores['id_categoria'] ?? '') === (string) $cat['id_categoria'] ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($cat['nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
@@ -474,8 +504,9 @@ $urgencias = [
                     </label>
                     <div class="urgencia-pills">
                         <?php foreach ($urgencias as $id => $urg): ?>
-                            <label class="urg-pill urg-<?php echo $id; ?> <?php echo $id === 1 ? 'selected' : ''; ?>">
-                                <input type="radio" name="id_urgencia_declarada" value="<?php echo $id; ?>" <?php echo $id === 1 ? 'checked' : ''; ?> onchange="selUrgencia(this)">
+                            <?php $urg_elegida = (int) ($valores['id_urgencia_declarada'] ?? 1) === $id; ?>
+                            <label class="urg-pill urg-<?php echo $id; ?> <?php echo $urg_elegida ? 'selected' : ''; ?>">
+                                <input type="radio" name="id_urgencia_declarada" value="<?php echo $id; ?>" <?php echo $urg_elegida ? 'checked' : ''; ?> onchange="selUrgencia(this)">
                                 <i class="fas <?php echo $urg['icon']; ?>"></i>
                                 <?php echo $urg['label']; ?>
                             </label>
@@ -506,7 +537,7 @@ $urgencias = [
                         placeholder="Describa el daño: qué falló, cuándo ocurrió, qué consecuencias tiene…"
                         required
                         minlength="10"
-                        maxlength="2000"></textarea>
+                        maxlength="2000"><?php echo htmlspecialchars($valores['descripcion_problema'] ?? ''); ?></textarea>
                     <span class="inv-hint" id="desc-contador">0 / 2000 caracteres (mínimo 10)</span>
                 </div>
             </div>
@@ -658,6 +689,12 @@ $urgencias = [
 const apiBase = '<?php echo $base; ?>';
 const idInstitucion = <?php echo intval($id_institucion); ?>;
 
+// Límites reales del servidor, no cifras escritas a mano. Si el hosting
+// cambia post_max_size, el formulario se entera sin tocar este archivo.
+const LIMITE_TOTAL   = <?php echo (int) $limite_total_bytes; ?>;
+const LIMITE_ARCHIVO = <?php echo (int) $limite_archivo_bytes; ?>;
+const enMB = b => (b / 1024 / 1024).toFixed(0);
+
 /* ── Urgencia pills ── */
 function selUrgencia(radio) {
     document.querySelectorAll('.urg-pill').forEach(p => p.classList.remove('selected'));
@@ -673,7 +710,7 @@ document.getElementById('descripcion_problema').addEventListener('input', functi
 });
 
 /* ── Subcategorías AJAX ── */
-function cargarSubcats() {
+function cargarSubcats(preseleccion) {
     const idCat = document.getElementById('id_categoria').value;
     const sel = document.getElementById('id_subcategoria');
     sel.innerHTML = '<option value="">Cargando…</option>';
@@ -695,6 +732,10 @@ function cargarSubcats() {
                 sel.appendChild(o);
             });
             sel.disabled = false;
+            // Al volver por un error de validación, recuperar la que estaba
+            // elegida: la lista se carga por AJAX, así que no basta con que el
+            // servidor marque el <option>.
+            if (preseleccion) sel.value = String(preseleccion);
         } else {
             sel.innerHTML = '<option value="">-- Sin subcategorías --</option>';
         }
@@ -759,7 +800,9 @@ function procesarFotosInv(files) {
     if (!files.length) return;
     files.forEach(file => {
         if (fotosSeleccionadas.length >= 5) { mostrarToast('Máximo 5 fotos permitidas.'); return; }
-        if (file.size > 5 * 1024 * 1024) { mostrarToast('"' + file.name + '" supera 5 MB.'); return; }
+        if (file.size > LIMITE_ARCHIVO) {
+            mostrarToast('"' + file.name + '" supera ' + enMB(LIMITE_ARCHIVO) + ' MB.'); return;
+        }
         const reader = new FileReader();
         reader.onload = ev => {
             // Copiar a File en memoria para evitar ERR_UPLOAD_FILE_CHANGED en Android
@@ -800,7 +843,11 @@ function quitarFotoInv(idx) { fotosSeleccionadas.splice(idx, 1); renderFotosInv(
 /* ── Procesar video ── */
 function procesarVideoInv(file) {
     if (!file) return;
-    if (file.size > 50 * 1024 * 1024) { mostrarToast('El video supera 50 MB.'); return; }
+    // El tope real es el del servidor, no los 50 MB que decía antes: un video
+    // de 35 MB pasaba esta comprobación y luego PHP descartaba el envío entero.
+    if (file.size > LIMITE_ARCHIVO) {
+        mostrarToast('El video supera ' + enMB(LIMITE_ARCHIVO) + ' MB.'); return;
+    }
     const tmpVid = document.createElement('video');
     tmpVid.onloadedmetadata = () => {
         if (tmpVid.duration > 20) { mostrarToast('El video supera los 20 segundos.'); return; }
@@ -1035,9 +1082,31 @@ document.getElementById('form-invitado').addEventListener('submit', function(e) 
         document.getElementById('descripcion_problema').focus(); return;
     }
 
+    // Suma de los adjuntos. Sin esto, un envío que supera post_max_size llega
+    // al servidor, PHP lo descarta entero y la persona pierde todo lo escrito:
+    // es el único error del que no podemos recuperarla, así que se evita aquí.
+    let pesoTotal = 0;
+    fotosSeleccionadas.forEach(f => { pesoTotal += f.file.size; });
+    if (videoSeleccionado) pesoTotal += videoSeleccionado.file.size;
+
+    if (pesoTotal > LIMITE_TOTAL) {
+        e.preventDefault();
+        mostrarToast('Los adjuntos suman ' + (pesoTotal / 1024 / 1024).toFixed(1)
+            + ' MB y el máximo es ' + enMB(LIMITE_TOTAL) + ' MB. Quita alguna foto o el video.');
+        return;
+    }
+
     document.getElementById('btn-submit-inv').disabled = true;
     document.getElementById('btn-submit-inv').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
 });
+
+// Si volvimos por un error y había una categoría elegida, repoblar también su
+// lista de subcategorías.
+<?php if (!empty($valores['id_categoria'])): ?>
+document.addEventListener('DOMContentLoaded', function () {
+    cargarSubcats(<?php echo (int) ($valores['id_subcategoria'] ?? 0); ?>);
+});
+<?php endif; ?>
 </script>
 <script src="<?php echo asset_url('js/tema.js'); ?>"></script>
 </body>

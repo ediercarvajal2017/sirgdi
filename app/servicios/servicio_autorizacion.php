@@ -3,6 +3,11 @@
 // Valida permisos antes de permitir acciones
 // Matriz de permisos: 23 permisos × 6 roles (definida en BD)
 
+// Las denegaciones terminan la petición con una página de error, no con
+// texto plano. Se incluye aquí y no solo desde el enrutador porque este
+// servicio también lo cargan los scripts de mantenimiento.
+require_once LIB_PATH . '/errores.php';
+
 class ServicioAutorizacion {
     private $bd;
     private $id_usuario;
@@ -204,7 +209,7 @@ class ServicioAutorizacion {
         if (!$this->verificar_permiso($nombre_permiso)) {
             http_response_code(HTTP_FORBIDDEN);
             $this->registrar_acceso_denegado($nombre_permiso);
-            die(ERROR_ACCESO_DENEGADO);
+            responder_prohibido();
         }
     }
 
@@ -215,7 +220,7 @@ class ServicioAutorizacion {
         if (!$this->verificar_alguno_permiso(...$permisos)) {
             http_response_code(HTTP_FORBIDDEN);
             $this->registrar_acceso_denegado(implode(',', $permisos));
-            die(ERROR_ACCESO_DENEGADO);
+            responder_prohibido();
         }
     }
 
@@ -226,7 +231,7 @@ class ServicioAutorizacion {
         if (!$this->tiene_rol($id_rol)) {
             http_response_code(HTTP_FORBIDDEN);
             $this->registrar_acceso_denegado("rol:$id_rol");
-            die(ERROR_ACCESO_DENEGADO);
+            responder_prohibido();
         }
     }
 
@@ -238,7 +243,7 @@ class ServicioAutorizacion {
         if ($id_institucion_recurso != $this->id_institucion) {
             http_response_code(HTTP_FORBIDDEN);
             $this->registrar_acceso_denegado('cross_tenant_access_attempt');
-            die(ERROR_INSTITUCION_MISMATCH);
+            responder_prohibido('Intento de acceso a datos de otra institución');
         }
     }
 

@@ -21,4 +21,6 @@ unset($__config, $__clave, $__seccion);
 require_once LIB_PATH . '/basedatos.php';
 require_once LIB_PATH . '/encriptacion.php';
 require_once LIB_PATH . '/validacion.php';
+require_once LIB_PATH . '/errores.php';
+require_once LIB_PATH . '/mensajes.php';
 require_once __DIR__ . '/Integration/BaseDbTestCase.php';

@@ -129,8 +129,7 @@ class ControladorGestion {
      */
     public function asignar_tecnico() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -141,8 +140,7 @@ class ControladorGestion {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte || !$id_tecnico) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte y técnico requeridos.');
+            responder_peticion_invalida('Faltan datos para asignar el reporte. Vuelve al tablero e inténtalo de nuevo.');
         }
 
         try {
@@ -208,8 +206,7 @@ class ControladorGestion {
      */
     public function eliminar_reporte() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -265,14 +262,12 @@ class ControladorGestion {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte requerido.');
+            responder_peticion_invalida('El enlace no dice qué reporte abrir. Vuelve al listado y entra desde ahí.');
         }
 
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         $estados = [
@@ -299,8 +294,7 @@ class ControladorGestion {
      */
     public function procesar_cambiar_estado() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -396,8 +390,7 @@ class ControladorGestion {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_tecnico) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID técnico requerido.');
+            responder_peticion_invalida('El enlace no dice qué técnico consultar.');
         }
 
         // Contar reportes activos asignados al técnico
@@ -422,11 +415,15 @@ class ControladorGestion {
     // ===== HELPERS =====
 
     private function renderizar_vista($vista, $datos = []) {
+        // Recoge el &error= / &exito= con que llega la redirección de la acción
+        // anterior; sin esto la plantilla de abajo no encuentra nada que mostrar.
+        mensajes_de_la_url();
+
         extract($datos);
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();

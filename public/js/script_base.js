@@ -105,3 +105,74 @@ document.addEventListener('keydown', function(e) {
 });
 
 console.log('Base utilities loaded');
+
+/* =====================================================================
+ * Protección contra el doble envío
+ * =====================================================================
+ * Varias acciones (asignar técnico, validar, cerrar, cambiar estado) mandan
+ * hasta cinco correos por SMTP dentro de la misma petición. Eso son varios
+ * segundos en los que la pantalla no reacciona, y lo natural es volver a
+ * pulsar: el resultado eran asignaciones y correos duplicados.
+ *
+ * Tres decisiones que no son obvias:
+ *
+ *  - El botón NO se desactiva en el acto, sino en el siguiente ciclo del
+ *    navegador. Un botón desactivado no manda su name/value, y varios
+ *    formularios de la aplicación distinguen la acción justamente por el
+ *    botón pulsado (<button name="accion" value="...">). Desactivarlo antes
+ *    de tiempo rompería el envío en lugar de protegerlo.
+ *  - Si otra validación ya canceló el envío, aquí no se hace nada: de lo
+ *    contrario el formulario quedaría bloqueado para siempre tras un error
+ *    de validación.
+ *  - Se reactiva sola a los 20 segundos. Un formulario que descarga un
+ *    archivo no cambia de página, y sin esto su botón quedaría muerto.
+ *
+ * Un formulario puede excluirse con data-sin-bloqueo.
+ */
+(function () {
+    'use strict';
+
+    var ESPERA_REACTIVAR = 20000;
+
+    document.addEventListener('submit', function (e) {
+        if (e.defaultPrevented) return;
+
+        var form = e.target;
+        if (!form || form.tagName !== 'FORM') return;
+        if (form.hasAttribute('data-sin-bloqueo')) return;
+        if ((form.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+
+        if (form.dataset.enviando === '1') {
+            e.preventDefault();
+            return;
+        }
+        form.dataset.enviando = '1';
+
+        var boton = e.submitter
+            || form.querySelector('button[type="submit"], input[type="submit"]');
+        if (!boton) return;
+
+        var textoOriginal = boton.innerHTML;
+        var anchoOriginal = boton.offsetWidth;
+
+        setTimeout(function () {
+            // Fijar el ancho evita que el botón se encoja al cambiar el texto
+            // y que la fila entera dé un salto.
+            if (anchoOriginal) boton.style.minWidth = anchoOriginal + 'px';
+            boton.disabled = true;
+            boton.setAttribute('aria-busy', 'true');
+
+            if (boton.tagName === 'BUTTON') {
+                boton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando…';
+            }
+        }, 0);
+
+        setTimeout(function () {
+            form.dataset.enviando = '';
+            boton.disabled = false;
+            boton.removeAttribute('aria-busy');
+            boton.style.minWidth = '';
+            if (boton.tagName === 'BUTTON') boton.innerHTML = textoOriginal;
+        }, ESPERA_REACTIVAR);
+    });
+})();

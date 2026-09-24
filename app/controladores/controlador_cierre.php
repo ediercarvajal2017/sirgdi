@@ -44,19 +44,16 @@ class ControladorCierre {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte requerido.');
+            responder_peticion_invalida('El enlace no dice qué reporte abrir. Vuelve al listado y entra desde ahí.');
         }
 
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         if ($reporte['id_estado'] != ESTADO_SOLUCIONADO) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('El reporte no está en estado Solucionado.');
+            responder_conflicto('Este reporte ya no está esperando validación: alguien más lo movió. Vuelve al tablero para ver su estado actual.');
         }
 
         // Obtener evidencias
@@ -74,8 +71,7 @@ class ControladorCierre {
 
     private function procesar_validar_solucion() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -188,14 +184,12 @@ class ControladorCierre {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte requerido.');
+            responder_peticion_invalida('El enlace no dice qué reporte abrir. Vuelve al listado y entra desde ahí.');
         }
 
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         $datos = [
@@ -209,8 +203,7 @@ class ControladorCierre {
 
     private function procesar_solicitar_encuesta() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -290,19 +283,16 @@ class ControladorCierre {
         $id_institucion = $this->auth->obtener_id_institucion();
 
         if (!$id_reporte) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('ID de reporte requerido.');
+            responder_peticion_invalida('El enlace no dice qué reporte abrir. Vuelve al listado y entra desde ahí.');
         }
 
         $reporte = $this->modelo_reporte->obtener_por_id($id_reporte, $id_institucion);
         if (!$reporte) {
-            http_response_code(HTTP_NOT_FOUND);
-            die('Reporte no encontrado.');
+            responder_no_encontrado('Ese reporte no existe, o pertenece a otra institución.');
         }
 
         if ($reporte['id_estado'] != ESTADO_EN_VALIDACION) {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('El reporte no está en estado En Validación.');
+            responder_conflicto('Este reporte ya no está en validación: alguien más lo movió. Vuelve al tablero para ver su estado actual.');
         }
 
         $datos = [
@@ -316,8 +306,7 @@ class ControladorCierre {
 
     private function procesar_cerrar_reporte() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(HTTP_BAD_REQUEST);
-            die('Método no permitido.');
+            responder_metodo_no_permitido();
         }
 
         $this->auth->requerir_autenticacion();
@@ -377,11 +366,15 @@ class ControladorCierre {
     // ===== HELPERS =====
 
     private function renderizar_vista($vista, $datos = []) {
+        // Recoge el &error= / &exito= con que llega la redirección de la acción
+        // anterior; sin esto la plantilla de abajo no encuentra nada que mostrar.
+        mensajes_de_la_url();
+
         extract($datos);
         $archivo_vista = APP_PATH . '/vistas/' . $vista . '.php';
 
         if (!file_exists($archivo_vista)) {
-            die('Vista no encontrada: ' . $archivo_vista);
+            responder_error_interno('Vista no encontrada: ' . $archivo_vista);
         }
 
         ob_start();

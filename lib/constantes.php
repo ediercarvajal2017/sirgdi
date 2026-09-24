@@ -61,6 +61,7 @@ define('PERMISO_VER_AUDITORIA', 'ver_auditoria');
 define('PERMISO_GESTIONAR_USUARIOS', 'gestionar_usuarios');
 define('PERMISO_GESTIONAR_ROLES', 'gestionar_roles');
 define('PERMISO_CONFIGURAR_INSTITUCION', 'configurar_institucion');
+define('PERMISO_GESTIONAR_SLA', 'gestionar_sla');
 define('PERMISO_VER_DASHBOARD', 'ver_dashboard');
 define('PERMISO_EXPORTAR_REPORTES', 'exportar_informes');
 define('PERMISO_VALIDAR_CIERRE', 'validar_cerrar');
