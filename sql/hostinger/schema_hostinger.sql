@@ -350,6 +350,7 @@ CREATE TABLE IF NOT EXISTS reporte (
     fecha_hora_cierre               DATETIME            NULL,
     -- SLA
     fecha_pausa_sla                 DATETIME            NULL COMMENT 'RN-10: inicio de pausa del SLA',
+    horas_pausa_sla                 DECIMAL(10,4)       NOT NULL DEFAULT 0 COMMENT 'Horas hábiles de pausas del SLA ya terminadas',
     total_horas_pausadas            DECIMAL(8,2)        NOT NULL DEFAULT 0 COMMENT 'Acumulado de horas fuera de SLA',
     -- Flags adicionales
     justificacion_anulacion         TEXT                NULL,

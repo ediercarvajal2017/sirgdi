@@ -207,8 +207,13 @@ class ControladorSuperadmin {
                 ]);
             }
 
-            // Sembrar el catálogo base (categorías, subcategorías y SLA) para la nueva institución
-            $this->sembrar_catalogos_institucion($bd, $id_institucion);
+            // Sembrar el catálogo base (categorías, subcategorías y SLA) para la
+            // nueva institución. No para una empresa de mantenimiento: no recibe
+            // reportes, y el catálogo solo le llenaba de categorías y SLA que no
+            // usa nunca.
+            if ($tipo === 'educativa') {
+                $this->sembrar_catalogos_institucion($bd, $id_institucion);
+            }
 
             // Guardar credenciales para mostrarlas una vez al superadmin
             $_SESSION['credenciales_admin_institucion'] = [

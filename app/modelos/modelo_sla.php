@@ -227,12 +227,17 @@ class ModeloSLA {
             }
         }
 
-        $horas_transcurridas = $horario->horas_entre($registro, $fin_medicion);
+        // Pausas ya terminadas (se acumulan al reanudar) más la que esté en
+        // curso. Antes las terminadas no se guardaban: al reanudar, el tiempo
+        // pausado volvía a contar.
+        $horas_pausa_previas = (float) ($reporte['horas_pausa_sla'] ?? 0);
+        $horas_pausa_actual = $horario->horas_entre($fin_medicion, $ahora);
+
+        $horas_transcurridas = max(0.0, $horario->horas_entre($registro, $fin_medicion) - $horas_pausa_previas);
         $horas_restantes = $horas_sla - $horas_transcurridas;
 
-        // Mientras está en pausa, el plazo se corre las horas hábiles pausadas.
-        $horas_pausadas = $horario->horas_entre($fin_medicion, $ahora);
-        $fecha_vencimiento = $horario->sumar_horas($registro, $horas_sla + $horas_pausadas);
+        // El plazo se corre todas las horas hábiles que estuvo en pausa.
+        $fecha_vencimiento = $horario->sumar_horas($registro, $horas_sla + $horas_pausa_previas + $horas_pausa_actual);
 
         // Determinar estado del SLA
         $estado_sla = 'en_tiempo';

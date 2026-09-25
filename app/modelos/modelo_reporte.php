@@ -434,21 +434,53 @@ class ModeloReporte {
     }
 
     /**
-     * Pausar SLA (RN-10: cuando reporte se devuelve)
+     * Pausar el SLA (RN-10).
+     *
+     * Si ya estaba en pausa, no se toca: antes se sobrescribía la fecha y se
+     * perdía la pausa en curso, que volvía a contar como tiempo de trabajo.
      */
     public function pausar_sla($id_reporte, $id_institucion) {
-        return $this->actualizar($id_reporte, $id_institucion, [
-            'fecha_pausa_sla' => date('Y-m-d H:i:s'),
-        ]);
+        return $this->bd->ejecutar(
+            'UPDATE reporte SET fecha_pausa_sla = :ahora
+              WHERE id_reporte = :id AND id_institucion = :inst AND fecha_pausa_sla IS NULL',
+            [':ahora' => date('Y-m-d H:i:s'), ':id' => $id_reporte, ':inst' => $id_institucion]
+        );
     }
 
     /**
-     * Reanudar SLA (cuando se retoma el trabajo)
+     * Reanudar el SLA, sumando lo que estuvo en pausa.
+     *
+     * Antes solo se borraba fecha_pausa_sla, y todo el tiempo que el reporte
+     * esperó la decisión del gestor volvía a contar como si lo hubiera gastado
+     * el técnico. Ahora esas horas —hábiles, con el horario de la institución—
+     * se acumulan en horas_pausa_sla y el cálculo del SLA las descuenta.
+     *
+     * @param DateTimeInterface|null $ahora Para las pruebas.
+     * @return float Horas hábiles que se sumaron (0 si no estaba en pausa).
      */
-    public function reanudar_sla($id_reporte, $id_institucion) {
-        return $this->actualizar($id_reporte, $id_institucion, [
-            'fecha_pausa_sla' => null,
-        ]);
+    public function reanudar_sla($id_reporte, $id_institucion, ?DateTimeInterface $ahora = null) {
+        $pausa = $this->bd->obtener_valor(
+            'SELECT fecha_pausa_sla FROM reporte WHERE id_reporte = :id AND id_institucion = :inst',
+            [':id' => $id_reporte, ':inst' => $id_institucion]
+        );
+        if (!$pausa) {
+            return 0.0;
+        }
+
+        require_once APP_PATH . '/modelos/modelo_sla.php';
+        $horas = (new ModeloSLA())->horario_de_institucion($id_institucion)
+            ->horas_entre(new DateTimeImmutable($pausa), $ahora ?? new DateTimeImmutable());
+
+        // La condición sobre fecha_pausa_sla evita sumar dos veces la misma
+        // pausa si dos peticiones la reanudan a la vez.
+        $this->bd->ejecutar(
+            'UPDATE reporte
+                SET horas_pausa_sla = horas_pausa_sla + :horas, fecha_pausa_sla = NULL
+              WHERE id_reporte = :id AND id_institucion = :inst AND fecha_pausa_sla = :pausa',
+            [':horas' => round($horas, 4), ':id' => $id_reporte, ':inst' => $id_institucion, ':pausa' => $pausa]
+        );
+
+        return $horas;
     }
 
     /**

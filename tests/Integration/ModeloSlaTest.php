@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__DIR__, 2) . '/app/modelos/modelo_sla.php';
+require_once dirname(__DIR__, 2) . '/app/modelos/modelo_reporte.php';
 
 final class ModeloSlaTest extends BaseDbTestCase
 {
@@ -226,5 +227,61 @@ final class ModeloSlaTest extends BaseDbTestCase
         $r = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-07-11 00:00:00'), HorarioLaboral::siempre());
 
         $this->assertEqualsWithDelta(960.0, $r['horas_transcurridas'], 0.001);
+    }
+
+    // ------------------------------------------------------ pausas acumuladas
+
+    public function testLasPausasTerminadasNoVuelvenAContar(): void
+    {
+        // Viernes 16:00 registrado; el técnico lo soluciona el lunes a las
+        // 8:00 (pausa); el gestor lo rechaza el miércoles a las 12:00
+        // (reanuda). Consultado el miércoles a las 14:00.
+        //   Transcurridas en bruto: vie 1 + sáb 6 + lun 10 + mar 10 + mié 7 = 34 h.
+        //   En pausa: lun 8-17 (9) + mar 10 + mié 7-12 (5) = 24 h.
+        //   Del técnico: 10 h.
+        // Antes, al reanudar se perdía la pausa y contaban las 34.
+        $this->sinHorarioPropio();
+        $reporte = $this->reporteConSla8h('2026-09-25 16:00:00');
+        $modelo_reporte = new ModeloReporte();
+        $id = (int) $modelo_reporte->crear($this->datosReporteValido());
+        // Solo la pausa: la fecha de registro la protege un trigger (RN-12), y
+        // el cálculo la toma del arreglo $reporte, que ya la tiene fija.
+        $this->bd->ejecutar('UPDATE reporte SET fecha_pausa_sla = ? WHERE id_reporte = ?', ['2026-09-28 08:00:00', $id]);
+
+        $sumadas = $modelo_reporte->reanudar_sla($id, self::ID_INSTITUCION, new DateTimeImmutable('2026-09-30 12:00:00'));
+        $this->assertEqualsWithDelta(24.0, $sumadas, 0.001);
+
+        $fila = $this->bd->obtener_uno('SELECT fecha_pausa_sla, horas_pausa_sla FROM reporte WHERE id_reporte = ?', [$id]);
+        $this->assertNull($fila['fecha_pausa_sla']);
+        $this->assertEqualsWithDelta(24.0, (float) $fila['horas_pausa_sla'], 0.001);
+
+        $reporte['horas_pausa_sla'] = $fila['horas_pausa_sla'];
+        $r = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-09-30 14:00:00'));
+        $this->assertEqualsWithDelta(10.0, $r['horas_transcurridas'], 0.001);
+        $this->assertSame('vencido', $r['estado_sla'], 'Plazo de 8 h: el técnico lleva 10.');
+        $this->assertEqualsWithDelta(-2.0, $r['horas_restantes'], 0.001);
+    }
+
+    public function testPausarDosVecesNoReiniciaLaPausa(): void
+    {
+        $modelo_reporte = new ModeloReporte();
+        $id = (int) $modelo_reporte->crear($this->datosReporteValido());
+        $this->bd->ejecutar('UPDATE reporte SET fecha_pausa_sla = ? WHERE id_reporte = ?', ['2026-09-28 08:00:00', $id]);
+
+        $modelo_reporte->pausar_sla($id, self::ID_INSTITUCION);
+
+        $this->assertSame('2026-09-28 08:00:00',
+            $this->bd->obtener_valor('SELECT fecha_pausa_sla FROM reporte WHERE id_reporte = ?', [$id]),
+            'Se sobrescribió la pausa en curso: lo ya pausado volvería a contar.');
+    }
+
+    public function testReanudarSinPausaNoHaceNada(): void
+    {
+        $modelo_reporte = new ModeloReporte();
+        $id = (int) $modelo_reporte->crear($this->datosReporteValido());
+
+        $this->assertSame(0.0, $modelo_reporte->reanudar_sla($id, self::ID_INSTITUCION));
+        $this->assertEqualsWithDelta(0.0, (float) $this->bd->obtener_valor(
+            'SELECT horas_pausa_sla FROM reporte WHERE id_reporte = ?', [$id]), 0.0001);
     }
 }
