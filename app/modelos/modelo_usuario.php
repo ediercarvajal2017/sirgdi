@@ -117,6 +117,35 @@ class ModeloUsuario {
     }
 
     /**
+     * Sustituye el rol de un usuario dentro de una institución.
+     *
+     * Devuelve false, sin tocar nada, si el usuario no pertenece a esa
+     * institución. Antes esta operación vivía en el controlador sin esa
+     * comprobación: un Admin podía enviar el id de un usuario de OTRA
+     * institución y se le creaba un rol en la suya. La actualización de los
+     * datos sí estaba filtrada —afectaba cero filas—, así que el formulario
+     * decía "actualizado correctamente" mientras escribía en otro inquilino.
+     */
+    public function reemplazar_rol($id_usuario, $id_institucion, $id_rol) {
+        if (!$this->obtener_por_id($id_usuario, $id_institucion)) {
+            return false;
+        }
+
+        $this->bd->eliminar(
+            'usuario_rol',
+            'id_usuario = :id_usuario AND id_institucion = :id_institucion',
+            [':id_usuario' => $id_usuario, ':id_institucion' => $id_institucion]
+        );
+        $this->bd->insertar('usuario_rol', [
+            'id_usuario'     => $id_usuario,
+            'id_rol'         => $id_rol,
+            'id_institucion' => $id_institucion,
+        ]);
+
+        return true;
+    }
+
+    /**
      * Incrementa la versión de credenciales: toda sesión abierta con la versión
      * anterior deja de ser válida en la siguiente petición.
      */

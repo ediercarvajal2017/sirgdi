@@ -383,6 +383,13 @@ class ControladorAdministrador {
                     throw new Exception('ID de usuario requerido.');
                 }
 
+                // Igual que al eliminar: el usuario tiene que ser de esta
+                // institución. Sin esto, un id de otra institución pasaba y se
+                // le creaba un rol aquí.
+                if (!$this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion)) {
+                    throw new Exception('Usuario no encontrado.');
+                }
+
                 $datos_actualizar = [
                     'nombre_completo' => $nombre,
                     'numero_documento' => $documento,
@@ -411,17 +418,9 @@ class ControladorAdministrador {
                 $this->modelo_usuario->actualizar($id_usuario, $id_institucion, $datos_actualizar);
 
                 // Actualizar rol del usuario
-                require_once LIB_PATH . '/basedatos.php';
-                $bd = BaseDatos::obtener();
-                $bd->eliminar('usuario_rol', 'id_usuario = :id_usuario AND id_institucion = :id_institucion', [
-                    ':id_usuario' => $id_usuario,
-                    ':id_institucion' => $id_institucion,
-                ]);
-                $bd->insertar('usuario_rol', [
-                    'id_usuario' => $id_usuario,
-                    'id_rol' => $id_rol,
-                    'id_institucion' => $id_institucion,
-                ]);
+                if (!$this->modelo_usuario->reemplazar_rol($id_usuario, $id_institucion, $id_rol)) {
+                    throw new Exception('Usuario no encontrado.');
+                }
 
                 $mensaje = 'Usuario actualizado correctamente.';
 
