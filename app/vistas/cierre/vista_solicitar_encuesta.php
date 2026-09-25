@@ -40,7 +40,11 @@ $csrf = $csrf_token ?? (class_exists('Validacion') ? Validacion::generar_csrf_to
     </div>
 </div>
 
-<?php $toast_exito_msg = 'Encuesta enviada al reportante.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
+<?php
+// Aquí se llega con &exito solo desde la aprobación. Decía "Encuesta enviada
+// al reportante" antes de haber enviado nada, y un gestor podía creerlo y
+// omitirla: el ciudadano se quedaba sin encuesta.
+$toast_exito_msg = 'Solución aprobada. Falta enviar la encuesta y el cierre formal.'; require APP_PATH . '/vistas/comunes/toast_helper.php'; ?>
 
 <style>
 :root{--primary-blue:var(--color-primary);--dark-blue:var(--color-primary-dark);--gray-text:var(--color-text-muted);--dark-text:var(--color-text);--light-bg:var(--color-bg-subtle);}

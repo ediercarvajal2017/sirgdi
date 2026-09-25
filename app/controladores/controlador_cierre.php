@@ -247,6 +247,13 @@ class ControladorCierre {
                 $encuesta_enviada = true;
             }
 
+            // El aviso va en sesión y no como &exito: la vista del cierre
+            // traduce cualquier &exito en "Reporte cerrado correctamente", y
+            // el reporte todavía no está cerrado.
+            if ($encuesta_enviada) {
+                $_SESSION['exito'] = 'Encuesta enviada al reportante.';
+            }
+
             ServicioAuditoria::registrar('solicitar_encuesta', 'reporte', $id_reporte, null, [
                 'ticket' => $reporte['numero_ticket'] ?? null,
                 'encuesta_enviada' => $encuesta_enviada,
