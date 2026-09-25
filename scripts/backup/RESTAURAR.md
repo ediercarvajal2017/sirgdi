@@ -30,9 +30,21 @@ openssl enc -d -aes-256-cbc -pbkdf2 -salt -pass file:./clave_backup \
 sed -E 's/DEFINER=`[^`]*`@`[^`]*`/DEFINER=CURRENT_USER/g' \
     sirgdi_bd_<FECHA>.sql > sirgdi_bd_<FECHA>_sin_definer.sql
 
+# El servidor usa MariaDB 11.8 y su volcado trae dos cosas que un MySQL o
+# MariaDB anterior (el de XAMPP, por ejemplo) no entiende, y la restauración
+# se detiene en seco:
+#   - la primera línea, "/*M!999999\- enable the sandbox mode */"
+#     -> ERROR: Unknown command '\-'
+#   - la colación utf8mb4_uca1400_ai_ci en los triggers
+#     -> ERROR 1273: Unknown collation
+# Ninguna de las dos contiene datos. Se quitan junto con el DEFINER:
+sed -E -e '1{/enable the sandbox mode/d}' \
+       -e 's/utf8mb4_uca1400_ai_ci/utf8mb4_unicode_ci/g' \
+       sirgdi_bd_<FECHA>_sin_definer.sql > sirgdi_bd_<FECHA>_restaurable.sql
+
 # Restaurar en una BD de prueba (NUNCA directo sobre producción sin verificar antes)
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS sirgdi_restore_test;"
-mysql -u root sirgdi_restore_test < sirgdi_bd_<FECHA>_sin_definer.sql
+mysql -u root sirgdi_restore_test < sirgdi_bd_<FECHA>_restaurable.sql
 
 # Verificar: comparar conteo de filas por tabla contra el origen
 mysql -u root sirgdi_restore_test -e "
@@ -57,6 +69,23 @@ Verificar que la cantidad de fotos en `almacenamiento/archivos/evidencias/`
 coincide con lo esperado antes de dar la restauración por buena.
 
 ## Simulacro de restauración (hacer al menos una vez, y periódicamente después)
+
+### Registro
+
+| Fecha | Respaldo usado | Resultado |
+|---|---|---|
+| 25/09/2026 | `sirgdi_bd_20260925_030001` y `mto_archivos_20260925_030001`, descargados de Google Drive (no del servidor) | Correcto tras dos arreglos de compatibilidad (ver paso 2). BD: 27 tablas y 3 triggers, 1 s. Archivos: 19 de 19 evidencias con su foto, más el `.htaccess` que las protege, 1 s. |
+
+Hallazgos de ese simulacro:
+
+- **El procedimiento tal como estaba escrito fallaba** en la primera línea del
+  volcado. Sin el simulacro se habría descubierto durante una emergencia.
+- **La única copia de `~/.backup_key` estaba en el mismo servidor que
+  protege.** Si se pierde el servidor, los respaldos de Drive siguen ahí pero
+  son ilegibles. La clave tiene que estar también fuera del servidor.
+- Las fotos del dominio antiguo (`mantenimiento`) van en otro paquete,
+  `mantenimiento_archivos_*`: la base es compartida, los archivos no.
+
 
 1. Descargar el backup más reciente (BD + archivos de un dominio).
 2. Restaurar la BD en una base de prueba local (`sirgdi_restore_test`) y
