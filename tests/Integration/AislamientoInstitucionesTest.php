@@ -35,7 +35,13 @@ final class AislamientoInstitucionesTest extends BaseDbTestCase
     {
         parent::setUp();
 
-        $this->b = (int) $this->bd->insertar('institucion', ['nombre' => 'Institución B (prueba de aislamiento)']);
+        // codigo_dane es único y vale '' por defecto: sin un código propio, B
+        // choca con cualquier institución que tampoco lo tenga (la semilla de
+        // la integración continua es una).
+        $this->b = (int) $this->bd->insertar('institucion', [
+            'nombre'      => 'Institución B (prueba de aislamiento)',
+            'codigo_dane' => (string) random_int(1000000000000, 9999999999999),
+        ]);
         $sedeB = (int) $this->bd->insertar('sede', ['id_institucion' => $this->b, 'nombre' => 'Sede B']);
         $categoriaB = (int) $this->bd->insertar('categoria', ['id_institucion' => $this->b, 'nombre' => 'Categoría B']);
 
