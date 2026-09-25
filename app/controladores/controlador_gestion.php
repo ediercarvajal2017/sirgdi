@@ -155,16 +155,12 @@ class ControladorGestion {
                 throw new Exception('Reporte no encontrado.');
             }
 
-            // Validar que el técnico existe y pertenece a la institución
-            $tecnico = $this->modelo_usuario->obtener_por_id($id_tecnico, $id_institucion);
+            // Un técnico propio de la institución, o uno de una empresa de
+            // mantenimiento con vínculo activo. Antes se exigía que el usuario
+            // perteneciera a la institución, y los externos nunca pasaban.
+            $tecnico = $this->modelo_usuario->obtener_tecnico_para_institucion($id_tecnico, $id_institucion);
             if (!$tecnico) {
-                throw new Exception('Técnico no encontrado.');
-            }
-
-            // Verificar que el usuario realmente tiene rol Técnico en esta institución
-            $autorizacion_tecnico = new ServicioAutorizacion($id_tecnico, $id_institucion);
-            if (!$autorizacion_tecnico->tiene_rol(ROL_TECNICO)) {
-                throw new Exception('El usuario seleccionado no tiene rol de Técnico.');
+                throw new Exception('Ese técnico no puede atender esta institución.');
             }
 
             // Asignar
@@ -406,22 +402,14 @@ class ControladorGestion {
 
         $id_institucion = $this->auth->obtener_id_institucion();
 
-        // Técnicos de la institución. Se filtra por id de rol y no por su nombre:
-        // el nombre lleva tilde y una diferencia de codificación dejaba la lista vacía.
-        $sql = 'SELECT DISTINCT u.id_usuario, u.nombre_completo AS nombre, u.correo_electronico AS email
-                FROM usuario u
-                JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario AND ur.id_institucion = u.id_institucion
-                WHERE u.id_institucion = :id_institucion
-                AND ur.id_rol = :rol_tecnico
-                AND u.activo = 1
-                ORDER BY nombre ASC';
-
-        require_once LIB_PATH . '/basedatos.php';
-        $bd = BaseDatos::obtener();
-        $tecnicos = $bd->obtener_todos($sql, [
-            ':id_institucion' => $id_institucion,
-            ':rol_tecnico' => ROL_TECNICO,
-        ]);
+        // Los propios y los de empresas de mantenimiento vinculadas: la misma
+        // regla que decide si el técnico puede entrar a trabajar aquí.
+        $tecnicos = array_map(fn($t) => [
+            'id_usuario' => $t['id_usuario'],
+            'nombre'     => $t['nombre_completo'],
+            'email'      => $t['correo_electronico'],
+            'empresa'    => $t['empresa'],
+        ], $this->modelo_usuario->tecnicos_de_institucion($id_institucion));
 
         header('Content-Type: application/json');
         echo json_encode($tecnicos);

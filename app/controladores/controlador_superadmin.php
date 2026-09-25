@@ -1022,11 +1022,18 @@ class ControladorSuperadmin {
                        JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
                       WHERE u.id_institucion = i.id_institucion AND u.activo = 1
                         AND ur.id_rol IN (" . ROL_GESTOR . ", " . ROL_RECTOR . ")) AS gestores,
-                    (SELECT COUNT(DISTINCT u.id_usuario)
+                    -- Propios más externos con vínculo activo: un colegio
+                    -- atendido solo por una empresa de mantenimiento no está
+                    -- sin técnicos.
+                    ((SELECT COUNT(DISTINCT u.id_usuario)
                        FROM usuario u
                        JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
                       WHERE u.id_institucion = i.id_institucion AND u.activo = 1
-                        AND ur.id_rol = " . ROL_TECNICO . ") AS tecnicos
+                        AND ur.id_rol = " . ROL_TECNICO . ")
+                   + (SELECT COUNT(DISTINCT ti.id_usuario)
+                       FROM tecnico_institucion ti
+                       JOIN usuario u ON u.id_usuario = ti.id_usuario AND u.activo = 1
+                      WHERE ti.id_institucion = i.id_institucion AND ti.activo = 1)) AS tecnicos
                FROM institucion i"
         );
 

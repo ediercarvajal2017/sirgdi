@@ -465,46 +465,91 @@ class ModeloUsuario {
     }
 
     /**
-     * Listar técnicos disponibles para una institución educativa.
-     * Incluye técnicos propios del colegio Y técnicos externos vinculados mediante tecnico_institucion.
+     * Técnicos que pueden atender una institución: los propios y los de
+     * empresas de mantenimiento con un vínculo activo.
+     *
+     * Es la misma regla que aplica ServicioAutorizacion al calcular permisos,
+     * así que quien sale en esta lista puede entrar a trabajar, y al revés.
+     * Antes la lista de asignar solo traía los propios, y la función que
+     * incluía a los externos tenía el SQL mal formado y no la llamaba nadie.
+     *
+     * @param int|null $id_tecnico Si se indica, solo ese técnico.
      */
-    public function obtener_tecnicos_disponibles($id_institucion) {
-        $sql = 'SELECT u.id_usuario, u.nombre_completo, u.correo_electronico, u.telefono,
-                       i.nombre AS empresa,
-                       COUNT(r.id_reporte) AS asignaciones_activas
-                FROM usuario u
-                JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
-                JOIN rol ro ON ro.id_rol = ur.id_rol AND ro.nombre_rol = \'tecnico\'
-                JOIN institucion i ON i.id_institucion = u.id_institucion
-                WHERE u.activo = 1
-                  AND (
-                    u.id_institucion = :id_inst_propio
-                    OR EXISTS (
-                        SELECT 1 FROM tecnico_institucion ti
-                        WHERE ti.id_usuario = u.id_usuario
-                          AND ti.id_institucion = :id_inst_externo
-                          AND ti.activo = 1
-                    )
-                  )
-                LEFT JOIN reporte r ON r.id_tecnico_asignado = u.id_usuario
-                    AND r.id_institucion = :id_inst_reporte
-                    AND r.id_estado NOT IN (
-                        SELECT id_estado FROM estado WHERE es_terminal = 1
-                    )
-                GROUP BY u.id_usuario
-                ORDER BY asignaciones_activas ASC, u.nombre_completo ASC';
+    public function tecnicos_de_institucion($id_institucion, $id_tecnico = null) {
+        $sql = 'SELECT u.id_usuario, u.nombre_completo, u.correo_electronico,
+                       CASE WHEN u.id_institucion = :inst_tipo THEN NULL ELSE e.nombre END AS empresa,
+                       (SELECT COUNT(*) FROM reporte r
+                          JOIN estado es ON es.id_estado = r.id_estado AND es.es_terminal = 0
+                         WHERE r.id_tecnico_asignado = u.id_usuario
+                           AND r.id_institucion = :inst_carga) AS asignaciones_activas
+                  FROM usuario u
+                  JOIN institucion e ON e.id_institucion = u.id_institucion
+                 WHERE u.activo = 1
+                   AND (
+                        EXISTS (SELECT 1 FROM usuario_rol ur
+                                 WHERE ur.id_usuario = u.id_usuario
+                                   AND ur.id_institucion = :inst_propia
+                                   AND ur.id_rol = ' . ROL_TECNICO . ')
+                     OR (    e.tipo = \'empresa_mantenimiento\'
+                         AND EXISTS (SELECT 1 FROM usuario_rol ur
+                                      WHERE ur.id_usuario = u.id_usuario
+                                        AND ur.id_institucion = u.id_institucion
+                                        AND ur.id_rol = ' . ROL_TECNICO . ')
+                         AND EXISTS (SELECT 1 FROM tecnico_institucion ti
+                                      WHERE ti.id_usuario = u.id_usuario
+                                        AND ti.id_institucion = :inst_vinculo
+                                        AND ti.activo = 1))
+                   )';
+        $parametros = [
+            ':inst_tipo'    => $id_institucion,
+            ':inst_carga'   => $id_institucion,
+            ':inst_propia'  => $id_institucion,
+            ':inst_vinculo' => $id_institucion,
+        ];
 
-        return $this->bd->obtener_todos($sql, [
-            ':id_inst_propio'   => $id_institucion,
-            ':id_inst_externo'  => $id_institucion,
-            ':id_inst_reporte'  => $id_institucion,
-        ]);
+        if ($id_tecnico !== null) {
+            $sql .= ' AND u.id_usuario = :id_tecnico';
+            $parametros[':id_tecnico'] = $id_tecnico;
+        }
+
+        return $this->bd->obtener_todos($sql . ' ORDER BY u.nombre_completo ASC', $parametros);
+    }
+
+    /** Un técnico concreto, si puede atender esa institución; si no, false. */
+    public function obtener_tecnico_para_institucion($id_tecnico, $id_institucion) {
+        $filas = $this->tecnicos_de_institucion($id_institucion, $id_tecnico);
+        return $filas[0] ?? false;
     }
 
     /**
      * Vincular un técnico externo a una institución educativa.
+     *
+     * Solo vale para un técnico de una empresa de mantenimiento y hacia una
+     * institución educativa. Antes no se comprobaba nada: se podía "vincular"
+     * a un rector, o vincular hacia otra empresa.
      */
     public function vincular_tecnico_institucion($id_usuario, $id_institucion, $id_asignado_por = null) {
+        $tecnico = $this->bd->obtener_uno(
+            'SELECT u.id_usuario, e.tipo
+               FROM usuario u
+               JOIN institucion e ON e.id_institucion = u.id_institucion
+               JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                                  AND ur.id_institucion = u.id_institucion
+                                  AND ur.id_rol = ' . ROL_TECNICO . '
+              WHERE u.id_usuario = ?',
+            [$id_usuario]
+        );
+        if (!$tecnico || $tecnico['tipo'] !== 'empresa_mantenimiento') {
+            throw new Exception('Solo se pueden vincular técnicos de una empresa de mantenimiento.');
+        }
+
+        $destino = $this->bd->obtener_valor(
+            'SELECT tipo FROM institucion WHERE id_institucion = ?', [$id_institucion]
+        );
+        if ($destino !== 'educativa') {
+            throw new Exception('Un técnico solo se puede vincular a una institución educativa.');
+        }
+
         $existe = $this->bd->existe(
             'tecnico_institucion',
             'id_usuario = :u AND id_institucion = :i',
@@ -528,8 +573,34 @@ class ModeloUsuario {
 
     /**
      * Desvincular (desactivar) un técnico externo de una institución educativa.
+     *
+     * Se niega si el técnico tiene reportes abiertos en esa institución: al
+     * desvincularlo deja de poder entrar, y esos reportes quedarían asignados
+     * a alguien que ya no puede verlos. Primero hay que reasignarlos.
      */
     public function desvincular_tecnico_institucion($id_usuario, $id_institucion) {
+        $abiertos = $this->bd->obtener_todos(
+            'SELECT r.numero_ticket
+               FROM reporte r
+               JOIN estado es ON es.id_estado = r.id_estado AND es.es_terminal = 0
+              WHERE r.id_tecnico_asignado = ? AND r.id_institucion = ?
+              ORDER BY r.numero_ticket',
+            [$id_usuario, $id_institucion]
+        );
+
+        if ($abiertos) {
+            $tickets = array_column($abiertos, 'numero_ticket');
+            throw new Exception(sprintf(
+                'No se puede desvincular: tiene %d %s abierto%s en esta institución (%s). '
+                . 'Pide al gestor que %s reasigne antes.',
+                count($tickets),
+                count($tickets) === 1 ? 'reporte' : 'reportes',
+                count($tickets) === 1 ? '' : 's',
+                implode(', ', array_slice($tickets, 0, 10)) . (count($tickets) > 10 ? '…' : ''),
+                count($tickets) === 1 ? 'lo' : 'los'
+            ));
+        }
+
         return $this->bd->ejecutar(
             'UPDATE tecnico_institucion SET activo = 0 WHERE id_usuario = ? AND id_institucion = ?',
             [$id_usuario, $id_institucion]

@@ -949,7 +949,8 @@ function abrirAsignacion(idReporte, esReasignacion) {
             tecnicos.forEach(tech => {
                 const opt = document.createElement('option');
                 opt.value = tech.id_usuario;
-                opt.textContent = tech.nombre;
+                // Un técnico externo lleva el nombre de su empresa.
+                opt.textContent = tech.empresa ? tech.nombre + ' — ' + tech.empresa : tech.nombre;
                 select.appendChild(opt);
             });
         });

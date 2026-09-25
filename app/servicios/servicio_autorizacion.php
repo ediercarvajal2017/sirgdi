@@ -14,6 +14,52 @@ class ServicioAutorizacion {
     private $id_institucion;
     private $permisos_cache = [];
 
+    /**
+     * Roles que el usuario tiene EN la institución de trabajo.
+     *
+     * Son dos fuentes:
+     *
+     *  1. Los roles asignados en esa institución (usuario_rol).
+     *  2. El rol Técnico, cuando es un técnico de una empresa de mantenimiento
+     *     con un vínculo activo a esa institución (tecnico_institucion).
+     *
+     * La segunda existía a medias: el superadministrador podía vincular un
+     * técnico a varios colegios y el técnico los elegía al entrar, pero nada
+     * de lo que venía después reconocía el vínculo y en cada colegio tenía
+     * cero permisos. No se resolvió creando un usuario_rol por colegio porque
+     * la clave única de esa tabla es (id_usuario, id_rol): un usuario solo
+     * puede tener el rol Técnico en una institución.
+     *
+     * Un vínculo solo puede dar el rol Técnico, y solo a quien ya es técnico
+     * en su propia empresa. Nunca Gestor ni Admin: vincular no puede servir
+     * para escalar privilegios.
+     *
+     * Las marcas llevan nombre distinto en cada rama porque, con las
+     * sentencias preparadas nativas, PDO no admite repetir un mismo nombre.
+     */
+    private const SQL_ROLES_EFECTIVOS =
+        'SELECT ur.id_rol FROM usuario_rol ur
+          WHERE ur.id_usuario = :ru_propio AND ur.id_institucion = :ri_propio
+         UNION
+         SELECT ur.id_rol FROM tecnico_institucion ti
+           JOIN usuario u      ON u.id_usuario = ti.id_usuario
+           JOIN institucion e  ON e.id_institucion = u.id_institucion
+                              AND e.tipo = \'empresa_mantenimiento\'
+           JOIN usuario_rol ur ON ur.id_usuario = u.id_usuario
+                              AND ur.id_institucion = u.id_institucion
+                              AND ur.id_rol = ' . ROL_TECNICO . '
+          WHERE ti.id_usuario = :ru_vinculo AND ti.id_institucion = :ri_vinculo
+            AND ti.activo = 1';
+
+    private function parametros_roles(): array {
+        return [
+            ':ru_propio'  => $this->id_usuario,
+            ':ri_propio'  => $this->id_institucion,
+            ':ru_vinculo' => $this->id_usuario,
+            ':ri_vinculo' => $this->id_institucion,
+        ];
+    }
+
     public function __construct($id_usuario = null, $id_institucion = null) {
         $this->bd = BaseDatos::obtener();
 
@@ -55,16 +101,12 @@ class ServicioAutorizacion {
 
         // Query: verificar si usuario tiene permiso a través de sus roles
         $sql = 'SELECT 1 FROM rol_permiso rp
-                INNER JOIN usuario_rol ur ON rp.id_rol = ur.id_rol
                 INNER JOIN permiso p ON rp.id_permiso = p.id_permiso
-                WHERE ur.id_usuario = :id_usuario
-                AND ur.id_institucion = :id_institucion
-                AND p.codigo = :nombre_permiso
+                WHERE p.codigo = :nombre_permiso
+                AND rp.id_rol IN (' . self::SQL_ROLES_EFECTIVOS . ')
                 LIMIT 1';
 
-        $resultado = $this->bd->obtener_uno($sql, [
-            ':id_usuario' => $this->id_usuario,
-            ':id_institucion' => $this->id_institucion,
+        $resultado = $this->bd->obtener_uno($sql, $this->parametros_roles() + [
             ':nombre_permiso' => $nombre_permiso,
         ]);
 
@@ -112,15 +154,12 @@ class ServicioAutorizacion {
             return false;
         }
 
-        return $this->bd->existe(
-            'usuario_rol',
-            'id_usuario = :id_usuario AND id_institucion = :id_institucion AND id_rol = :id_rol',
-            [
-                ':id_usuario' => $this->id_usuario,
-                ':id_institucion' => $this->id_institucion,
-                ':id_rol' => $id_rol,
-            ]
-        );
+        $sql = 'SELECT 1 FROM (' . self::SQL_ROLES_EFECTIVOS . ') roles
+                WHERE roles.id_rol = :id_rol LIMIT 1';
+
+        return (bool) $this->bd->obtener_uno($sql, $this->parametros_roles() + [
+            ':id_rol' => $id_rol,
+        ]);
     }
 
     /**
@@ -155,14 +194,9 @@ class ServicioAutorizacion {
             // Para usuarios de institución específica
             $sql = 'SELECT DISTINCT p.codigo FROM permiso p
                     INNER JOIN rol_permiso rp ON p.id_permiso = rp.id_permiso
-                    INNER JOIN usuario_rol ur ON rp.id_rol = ur.id_rol
-                    WHERE ur.id_usuario = :id_usuario
-                    AND ur.id_institucion = :id_institucion';
+                    WHERE rp.id_rol IN (' . self::SQL_ROLES_EFECTIVOS . ')';
 
-            $resultado = $this->bd->obtener_todos($sql, [
-                ':id_usuario' => $this->id_usuario,
-                ':id_institucion' => $this->id_institucion,
-            ]);
+            $resultado = $this->bd->obtener_todos($sql, $this->parametros_roles());
         }
 
         return array_map(fn($row) => $row['codigo'], $resultado);
@@ -177,14 +211,9 @@ class ServicioAutorizacion {
         }
 
         $sql = 'SELECT r.* FROM rol r
-                INNER JOIN usuario_rol ur ON r.id_rol = ur.id_rol
-                WHERE ur.id_usuario = :id_usuario
-                AND ur.id_institucion = :id_institucion';
+                WHERE r.id_rol IN (' . self::SQL_ROLES_EFECTIVOS . ')';
 
-        return $this->bd->obtener_todos($sql, [
-            ':id_usuario' => $this->id_usuario,
-            ':id_institucion' => $this->id_institucion,
-        ]);
+        return $this->bd->obtener_todos($sql, $this->parametros_roles());
     }
 
     /**
