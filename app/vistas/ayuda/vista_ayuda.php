@@ -130,6 +130,14 @@ $base = config('app.url_base');
             gestionan, una vez por cada aviso, sin repetirlo cada día.
         </p>
         <p>
+            El plazo se cuenta en <strong>horas hábiles</strong>: solo dentro del horario
+            laboral de la institución, y sin contar domingos ni festivos de Colombia. Un
+            reporte que llega el sábado por la noche empieza a contar el lunes a primera
+            hora. El horario por defecto es de lunes a viernes de 7:00 a 17:00 y el sábado
+            de 7:00 a 13:00; quien configura el SLA puede cambiarlo en
+            <em>Configuración → Horario laboral</em>.
+        </p>
+        <p>
             Devolver un reporte pausa ese reloj, y retomarlo lo reanuda: al técnico no
             se le cuenta el tiempo que el reporte estuvo esperando decisión de otro.
         </p>

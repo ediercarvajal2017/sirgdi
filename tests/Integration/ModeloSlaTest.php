@@ -19,6 +19,16 @@ final class ModeloSlaTest extends BaseDbTestCase
         return date('Y-m-d H:i:s', (int) round(time() - $horas * 3600));
     }
 
+    /**
+     * Con el horario de 24 horas: estas pruebas verifican qué SLA se elige y
+     * cómo se descuenta la pausa, y no pueden depender del día y la hora en
+     * que se ejecutan. El horario laboral tiene sus propias pruebas.
+     */
+    private function calcular(array $reporte): array
+    {
+        return $this->modelo->calcular_vencimiento($reporte, null, null, HorarioLaboral::siempre());
+    }
+
     private function reporteFalso(float $horasAtras, ?float $horasEnPausa = null, ?int $idCategoria = null): array
     {
         return [
@@ -46,7 +56,7 @@ final class ModeloSlaTest extends BaseDbTestCase
 
         $reporte = $this->reporteFalso('0.1', null, 99999);
 
-        $resultado = $this->modelo->calcular_vencimiento($reporte);
+        $resultado = $this->calcular($reporte);
 
         $this->assertSame(48, $resultado['horas_slaurado']);
         $this->assertSame('en_tiempo', $resultado['estado_sla']);
@@ -63,7 +73,7 @@ final class ModeloSlaTest extends BaseDbTestCase
         ]);
 
         $reporte = $this->reporteFalso('0.1');
-        $resultado = $this->modelo->calcular_vencimiento($reporte);
+        $resultado = $this->calcular($reporte);
 
         $this->assertSame(10, $resultado['horas_slaurado']);
         $this->assertSame('en_tiempo', $resultado['estado_sla']);
@@ -81,7 +91,7 @@ final class ModeloSlaTest extends BaseDbTestCase
 
         // Registrado hace 50h con SLA de 10h: vencido hace 40h
         $reporte = $this->reporteFalso('50');
-        $resultado = $this->modelo->calcular_vencimiento($reporte);
+        $resultado = $this->calcular($reporte);
 
         $this->assertSame('vencido', $resultado['estado_sla']);
         $this->assertLessThan(0, $resultado['horas_restantes']);
@@ -100,7 +110,7 @@ final class ModeloSlaTest extends BaseDbTestCase
 
         // Registrado hace 9h30min con SLA de 10h: quedan 30 min
         $reporte = $this->reporteFalso('9.5');
-        $resultado = $this->modelo->calcular_vencimiento($reporte);
+        $resultado = $this->calcular($reporte);
 
         $this->assertSame('cerca', $resultado['estado_sla']);
     }
@@ -121,9 +131,100 @@ final class ModeloSlaTest extends BaseDbTestCase
         // Registrado hace 5h, pero en pausa desde hace 3h: solo 2h deberían
         // contar como transcurridas, no las 5h completas.
         $reporte = $this->reporteFalso('5', '3');
-        $resultado = $this->modelo->calcular_vencimiento($reporte);
+        $resultado = $this->calcular($reporte);
 
         $this->assertEqualsWithDelta(2.0, $resultado['horas_transcurridas'], 0.1);
         $this->assertSame('en_tiempo', $resultado['estado_sla']);
+    }
+
+    // ------------------------------------------------------ horas hábiles
+
+    /** SLA de 8 h para la categoría de prueba, y un reporte con fecha fija. */
+    private function reporteConSla8h(string $registro, ?string $pausa = null): array
+    {
+        $this->modelo->crear([
+            'id_institucion' => self::ID_INSTITUCION,
+            'id_categoria' => self::ID_CATEGORIA,
+            'id_urgencia' => URGENCIA_URGENTE,
+            'tiempo_respuesta_horas' => 1,
+            'tiempo_resolucion_horas' => 8,
+        ]);
+
+        return [
+            'id_institucion' => self::ID_INSTITUCION,
+            'id_categoria' => self::ID_CATEGORIA,
+            'id_urgencia_calculada' => URGENCIA_URGENTE,
+            'fecha_hora_registro' => $registro,
+            'fecha_pausa_sla' => $pausa,
+        ];
+    }
+
+    private function sinHorarioPropio(): void
+    {
+        $this->bd->ejecutar('DELETE FROM configuracion_institucion WHERE id_institucion = ?', [self::ID_INSTITUCION]);
+    }
+
+    public function testUnReporteDelSabadoPorLaNocheYaNoVenceElDomingo(): void
+    {
+        // Caso real de producción: SIR-202600004, sábado 19/09/2026 23:19.
+        // En horas de calendario, con 8 h, vencía el domingo a las 7:19.
+        $this->sinHorarioPropio();
+        $reporte = $this->reporteConSla8h('2026-09-19 23:19:00');
+
+        $domingo = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-09-20 12:00:00'));
+        $this->assertSame('en_tiempo', $domingo['estado_sla'], 'El domingo nadie trabaja: no puede estar vencido.');
+        $this->assertEqualsWithDelta(0.0, $domingo['horas_transcurridas'], 0.001);
+        $this->assertSame('2026-09-21 15:00:00', $domingo['fecha_vencimiento'], 'Lunes 7:00 + 8 h hábiles.');
+
+        $lunesTarde = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-09-21 16:00:00'));
+        $this->assertSame('vencido', $lunesTarde['estado_sla']);
+        $this->assertEqualsWithDelta(9.0, $lunesTarde['horas_transcurridas'], 0.001);
+    }
+
+    public function testUsaElHorarioGuardadoPorLaInstitucion(): void
+    {
+        // Colegio que trabaja lunes a viernes de 6 a 18, sin sábado.
+        $semana = array_fill_keys(['1', '2', '3', '4', '5'], ['06:00', '18:00']) + ['6' => null, '7' => null];
+        $this->bd->ejecutar(
+            'INSERT INTO configuracion_institucion (id_institucion, horario_semanal_json) VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE horario_semanal_json = VALUES(horario_semanal_json)',
+            [self::ID_INSTITUCION, json_encode($semana)]
+        );
+        $reporte = $this->reporteConSla8h('2026-09-25 16:00:00'); // viernes
+
+        $r = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-09-28 12:00:00'));
+
+        // Viernes 16-18 (2 h) + lunes 6-12 (6 h) = 8 h justas.
+        $this->assertEqualsWithDelta(8.0, $r['horas_transcurridas'], 0.001);
+        $this->assertSame('2026-09-28 12:00:00', $r['fecha_vencimiento']);
+
+        // El mapa del tablero trae el mismo horario y da lo mismo.
+        $mapa = $this->modelo->mapa_por_institucion(self::ID_INSTITUCION);
+        $this->assertSame($r, $this->modelo->calcular_vencimiento($reporte, $mapa, new DateTimeImmutable('2026-09-28 12:00:00')));
+    }
+
+    public function testLaPausaDetieneElRelojEnHorasHabiles(): void
+    {
+        // Registrado viernes 16:00, pausado el lunes 8:00 (8 h hábiles con el
+        // horario por defecto), consultado el miércoles.
+        $this->sinHorarioPropio();
+        $reporte = $this->reporteConSla8h('2026-09-25 16:00:00', '2026-09-28 08:00:00');
+
+        $r = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-09-30 12:00:00'));
+
+        $this->assertEqualsWithDelta(8.0, $r['horas_transcurridas'], 0.001, 'Lo pausado no cuenta.');
+        $this->assertSame('cerca', $r['estado_sla'], 'Justo en el límite: 0 h restantes.');
+    }
+
+    public function testUnReporteDeVariosMesesCuentaTodosSusDias(): void
+    {
+        // El cálculo anterior tomaba días y horas de la diferencia de fechas
+        // sin sus meses: 40 días contaban como 9.
+        $reporte = $this->reporteFalso(0);
+        $reporte['fecha_hora_registro'] = '2026-06-01 00:00:00';
+
+        $r = $this->modelo->calcular_vencimiento($reporte, null, new DateTimeImmutable('2026-07-11 00:00:00'), HorarioLaboral::siempre());
+
+        $this->assertEqualsWithDelta(960.0, $r['horas_transcurridas'], 0.001);
     }
 }

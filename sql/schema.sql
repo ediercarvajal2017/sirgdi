@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS configuracion_institucion (
     horas_laborales_inicio              TINYINT UNSIGNED    NOT NULL DEFAULT 7,
     horas_laborales_fin                 TINYINT UNSIGNED    NOT NULL DEFAULT 17,
     dias_no_laborales_json              JSON                NULL     COMMENT '[6,7] = sáb, dom',
+    horario_semanal_json                JSON                NULL     COMMENT 'Franja por día ISO: {"1":["07:00","17:00"],...,"7":null}. NULL = horario por defecto',
     -- Plantillas de correo electrónico (variables: {TICKET}, {NOMBRE}, {DESCRIPCION}, etc.)
     plantilla_asunto_registro           VARCHAR(200)        NULL,
     plantilla_asunto_asignado           VARCHAR(200)        NULL,

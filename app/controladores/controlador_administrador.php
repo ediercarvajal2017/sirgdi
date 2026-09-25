@@ -52,6 +52,64 @@ class ControladorAdministrador {
         }
     }
 
+    /**
+     * Horario laboral de la institución: con él, el SLA cuenta horas hábiles.
+     *
+     * Mismo permiso que la pantalla de SLA: el horario es parte de cómo se
+     * mide el plazo, y así el menú y la pantalla piden lo mismo.
+     */
+    public function horario_laboral() {
+        $this->auth->requerir_autenticacion();
+        $this->autorizacion->requerir_permiso(PERMISO_GESTIONAR_SLA);
+        require_once LIB_PATH . '/horario_laboral.php';
+
+        $id_institucion = $this->auth->obtener_id_institucion();
+        $url = config('app.url_base') . '/?controlador=administrador&accion=horario_laboral';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                if (($_POST['accion'] ?? '') === 'restablecer') {
+                    $this->modelo_sla->guardar_horario($id_institucion, null);
+                    ServicioAuditoria::registrar('horario_restablecido', 'institucion', $id_institucion);
+                    header('Location: ' . $url . '&exito=' . urlencode('Horario por defecto restablecido.'));
+                    exit;
+                }
+
+                $semana = [];
+                for ($d = 1; $d <= 7; $d++) {
+                    $dia = $_POST['dia'][$d] ?? [];
+                    $semana[(string) $d] = !empty($dia['activo'])
+                        ? [trim((string) ($dia['inicio'] ?? '')), trim((string) ($dia['fin'] ?? ''))]
+                        : null;
+                }
+
+                $error = HorarioLaboral::validar($semana);
+                if ($error !== null) {
+                    throw new Exception($error);
+                }
+
+                $antes = $this->modelo_sla->horario_de_institucion($id_institucion)->a_arreglo();
+                $this->modelo_sla->guardar_horario($id_institucion, $semana);
+                ServicioAuditoria::registrar('horario_actualizado', 'institucion', $id_institucion, $antes, $semana);
+
+                header('Location: ' . $url . '&exito=' . urlencode('Horario guardado. Los plazos de todos los reportes se calculan ya con él.'));
+                exit;
+            } catch (Exception $e) {
+                header('Location: ' . $url . '&error=' . urlencode($e->getMessage()));
+                exit;
+            }
+        }
+
+        $anio = (int) date('Y');
+        $this->renderizar_vista('admin/vista_horario_laboral', [
+            'titulo'      => 'Horario laboral - ' . config('app.app_name'),
+            'semana'      => $this->modelo_sla->horario_de_institucion($id_institucion)->a_arreglo(),
+            'es_propio'   => $this->modelo_sla->tiene_horario_propio($id_institucion),
+            'festivos'    => array_merge(FestivosColombia::del_anio($anio), FestivosColombia::del_anio($anio + 1)),
+            'csrf_token'  => Validacion::generar_csrf_token(),
+        ]);
+    }
+
     private function gestionar_sla_form() {
         $this->auth->requerir_autenticacion();
         // Se exige gestionar_sla, que es el permiso que existe para esto y el

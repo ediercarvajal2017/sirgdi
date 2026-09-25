@@ -94,6 +94,9 @@
                             <li><a href="<?php echo config('app.url_base'); ?>/?controlador=administrador&accion=gestionar_sla">
                                 <i class="fas fa-hourglass-end"></i> Configurar SLA
                             </a></li>
+                            <li><a href="<?php echo config('app.url_base'); ?>/?controlador=administrador&accion=horario_laboral">
+                                <i class="fas fa-business-time"></i> Horario laboral
+                            </a></li>
                         <?php endif; ?>
                         <?php // El controlador exige gestionar_roles, no gestionar_usuarios.
                               // El Rector tiene el primero y no el segundo, así que la opción

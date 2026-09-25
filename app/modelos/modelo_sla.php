@@ -3,6 +3,8 @@
 // RN-13: SLA alerta cuando falta <1h
 // RN-10: SLA se pausa en estado Devuelto
 
+require_once LIB_PATH . '/horario_laboral.php';
+
 class ModeloSLA {
     private $bd;
 
@@ -126,7 +128,51 @@ class ModeloSLA {
             }
         }
 
+        // El horario viaja con el mapa: quien calcula muchos vencimientos
+        // tampoco tiene que consultarlo una vez por reporte.
+        $mapa['horario'] = $this->horario_de_institucion($id_institucion);
+
         return $mapa;
+    }
+
+    /**
+     * Guarda el horario laboral de una institución, o lo vuelve al horario
+     * por defecto con null. La institución puede no tener todavía fila en
+     * configuracion_institucion: se crea.
+     *
+     * @param array|null $semana día ISO => ['HH:MM','HH:MM'] o null; ya validado.
+     */
+    public function guardar_horario($id_institucion, ?array $semana) {
+        $json = $semana === null ? null : json_encode($semana);
+
+        return $this->bd->ejecutar(
+            'INSERT INTO configuracion_institucion (id_institucion, horario_semanal_json)
+             VALUES (:inst, :json)
+             ON DUPLICATE KEY UPDATE horario_semanal_json = VALUES(horario_semanal_json)',
+            [':inst' => $id_institucion, ':json' => $json]
+        );
+    }
+
+    /** True si la institución guardó un horario propio. */
+    public function tiene_horario_propio($id_institucion) {
+        return (bool) $this->bd->obtener_valor(
+            'SELECT 1 FROM configuracion_institucion
+              WHERE id_institucion = :inst AND horario_semanal_json IS NOT NULL',
+            [':inst' => $id_institucion]
+        );
+    }
+
+    /**
+     * Horario laboral de una institución. Sin configuración propia, el
+     * horario por defecto (lunes a viernes 7-17, sábado 7-13, sin festivos).
+     */
+    public function horario_de_institucion($id_institucion) {
+        $json = $this->bd->obtener_valor(
+            'SELECT horario_semanal_json FROM configuracion_institucion WHERE id_institucion = :inst',
+            [':inst' => $id_institucion]
+        );
+
+        return HorarioLaboral::desde_json($json !== null ? (string) $json : null);
     }
 
     /**
@@ -135,8 +181,12 @@ class ModeloSLA {
      *                         base de datos: es lo que evita el N+1 del
      *                         tablero, que hacía una o dos consultas por
      *                         reporte y dos recorridos completos por pantalla.
+     * @param DateTimeInterface|null $ahora  Para las pruebas: con horas hábiles
+     *                         el resultado depende del día y la hora.
+     * @param HorarioLaboral|null $horario   Para las pruebas; si no, el de la
+     *                         institución.
      */
-    public function calcular_vencimiento($reporte, $mapa = null) {
+    public function calcular_vencimiento($reporte, $mapa = null, ?DateTimeInterface $ahora = null, ?HorarioLaboral $horario = null) {
         if ($mapa !== null) {
             $sla = $mapa['categoria'][(int) $reporte['id_categoria']]
                 ?? $mapa['urgencia'][(int) $reporte['id_urgencia_calculada']]
@@ -158,43 +208,38 @@ class ModeloSLA {
             $horas_sla = intval($sla['tiempo_resolucion_horas']);
         }
 
-        // Calcular tiempo transcurrido (excluyendo pausa RN-10)
-        $fecha_registro = new DateTime($reporte['fecha_hora_registro']);
-        $ahora = new DateTime();
+        // Horas HÁBILES, no de calendario: un reporte del sábado por la noche
+        // no puede vencer el domingo, antes de que nadie pueda atenderlo. El
+        // horario es el de la institución (ver HorarioLaboral).
+        $horario = $horario ?? $mapa['horario'] ?? $this->horario_de_institucion($reporte['id_institucion']);
+        $ahora = $ahora ? DateTimeImmutable::createFromInterface($ahora) : new DateTimeImmutable();
+        $registro = new DateTimeImmutable($reporte['fecha_hora_registro']);
 
-        $tiempo_total = $fecha_registro->diff($ahora);
-        $horas_transcurridas = ($tiempo_total->d * 24) + $tiempo_total->h + ($tiempo_total->i / 60);
-
-        // Si hay pausa SLA, restar ese tiempo
-        if ($reporte['fecha_pausa_sla']) {
-            $fecha_pausa = new DateTime($reporte['fecha_pausa_sla']);
-            $tiempo_pausa = $fecha_pausa->diff($ahora);
-            $horas_pausa = ($tiempo_pausa->d * 24) + $tiempo_pausa->h + ($tiempo_pausa->i / 60);
-
-            // No restar más de lo transcurrido
-            $horas_pausa = min($horas_pausa, $horas_transcurridas);
-            $horas_transcurridas -= $horas_pausa;
+        // El reloj corre hasta ahora, o hasta la pausa (RN-10) si la hay.
+        //
+        // Antes se sumaban los días y horas de la diferencia de fechas sin sus
+        // meses: un reporte de 40 días contaba como si llevara 9.
+        $fin_medicion = $ahora;
+        if (!empty($reporte['fecha_pausa_sla'])) {
+            $pausa = new DateTimeImmutable($reporte['fecha_pausa_sla']);
+            if ($pausa < $fin_medicion) {
+                $fin_medicion = $pausa;
+            }
         }
 
-        // Calcular vencimiento
+        $horas_transcurridas = $horario->horas_entre($registro, $fin_medicion);
         $horas_restantes = $horas_sla - $horas_transcurridas;
-        $fecha_vencimiento = clone $fecha_registro;
-        $fecha_vencimiento->add(new DateInterval('PT' . intval($horas_sla) . 'H'));
 
-        // Si hay pausa, ajustar fecha de vencimiento
-        if ($reporte['fecha_pausa_sla']) {
-            $fecha_pausa = new DateTime($reporte['fecha_pausa_sla']);
-            $ahora = new DateTime();
-            $diferencia_pausa = $ahora->diff($fecha_pausa);
-            $fecha_vencimiento->add($diferencia_pausa);
-        }
+        // Mientras está en pausa, el plazo se corre las horas hábiles pausadas.
+        $horas_pausadas = $horario->horas_entre($fin_medicion, $ahora);
+        $fecha_vencimiento = $horario->sumar_horas($registro, $horas_sla + $horas_pausadas);
 
         // Determinar estado del SLA
         $estado_sla = 'en_tiempo';
         if ($horas_restantes < 0) {
             $estado_sla = 'vencido';
         } elseif ($horas_restantes <= 1) {
-            $estado_sla = 'cerca'; // RN-13: Alerta a <1h
+            $estado_sla = 'cerca'; // RN-13: Alerta a <1h (hábil)
         }
 
         return [
