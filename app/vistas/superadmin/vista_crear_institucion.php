@@ -15,6 +15,16 @@
     <form method="POST" action="<?php echo config('app.url_base'); ?>/?controlador=superadmin&accion=crear_institucion" class="form-modern" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
 
+        <?php $tipo_old = $old['tipo'] ?? 'educativa'; ?>
+        <div class="form-group">
+            <label for="tipo"><i class="fas fa-sitemap"></i> Tipo <span class="required">*</span></label>
+            <select id="tipo" name="tipo" class="input-modern<?php echo $errCls('tipo'); ?>" required>
+                <option value="educativa"<?php echo $tipo_old === 'educativa' ? ' selected' : ''; ?>>Institución educativa — recibe reportes de daños</option>
+                <option value="empresa_mantenimiento"<?php echo $tipo_old === 'empresa_mantenimiento' ? ' selected' : ''; ?>>Empresa de mantenimiento — aporta técnicos a los colegios</option>
+            </select>
+            <small class="form-help">Una empresa de mantenimiento no recibe reportes: sus técnicos se vinculan después a uno o varios colegios desde <em>Técnicos externos</em>.</small>
+        </div>
+
         <div class="form-group">
             <label for="nombre"><i class="fas fa-school"></i> Nombre de la Institución <span class="required">*</span></label>
             <input
@@ -31,7 +41,7 @@
         </div>
 
         <div class="form-group">
-            <label for="codigo_dane"><i class="fas fa-barcode"></i> Código DANE <span class="required">*</span></label>
+            <label for="codigo_dane"><i class="fas fa-barcode"></i> Código DANE (o NIT sin dígito de verificación, si es una empresa) <span class="required">*</span></label>
             <input
                 type="text"
                 id="codigo_dane"

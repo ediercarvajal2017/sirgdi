@@ -79,6 +79,14 @@ class ControladorSuperadmin {
             $nombre = trim($_POST['nombre'] ?? '');
             $codigo_dane = trim($_POST['codigo_dane'] ?? '');
 
+            // Antes no se podía elegir: todo salía educativa, y una empresa de
+            // mantenimiento solo se podía crear tocando la base de datos.
+            $tipo = $_POST['tipo'] ?? 'educativa';
+            if (!in_array($tipo, ['educativa', 'empresa_mantenimiento'], true)) {
+                $campo_error = 'tipo';
+                throw new Exception('Elige si es una institución educativa o una empresa de mantenimiento.');
+            }
+
             // Datos del primer administrador
             $admin_nombre = trim($_POST['admin_nombre'] ?? '');
             $admin_documento = trim($_POST['admin_documento'] ?? '');
@@ -142,6 +150,7 @@ class ControladorSuperadmin {
 
             // Crear institución sin logo primero
             $datos_institucion = [
+                'tipo' => $tipo,
                 'nombre' => $nombre,
                 'codigo_dane' => $codigo_dane,
                 'logo_ruta' => null,
@@ -218,6 +227,7 @@ class ControladorSuperadmin {
 
             // Preservar lo ingresado para repoblar el formulario
             $_SESSION['form_inst_old'] = [
+                'tipo' => $_POST['tipo'] ?? 'educativa',
                 'nombre' => $_POST['nombre'] ?? '',
                 'codigo_dane' => $_POST['codigo_dane'] ?? '',
                 'admin_nombre' => $_POST['admin_nombre'] ?? '',
@@ -1005,7 +1015,7 @@ class ControladorSuperadmin {
         // fallara en silencio (pasa de verdad: en la base de desarrollo
         // 'Admin de Institución' está guardado con los bytes corruptos).
         $filas = $bd->obtener_todos(
-            "SELECT i.id_institucion,
+            "SELECT i.id_institucion, i.tipo,
                     (SELECT COUNT(*) FROM sede s
                       WHERE s.id_institucion = i.id_institucion AND s.activa = 1) AS sedes,
                     (SELECT COUNT(*) FROM categoria c
@@ -1047,10 +1057,19 @@ class ControladorSuperadmin {
             'tecnicos'   => ['Sin técnicos', 'No hay a quién asignarle los reportes.', null],
         ];
 
+        // Una empresa de mantenimiento no recibe reportes: no necesita sedes,
+        // categorías, SLA ni gestores. Solo quien administre su personal y
+        // técnicos que vincular a los colegios.
+        $requisitos_empresa = [
+            'admins'   => $requisitos['admins'],
+            'tecnicos' => ['Sin técnicos', 'No hay técnicos que vincular a los colegios.', null],
+        ];
+
         $resultado = [];
         foreach ($filas as $f) {
             $faltan = [];
-            foreach ($requisitos as $clave => $info) {
+            $aplican = $f['tipo'] === 'empresa_mantenimiento' ? $requisitos_empresa : $requisitos;
+            foreach ($aplican as $clave => $info) {
                 if ((int) $f[$clave] === 0) {
                     $faltan[] = ['titulo' => $info[0], 'motivo' => $info[1], 'accion' => $info[2]];
                 }

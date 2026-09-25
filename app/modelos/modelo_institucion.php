@@ -6,6 +6,13 @@
 
 class ModeloInstitucion {
 
+    /**
+     * Una institución educativa recibe reportes; una empresa de mantenimiento
+     * aporta técnicos externos que se vinculan a una o varias educativas.
+     */
+    const TIPOS = ['educativa', 'empresa_mantenimiento'];
+
+
     private $tabla = 'institucion';
     private $bd;
 
@@ -20,7 +27,13 @@ class ModeloInstitucion {
      * @return int ID de la institución creada
      */
     public function crear($datos) {
+        $tipo = $datos['tipo'] ?? 'educativa';
+        if (!in_array($tipo, self::TIPOS, true)) {
+            throw new Exception('Tipo de institución no válido.');
+        }
+
         $datos_insertar = [
+            'tipo' => $tipo,
             'nombre' => $datos['nombre'] ?? '',
             'codigo_dane' => $datos['codigo_dane'] ?? '',
             'logo_ruta' => $datos['logo_ruta'] ?? null,

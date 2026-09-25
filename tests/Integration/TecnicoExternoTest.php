@@ -2,6 +2,7 @@
 
 require_once dirname(__DIR__, 2) . '/app/modelos/modelo_reporte.php';
 require_once dirname(__DIR__, 2) . '/app/modelos/modelo_usuario.php';
+require_once dirname(__DIR__, 2) . '/app/modelos/modelo_institucion.php';
 require_once dirname(__DIR__, 2) . '/app/servicios/servicio_autorizacion.php';
 
 /**
@@ -177,6 +178,25 @@ final class TecnicoExternoTest extends BaseDbTestCase
 
         $this->assertFalse((new ServicioAutorizacion($deOtroColegio, $this->colegio1))->verificar_permiso(PERMISO_TECNICO));
         $this->assertNotContains($deOtroColegio, $this->idsTecnicos($this->colegio1));
+    }
+
+    // -------------------------------------------------- crear la empresa
+
+    public function testSePuedeCrearUnaEmpresaDeMantenimiento(): void
+    {
+        // Antes el alta no dejaba elegir el tipo: todo salía educativa y la
+        // empresa solo se podía crear tocando la base de datos.
+        $modelo = new ModeloInstitucion();
+        $id = (int) $modelo->crear([
+            'nombre'      => 'Empresa creada desde el alta',
+            'tipo'        => 'empresa_mantenimiento',
+            'codigo_dane' => (string) random_int(1000000000000, 9999999999999),
+        ]);
+
+        $this->assertSame('empresa_mantenimiento', $modelo->obtener_por_id($id)['tipo']);
+
+        $this->expectException(Exception::class);
+        $modelo->crear(['nombre' => 'Tipo inventado', 'tipo' => 'superadmin', 'codigo_dane' => '99999']);
     }
 
     // -------------------------------------------------- vincular y desvincular
