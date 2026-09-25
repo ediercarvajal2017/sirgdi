@@ -1,0 +1,53 @@
+# Monitor de disponibilidad.
+#
+# Nada avisaba si el sitio se caía: las alertas que ya existen (respaldo,
+# revisión diaria de salud) corren en el mismo servidor y caen con él. Este
+# monitor vive fuera, en GitHub, y consulta cada 10 minutos una ruta que toca
+# la base de datos (app/controladores/controlador_salud.php).
+#
+# Si falla, el trabajo termina en rojo y GitHub lo avisa por correo a quien
+# hizo el último cambio en la programación de este archivo. Para no despertar
+# a nadie por un corte de un segundo, reintenta tres veces antes de fallar.
+#
+# Dos límites de GitHub que conviene conocer:
+#  - Las ejecuciones programadas pueden retrasarse unos minutos en horas de
+#    mucha carga: esto detecta caídas de minutos, no de segundos.
+#  - En un repositorio público, GitHub desactiva las tareas programadas tras
+#    60 días sin actividad en el repositorio, y avisa por correo antes.
+
+name: Monitor
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  disponibilidad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: El sitio y la base de datos responden
+        run: |
+          url='https://mto.jlcserviciosintegrales.com/?controlador=salud&accion=ping'
+          for intento in 1 2 3; do
+            # Sin conexión, curl ya escribe 000 como código; el || true solo
+            # evita que el fallo de curl corte el bucle antes de reintentar.
+            rm -f cuerpo.txt
+            codigo=$(curl -sS --max-time 20 -o cuerpo.txt -w '%{http_code}' "$url&t=$(date +%s)" || true)
+            texto=$(head -c 120 cuerpo.txt 2>/dev/null | tr -s '[:space:]' ' ' || true)
+            if [ "$codigo" = 200 ] && [ "$texto" = ok ]; then
+              echo "Disponible (intento $intento)."
+              exit 0
+            fi
+            echo "::warning::Intento $intento: HTTP $codigo, respuesta '${texto}'"
+            [ "$intento" -lt 3 ] && sleep 30
+          done
+          echo "::error::El sitio no responde bien tras 3 intentos (último HTTP $codigo)."
+          exit 1
