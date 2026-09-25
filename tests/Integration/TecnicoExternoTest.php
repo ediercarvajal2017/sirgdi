@@ -4,6 +4,7 @@ require_once dirname(__DIR__, 2) . '/app/modelos/modelo_reporte.php';
 require_once dirname(__DIR__, 2) . '/app/modelos/modelo_usuario.php';
 require_once dirname(__DIR__, 2) . '/app/modelos/modelo_institucion.php';
 require_once dirname(__DIR__, 2) . '/app/servicios/servicio_autorizacion.php';
+require_once dirname(__DIR__, 2) . '/app/servicios/servicio_autenticacion.php';
 
 /**
  * Un técnico de una empresa de mantenimiento que atiende uno o varios
@@ -96,6 +97,26 @@ final class TecnicoExternoTest extends BaseDbTestCase
     private function idsTecnicos(int $institucion): array
     {
         return array_map('intval', array_column($this->usuarios->tecnicos_de_institucion($institucion), 'id_usuario'));
+    }
+
+    // ------------------------------------------------------ al iniciar sesión
+
+    public function testAlEntrarSeLeReconoceComoTecnicoConLosRolesRealesDeLaBase(): void
+    {
+        // Se comparaba el nombre con 'tecnico', pero el rol se llama 'Técnico':
+        // nunca coincidía, y el técnico entraba a su empresa sin poder elegir
+        // colegio. Lo encontró la prueba en producción, no esta suite: las
+        // demás pruebas parten de una institución ya elegida.
+        $roles = $this->usuarios->obtener_roles($this->tecnico, $this->empresa);
+
+        $this->assertNotContains('tecnico', array_column($roles, 'nombre_rol'),
+            'Si el rol pasara a llamarse así, esta prueba dejaría de demostrar nada.');
+        $this->assertTrue(ServicioAutenticacion::incluye_rol_tecnico($roles));
+
+        $gestor = $this->usuario($this->colegio1, ROL_GESTOR, 'gestor-login');
+        $this->assertFalse(ServicioAutenticacion::incluye_rol_tecnico(
+            $this->usuarios->obtener_roles($gestor, $this->colegio1)
+        ));
     }
 
     // ------------------------------------------------------ puede trabajar

@@ -257,7 +257,7 @@ class ServicioAutenticacion {
         $_SESSION['rol'] = !empty($nombres_roles) ? implode(' · ', $nombres_roles) : 'Usuario';
 
         // ── Técnico externo: detectar si pertenece a empresa_mantenimiento ──
-        $es_tecnico = in_array('tecnico', $nombres_roles);
+        $es_tecnico = self::incluye_rol_tecnico($roles_usuario);
         if ($es_tecnico && $this->modelo_usuario->es_empresa_mantenimiento($usuario['id_institucion'])) {
             $instituciones = $this->modelo_usuario->obtener_instituciones_tecnico($usuario['id_usuario']);
             if (!empty($instituciones)) {
@@ -290,6 +290,20 @@ class ServicioAutenticacion {
 
         // Generar CSRF token
         Validacion::generar_csrf_token();
+    }
+
+    /**
+     * Si entre los roles hay el de Técnico. Por id, nunca por nombre.
+     *
+     * Se comparaba con in_array('tecnico', $nombres), pero el rol se llama
+     * 'Técnico' —con mayúscula y tilde—, así que nunca coincidía: un técnico
+     * de una empresa de mantenimiento entraba a trabajar en su propia empresa,
+     * sin el selector de colegio, y la función de técnicos externos no ha
+     * funcionado nunca. Es el mismo problema que ya se había corregido en las
+     * notificaciones: los nombres llevan tildes y cambian; los ids no.
+     */
+    public static function incluye_rol_tecnico(array $roles) {
+        return in_array(ROL_TECNICO, array_map('intval', array_column($roles, 'id_rol')), true);
     }
 
     /**
