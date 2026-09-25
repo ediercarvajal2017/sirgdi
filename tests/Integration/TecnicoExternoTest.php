@@ -119,6 +119,37 @@ final class TecnicoExternoTest extends BaseDbTestCase
         ));
     }
 
+    public function testLaSesionSigueValidaDespuesDeElegirColegio(): void
+    {
+        // La revalidación de cada petición buscaba al usuario en la
+        // institución de trabajo. Un técnico externo trabaja en el colegio
+        // pero su cuenta es de la empresa: no aparecía, se le tomaba por un
+        // usuario desactivado y se le expulsaba al abrir su panel. También lo
+        // encontró el recorrido en producción.
+        $antes = $_SESSION ?? [];
+        $_SERVER['HTTP_USER_AGENT'] = 'prueba';
+        $_SESSION = [
+            'id_usuario'            => $this->tecnico,
+            'id_institucion'        => $this->colegio1,
+            'id_institucion_propia' => $this->empresa,
+            'ultima_actividad'      => time(),
+            'fecha_login'           => time(),
+            'user_agent'            => 'prueba',
+            'version_credenciales'  => (int) $this->bd->obtener_valor(
+                'SELECT version_credenciales FROM usuario WHERE id_usuario = ?', [$this->tecnico]
+            ),
+        ];
+
+        try {
+            $auth = new ServicioAutenticacion();
+            $this->assertSame($this->empresa, $auth->obtener_id_institucion_cuenta());
+            $this->assertSame($this->colegio1, $auth->obtener_id_institucion());
+            $this->assertTrue($auth->validar_sesion_vigente(), 'Se expulsó al técnico tras elegir colegio.');
+        } finally {
+            $_SESSION = $antes;
+        }
+    }
+
     // ------------------------------------------------------ puede trabajar
 
     public function testTrabajaEnCadaUnoDeSusColegios(): void

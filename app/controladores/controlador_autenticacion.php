@@ -188,7 +188,8 @@ class ControladorAutenticacion {
         $this->auth->requerir_autenticacion();
 
         $id_usuario = $this->auth->obtener_id_usuario();
-        $id_institucion = $this->auth->obtener_id_institucion();
+        // La cuenta, no el colegio donde trabaja (ver obtener_id_institucion_cuenta).
+        $id_institucion = $this->auth->obtener_id_institucion_cuenta();
 
         $contrasena_actual = $_POST['contrasena_actual'] ?? '';
         $contrasena_nueva = $_POST['contrasena_nueva'] ?? '';
@@ -255,7 +256,8 @@ class ControladorAutenticacion {
         $this->auth->requerir_autenticacion();
 
         $id_usuario = $this->auth->obtener_id_usuario();
-        $id_institucion = $this->auth->obtener_id_institucion();
+        // La cuenta, no el colegio donde trabaja (ver obtener_id_institucion_cuenta).
+        $id_institucion = $this->auth->obtener_id_institucion_cuenta();
         $usuario = $this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion);
 
         $datos = [
@@ -284,7 +286,8 @@ class ControladorAutenticacion {
         $this->exigir_post();
 
         $id_usuario = $this->auth->obtener_id_usuario();
-        $id_institucion = $this->auth->obtener_id_institucion();
+        // La cuenta, no el colegio donde trabaja (ver obtener_id_institucion_cuenta).
+        $id_institucion = $this->auth->obtener_id_institucion_cuenta();
 
         try {
             $secreto = $this->modelo_usuario->preparar_2fa($id_usuario, $id_institucion);
@@ -304,7 +307,8 @@ class ControladorAutenticacion {
         $this->exigir_post();
 
         $id_usuario = $this->auth->obtener_id_usuario();
-        $id_institucion = $this->auth->obtener_id_institucion();
+        // La cuenta, no el colegio donde trabaja (ver obtener_id_institucion_cuenta).
+        $id_institucion = $this->auth->obtener_id_institucion_cuenta();
         $codigo = preg_replace('/\D/', '', $_POST['codigo'] ?? '');
 
         if (strlen($codigo) !== 6) {
@@ -342,7 +346,8 @@ class ControladorAutenticacion {
         $this->exigir_post();
 
         $id_usuario = $this->auth->obtener_id_usuario();
-        $id_institucion = $this->auth->obtener_id_institucion();
+        // La cuenta, no el colegio donde trabaja (ver obtener_id_institucion_cuenta).
+        $id_institucion = $this->auth->obtener_id_institucion_cuenta();
         $contrasena = $_POST['contrasena_actual'] ?? '';
 
         $usuario = $this->modelo_usuario->obtener_por_id($id_usuario, $id_institucion);

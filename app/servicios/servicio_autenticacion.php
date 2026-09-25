@@ -42,6 +42,20 @@ class ServicioAutenticacion {
     }
 
     /**
+     * Institución a la que pertenece la CUENTA del usuario conectado.
+     *
+     * Casi siempre coincide con la de trabajo, pero no para un técnico de una
+     * empresa de mantenimiento: su cuenta es de la empresa y trabaja en un
+     * colegio. Todo lo que busca la fila del propio usuario —revalidar la
+     * sesión, cambiar la contraseña, el 2FA— tiene que usar esta. Con la de
+     * trabajo la fila no aparecía, la revalidación lo tomaba por un usuario
+     * desactivado y lo expulsaba en la primera petición tras elegir colegio.
+     */
+    public function obtener_id_institucion_cuenta() {
+        return $_SESSION['id_institucion_propia'] ?? $_SESSION['id_institucion'] ?? null;
+    }
+
+    /**
      * Obtener email del usuario actual
      */
     public function obtener_email_usuario() {
@@ -385,7 +399,7 @@ class ServicioAutenticacion {
         // contraseña ya cambiada tras un robo de sesión— seguía operando.
         $estado = $this->modelo_usuario->obtener_estado_sesion(
             $_SESSION['id_usuario'],
-            $_SESSION['id_institucion']
+            $this->obtener_id_institucion_cuenta()
         );
 
         if (!$estado || !$estado['activo']) {
@@ -420,7 +434,7 @@ class ServicioAutenticacion {
 
         $estado = $this->modelo_usuario->obtener_estado_sesion(
             $_SESSION['id_usuario'],
-            $_SESSION['id_institucion']
+            $this->obtener_id_institucion_cuenta()
         );
 
         if ($estado) {
